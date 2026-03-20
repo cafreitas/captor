@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Captor — Gerador de Reunião Consultiva v1.0</title>
+<title>Captor — Pré-vendas eficiente e inteligente v1.0</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -248,21 +248,21 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     <div class="ll">
       <div>
         <div class="llogo">captor<span>.</span></div>
-        <div class="ltag">Gerador de Reunião Consultiva</div>
+        <div class="ltag">Pré-vendas eficiente e inteligente</div>
       </div>
       <div class="lstats">
-        <div><div class="lsv">+R$12bi</div><div class="lsl">Sob custódia</div></div>
-        <div><div class="lsv">+15 mil</div><div class="lsl">Clientes ativos</div></div>
-        <div><div class="lsv">Nº1 NPS</div><div class="lsl">Satisfação em 2024</div></div>
+        <div><div class="lsv">IA</div><div class="lsl">que facilita a pré-venda</div></div>
+        <div><div class="lsv">Propostas</div><div class="lsl">personalizadas em segundos</div></div>
+        <div><div class="lsv">Suas</div><div class="lsl">regras para recomendações</div></div>
       </div>
       <div class="lxp">
-        <div class="lxb">XP</div>
-        <div class="lxt">Credenciada — G20 XP Investimentos</div>
+        
+        <div class="lxt">© 2026 Quantic</div>
       </div>
     </div>
     <div class="lr">
       <div class="lrt">Acesso à plataforma</div>
-      <div class="lrs">Entre com seu email para acessar o Gerador de Reunião Consultiva</div>
+      <div class="lrs">Entre com seu email para acessar a plataforma</div>
       <label class="ll2">Email</label>
       <input class="li" type="email" id="lEmail" placeholder="nome@captor.com.br">
       <label class="ll2">Senha</label>
@@ -417,7 +417,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Gerador de Reunião Consultiva &nbsp;·&nbsp; <strong>v1.0</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v1.0</strong> &nbsp;·&nbsp; Uso interno</footer>
 </div>
 
 <script>
@@ -802,10 +802,10 @@ function gerarPDF(){
 
       // Cards de stats lado direito
       var stats=[
-        {v:'+R$12bi',l:'Sob custódia'},
-        {v:'+15 mil',l:'Clientes ativos'},
-        {v:'Nº1 NPS',l:'Satisfação 2024'},
-        {v:'8 anos',l:'No mercado'}
+        {v:'IA',l:'que facilita a pré-venda'},
+        {v:'Propostas',l:'em segundos'},
+        {v:'Suas regras',l:'para recomend.'},
+        {v:'© 2026',l:'Quantic'}
       ];
       var cx=170,cy=40,cw=28,ch=22,gap=5;
       stats.forEach(function(st,i){
@@ -819,10 +819,10 @@ function gerarPDF(){
         doc.text(st.l,sx+cw/2,sy+16,{align:'center'});
       });
 
-      // XP badge
+      // Badge rodapé
       setFill(LIME);doc.roundedRect(22,H-22,30,8,1,1,'F');
       setTxt(DARK);doc.setFontSize(7);doc.setFont('helvetica','bold');
-      doc.text('Credenciada XP · G20',37,H-17,{align:'center'});
+      doc.text('© 2026 Quantic',37,H-17,{align:'center'});
 
     } else {
       // ── SLIDES 2-6 ──

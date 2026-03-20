@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Captor — Gerador de Reunião Consultiva v1.0</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* ── ZERO dependências externas. Abre com duplo-clique. ── */
+:root{
+  --bg:#1e1e1e;--bg2:#272727;--bg3:#2e2e2e;--surface:#333;
+  --border:#404040;--border2:#4a4a4a;
+  --lime:#a8c23a;--lime2:#c0d85a;
+  --lime-dim:rgba(168,194,58,.13);--lime-glow:rgba(168,194,58,.22);
+  --text:#f0f0f0;--muted:#a0a0a0;--dim:#606060;
+  --white:#fff;--gold:#e0b840;--gold-dim:rgba(224,184,64,.15);
+  --r:8px;--rl:14px;
+  --f:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* LOGIN */
+#login{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.lw{display:flex;width:min(800px,95vw);border-radius:var(--rl);overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.6);border:1px solid var(--border)}
+.ll{width:50%;background:var(--bg3);display:flex;flex-direction:column;justify-content:space-between;padding:40px;position:relative}
+.ll::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(168,194,58,.08),transparent 60%);pointer-events:none}
+.llogo{font-size:2.4rem;font-weight:800;color:var(--white);letter-spacing:-.03em;line-height:1}
+.llogo span{color:var(--lime)}
+.ltag{font-size:.7rem;color:var(--muted);font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-top:5px}
+.lstats{display:flex;flex-direction:column;gap:12px}
+.lsv{font-size:1.4rem;font-weight:800;color:var(--lime);letter-spacing:-.02em}
+.lsl{font-size:.7rem;color:var(--muted);margin-top:1px}
+.lxp{display:flex;align-items:center;gap:8px}
+.lxb{background:var(--lime);color:#1e1e1e;font-size:.63rem;font-weight:800;padding:2px 8px;border-radius:4px}
+.lxt{font-size:.7rem;color:var(--dim)}
+.lr{width:50%;background:var(--surface);padding:40px;display:flex;flex-direction:column;justify-content:center}
+.lrt{font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:4px}
+.lrs{font-size:.74rem;color:var(--muted);margin-bottom:24px;line-height:1.5}
+.ll2{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);display:block;margin-bottom:5px}
+.li{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 13px;color:var(--text);font-family:var(--f);font-size:.85rem;outline:none;transition:border-color .2s;margin-bottom:12px}
+.li:focus{border-color:var(--lime)}
+.li::placeholder{color:var(--dim)}
+.lkh{font-size:.67rem;color:var(--dim);margin:-8px 0 12px}
+.lkh a{color:var(--lime);text-decoration:none}
+.lbtn{width:100%;padding:12px;background:var(--lime);color:#1a1a1a;font-family:var(--f);font-weight:700;font-size:.86rem;border:none;border-radius:var(--r);cursor:pointer;transition:all .2s;margin-top:6px}
+.lbtn:hover{background:var(--lime2);transform:translateY(-1px);box-shadow:0 6px 16px var(--lime-glow)}
+.lnote{font-size:.68rem;color:var(--dim);text-align:center;margin-top:12px;line-height:1.6}
+
+/* APP */
+#app{display:none}
+
+/* HEADER */
+header{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.hl{display:flex;align-items:center;gap:12px}
+.hlogo{font-size:1.25rem;font-weight:800;color:var(--white);letter-spacing:-.02em}
+.hlogo span{color:var(--lime)}
+.hpipe{width:1px;height:15px;background:var(--border2)}
+.hsub{font-size:.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.1em}
+.hver{font-size:.62rem;color:var(--lime);background:rgba(168,194,58,.12);border:1px solid rgba(168,194,58,.25);border-radius:4px;padding:2px 7px;font-weight:700}
+/* SLIDES INSTITUCIONAL */
+.sldeckgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.sldeck{background:var(--bg3);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .2s,transform .18s}
+.sldeck:hover{border-color:var(--lime);transform:translateY(-2px)}
+.sldeck-cover{background:linear-gradient(135deg,#1a1a1a 0%,#2a2a2a 100%);padding:18px 18px 14px;border-bottom:2px solid var(--lime);position:relative}
+.sldeck-num{position:absolute;top:12px;right:14px;width:22px;height:22px;border-radius:50%;background:var(--lime);color:#1a1a1a;font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center}
+.sldeck-rotulo{font-size:.6rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+.sldeck-title{font-size:.9rem;font-weight:800;color:var(--white);line-height:1.3}
+.sldeck-body{padding:14px 16px}
+.sldeck-content{font-size:.76rem;color:var(--muted);line-height:1.65}
+.sldeck-visual{margin-top:8px;font-size:.67rem;color:var(--dim);background:var(--bg2);border-radius:5px;padding:6px 9px;font-style:italic}
+/* SLIDE 1 RESUMO EXECUTIVO */
+.sldeck-exec{background:linear-gradient(135deg,#1a2010 0%,#222 100%);border-color:var(--lime)}
+.sldeck-exec .sldeck-cover{background:linear-gradient(135deg,#0e1a06 0%,#1a2810 100%);border-bottom:2px solid var(--lime)}
+.exec-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.exec-stat{background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.2);border-radius:6px;padding:8px 10px;text-align:center}
+.exec-stat-val{font-size:1rem;font-weight:800;color:var(--lime);letter-spacing:-.02em}
+.exec-stat-lbl{font-size:.58rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.06em}
+.hrr{display:flex;align-items:center;gap:9px}
+.ntabs{display:flex;gap:2px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:3px}
+.ntab{padding:5px 14px;border-radius:6px;border:none;background:transparent;color:var(--muted);font-family:var(--f);font-size:.74rem;font-weight:600;cursor:pointer;transition:all .18s}
+.ntab.active{background:var(--lime);color:#1a1a1a}
+.upill{display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border);border-radius:40px;padding:3px 11px 3px 3px}
+.uav{width:24px;height:24px;border-radius:50%;background:var(--lime-dim);border:1px solid var(--lime);color:var(--lime);font-size:.68rem;font-weight:800;display:flex;align-items:center;justify-content:center}
+.uname{font-size:.73rem;color:var(--muted)}
+
+/* MAIN */
+.main{display:grid;grid-template-columns:340px 1fr;min-height:calc(100vh - 54px)}
+
+/* SIDEBAR */
+.sb{background:var(--bg2);border-right:1px solid var(--border);padding:20px 16px;overflow-y:auto}
+.sbt{font-size:.88rem;font-weight:700;color:var(--white)}
+.sbs{font-size:.7rem;color:var(--muted);margin-top:3px;margin-bottom:18px}
+.fg{margin-bottom:11px}
+.fl{display:block;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px}
+.fi,.fsel,.fta{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:9px 11px;color:var(--text);font-family:var(--f);font-size:.82rem;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.fi:focus,.fsel:focus,.fta:focus{border-color:var(--lime)}
+.fi::placeholder{color:var(--dim)}
+.fsel{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.fsel option{background:var(--bg3)}
+.fta{resize:vertical;min-height:60px}
+.fhint{font-size:.64rem;color:var(--dim);margin-top:3px}
+.fdiv{height:1px;background:var(--border);margin:14px 0}
+.genbtn{width:100%;padding:12px;background:var(--lime);color:#1a1a1a;font-family:var(--f);font-weight:700;font-size:.84rem;border:none;border-radius:var(--r);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px}
+.genbtn:hover{background:var(--lime2);transform:translateY(-1px);box-shadow:0 5px 18px var(--lime-glow)}
+.genbtn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* CONTENT */
+.content{padding:24px 26px;overflow-y:auto;background:var(--bg)}
+
+/* EMPTY */
+.empty{height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center}
+.emicon{width:66px;height:66px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--dim)}
+.emtit{font-size:.95rem;font-weight:700;color:var(--dim)}
+.emdesc{font-size:.75rem;color:var(--dim);max-width:240px;line-height:1.6}
+
+/* LOADING */
+.ldwrap{height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--lime);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ldlabel{font-size:.8rem;color:var(--muted);font-weight:500}
+.ldsteps{display:flex;flex-direction:column;gap:6px}
+.ldstep{display:flex;align-items:center;gap:9px;font-size:.71rem;color:var(--dim);transition:color .3s}
+.ldstep.active{color:var(--lime)}
+.ldstep.done{color:var(--muted)}
+.lddot{width:5px;height:5px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:all .3s}
+.ldstep.active .lddot{background:var(--lime);box-shadow:0 0 5px var(--lime)}
+
+/* OUTPUT */
+.outhead{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:10px}
+.outtag{display:inline-block;background:var(--lime);color:#1a1a1a;font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:4px;margin-bottom:7px}
+.outname{font-size:1.35rem;font-weight:800;color:var(--white);letter-spacing:-.02em}
+.outmeta{font-size:.73rem;color:var(--muted);margin-top:3px}
+.outsumm{font-size:.77rem;color:var(--muted);line-height:1.7;max-width:540px;margin-top:9px}
+.printbtn{flex-shrink:0;padding:7px 12px;background:transparent;border:1px solid var(--border);border-radius:var(--r);color:var(--muted);font-family:var(--f);font-size:.72rem;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .2s;white-space:nowrap}
+.printbtn:hover{border-color:var(--lime);color:var(--lime)}
+
+/* BLOCKS */
+.block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:12px;overflow:hidden}
+.blkhd{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;transition:background .15s}
+.blkhd:hover{background:rgba(255,255,255,.02)}
+.blkico{width:28px;height:28px;border-radius:6px;background:var(--lime-dim);border:1px solid rgba(168,194,58,.2);display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0}
+.blktit{font-size:.81rem;font-weight:700;flex:1;color:var(--white)}
+.blkchev{color:var(--dim);font-size:.68rem;transition:transform .2s}
+.blkchev.open{transform:rotate(180deg)}
+.blkbody{padding:16px;display:none}
+.blkbody.open{display:block}
+
+/* ROTEIRO */
+.rotitem{display:flex;gap:10px;margin-bottom:14px}
+.rotnum{width:22px;height:22px;flex-shrink:0;margin-top:1px;background:var(--lime);color:#1a1a1a;font-size:.68rem;font-weight:800;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.rotcont strong{display:block;font-size:.81rem;font-weight:700;color:var(--white);margin-bottom:2px}
+.rotcont p{font-size:.75rem;color:var(--muted);line-height:1.65}
+.rottip{margin-top:5px;font-size:.7rem;color:var(--lime);background:var(--lime-dim);border-radius:5px;padding:4px 8px;display:inline-block;border-left:2px solid var(--lime)}
+.rottime{font-size:.65rem;color:var(--dim);margin-top:3px}
+
+/* PERGUNTAS */
+.pqcard{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px;margin-bottom:7px;display:flex;gap:9px}
+.pqn{font-size:.64rem;font-weight:800;color:#1a1a1a;background:var(--lime);border-radius:4px;padding:2px 6px;flex-shrink:0;margin-top:1px}
+.pqq{font-size:.8rem;color:var(--white);line-height:1.6;font-weight:500}
+.pqwhy{font-size:.7rem;color:var(--muted);margin-top:4px;font-style:italic}
+
+/* ARGUMENTOS */
+.argcard{border-left:3px solid var(--lime);background:var(--bg3);border-radius:0 var(--r) var(--r) 0;padding:11px 14px;margin-bottom:9px}
+.argtit{font-size:.81rem;font-weight:700;color:var(--white);margin-bottom:4px}
+.argbody{font-size:.76rem;color:var(--muted);line-height:1.65}
+.arghook{margin-top:8px;font-size:.71rem;color:var(--gold);background:var(--gold-dim);border-radius:5px;padding:5px 9px;display:inline-block}
+
+/* SLIDES */
+.slidesgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.slidecard{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .2s,transform .18s}
+.slidecard:hover{border-color:var(--lime);transform:translateY(-2px)}
+.slidetop{padding:8px 11px 6px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.slidenum{width:18px;height:18px;border-radius:50%;background:var(--lime);color:#1a1a1a;font-size:.63rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sliderot{font-size:.62rem;color:var(--dim);text-transform:uppercase;letter-spacing:.07em}
+.slidebody{padding:10px}
+.slidetitle{font-size:.77rem;font-weight:700;color:var(--white);margin-bottom:4px;line-height:1.4}
+.slidecont{font-size:.7rem;color:var(--muted);line-height:1.6}
+.slidevis{margin-top:6px;font-size:.64rem;color:var(--dim);background:var(--bg2);border-radius:5px;padding:6px 8px;font-style:italic}
+
+/* CHARTS SVG */
+.chartsgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.chartbox{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.charttitle{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+
+/* DASHBOARD */
+#dashview{display:none;padding:24px 26px}
+.dht{font-size:1.1rem;font-weight:800;color:var(--white);letter-spacing:-.02em}
+.dhs{font-size:.73rem;color:var(--muted);margin-top:3px;margin-bottom:16px}
+.kpirow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px}
+.kpiv{font-size:1.6rem;font-weight:800;color:var(--lime);letter-spacing:-.03em}
+.kpil{font-size:.64rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.dashgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.dashch{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px}
+.histtbl{width:100%;border-collapse:collapse}
+.histtbl th{text-align:left;padding:7px 10px;font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--border)}
+.histtbl td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:.76rem;color:var(--text)}
+.histtbl tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:.63rem;font-weight:700}
+.blime{background:var(--lime-dim);color:var(--lime)}
+.bgold{background:var(--gold-dim);color:var(--gold)}
+.bmuted{background:rgba(255,255,255,.06);color:var(--muted)}
+
+/* SLIDERS ALOCAÇÃO */
+.aslider-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.aslider-label{font-size:.7rem;color:var(--muted);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aslider-wrap{flex:1;position:relative}
+input[type=range].aslider{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer}
+input[type=range].aslider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;background:var(--lime);cursor:pointer;border:2px solid var(--bg2);transition:transform .15s}
+input[type=range].aslider::-webkit-slider-thumb:hover{transform:scale(1.2)}
+input[type=range].aslider:disabled{opacity:.35;cursor:not-allowed}
+input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
+.aslider-val{font-size:.72rem;font-weight:700;color:var(--lime);width:34px;text-align:right;flex-shrink:0}
+.alloc-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:2px}
+.alloc-bar-fill{height:100%;background:var(--lime);border-radius:3px;transition:width .2s}
+.alloc-bar-fill.over{background:var(--gold)}
+/* FOOTER */
+.footer{text-align:center;padding:13px;font-size:.62rem;color:var(--dim);border-top:1px solid var(--border);background:var(--bg2)}
+.footer strong{color:var(--lime)}
+
+.fadein{animation:fadein .35s ease forwards}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:780px){
+  .lw{flex-direction:column}.ll,.lr{width:100%;padding:28px}
+  .main{grid-template-columns:1fr}.sb{border-right:none;border-bottom:1px solid var(--border)}
+  .kpirow{grid-template-columns:1fr 1fr}.chartsgrid,.dashgrid{grid-template-columns:1fr}
+  header{padding:0 12px}.hsub,.hver{display:none}
+}
+@media print{
+  header,.sb,.printbtn,.footer,#dashview{display:none!important}
+  .main{grid-template-columns:1fr}.content{padding:0}
+  .blkbody{display:block!important}
+  .block{break-inside:avoid}
+  .chartsgrid{grid-template-columns:1fr 1fr}
+  body{background:#fff;color:#000}
+  .bg2,.bg3,.bg,.surface{background:#fff!important}
+  svg text{fill:#333!important}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="lw">
+    <div class="ll">
+      <div>
+        <div class="llogo">captor<span>.</span></div>
+        <div class="ltag">Gerador de Reunião Consultiva</div>
+      </div>
+      <div class="lstats">
+        <div><div class="lsv">+R$12bi</div><div class="lsl">Sob custódia</div></div>
+        <div><div class="lsv">+15 mil</div><div class="lsl">Clientes ativos</div></div>
+        <div><div class="lsv">Nº1 NPS</div><div class="lsl">Satisfação em 2024</div></div>
+      </div>
+      <div class="lxp">
+        <div class="lxb">XP</div>
+        <div class="lxt">Credenciada — G20 XP Investimentos</div>
+      </div>
+    </div>
+    <div class="lr">
+      <div class="lrt">Acesso à plataforma</div>
+      <div class="lrs">Entre com seu email para acessar o Gerador de Reunião Consultiva</div>
+      <label class="ll2">Email</label>
+      <input class="li" type="email" id="lEmail" placeholder="nome@captor.com.br">
+      <label class="ll2">Senha</label>
+      <input class="li" type="password" id="lPass" placeholder="••••••••">
+      <button class="lbtn" onclick="doLogin()">Entrar</button>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v1.0</div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="hl">
+      <div class="hlogo">captor<span>.</span></div>
+      <div class="hpipe"></div>
+      <div class="hsub">Assessoria Consultiva</div>
+      <div class="hver">v1.0</div>
+    </div>
+    <div class="hrr">
+      <div class="ntabs">
+        <button class="ntab active" onclick="showTab('gen',this)">Gerador</button>
+        <button class="ntab" onclick="showTab('dash',this)">Dashboard</button>
+      </div>
+      <div class="upill">
+        <div class="uav" id="avEl">?</div>
+        <span class="uname" id="unEl">Assessor</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="main" id="genView">
+    <aside class="sb">
+      <div class="sbt">Perfil do Prospect</div>
+      <div class="sbs">Preencha os dados para gerar o roteiro</div>
+
+      <div class="fg"><label class="fl">Nome</label><input class="fi" id="fNome" placeholder="Ex: Ricardo Almeida"></div>
+      <div class="fg">
+        <label class="fl">Patrimônio estimado</label>
+        <input class="fi" id="fPat" type="text" placeholder="R$ 0" oninput="maskPat(this)" autocomplete="off">
+        <div class="fhint">Imóveis + investimentos + reservas</div>
+      </div>
+      <div class="fg">
+        <label class="fl">Profissão / Setor</label>
+        <select class="fsel" id="fProf">
+          <option value="">Selecione...</option>
+          <option>Empresário / Sócio</option><option>Médico / Dentista</option>
+          <option>Advogado / Contador</option><option>Engenheiro</option>
+          <option>Executivo CLT (C-Level)</option><option>Servidor Público</option>
+          <option>Investidor / Rentista</option><option>Profissional Liberal</option>
+          <option>Aposentado</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Idade</label><input class="fi" id="fIdade" type="number" placeholder="Ex: 45" min="18" max="90"></div>
+      <div class="fg">
+        <label class="fl">Perfil de risco</label>
+        <select class="fsel" id="fPerfil">
+          <option value="">Selecione...</option>
+          <option>Conservador</option><option>Moderado</option><option>Arrojado</option><option>Agressivo</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Objetivo principal</label>
+        <select class="fsel" id="fObj">
+          <option value="">Selecione...</option>
+          <option>Aposentadoria / Independência financeira</option>
+          <option>Sucessão patrimonial / família</option>
+          <option>Compra de imóvel / bem</option>
+          <option>Crescimento patrimonial acelerado</option>
+          <option>Proteção e preservação</option>
+          <option>Renda passiva</option>
+          <option>Investimentos internacionais / Offshore</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Assessoria atual</label>
+        <select class="fsel" id="fAss">
+          <option value="">Selecione...</option>
+          <option>Não possui</option><option>Gerente de banco</option>
+          <option>Outro escritório XP</option><option>BTG / Rico / outros</option>
+          <option>Investe sozinho</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Problemas confirmados na gestão atual <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
+        <textarea class="fta" id="fGaps" placeholder="Ex: carteira 100% CDB banco, sem proteção cambial, sem previdência privada..." style="min-height:54px"></textarea>
+        <div class="fhint">Só preencha o que o cliente já confirmou ou você observou — a IA não vai inventar gaps sem evidência</div>
+      </div>
+      <div class="fg">
+        <label class="fl">Contexto / observações</label>
+        <textarea class="fta" id="fCtx" placeholder="Ex: veio por indicação, tem empresa, preocupado com câmbio..."></textarea>
+      </div>
+
+      <!-- ALOCAÇÃO ATUAL -->
+      <div class="fdiv"></div>
+      <div style="margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+          <span class="fl" style="margin-bottom:0">Alocação atual do cliente <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></span>
+          <span id="allocTotal" style="font-size:.72rem;font-weight:700;color:var(--lime)">0%</span>
+        </div>
+        <div class="fhint" style="margin-bottom:10px">Sliders travam automaticamente ao atingir 100%</div>
+        <div id="allocSliders"></div>
+        <button type="button" onclick="resetSliders()" style="margin-top:8px;background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f)">↺ Limpar</button>
+      </div>
+      <div class="fdiv"></div>
+      <button class="genbtn" id="btnGen" onclick="generate()">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg>
+        Gerar Reunião Consultiva
+      </button>
+    </aside>
+
+    <main class="content" id="contentArea">
+      <div class="empty" id="emptyState">
+        <div class="emicon">◎</div>
+        <div class="emtit">Pronto para começar</div>
+        <div class="emdesc">Preencha o perfil ao lado e gere um roteiro consultivo completo em segundos.</div>
+      </div>
+      <div id="loadingState" style="display:none" class="ldwrap">
+        <div class="spinner"></div>
+        <div class="ldlabel">Preparando sua reunião...</div>
+        <div class="ldsteps">
+          <div class="ldstep" id="ss1"><div class="lddot"></div>Analisando perfil do cliente</div>
+          <div class="ldstep" id="ss2"><div class="lddot"></div>Gerando roteiro e perguntas</div>
+          <div class="ldstep" id="ss3"><div class="lddot"></div>Construindo argumentos consultivos</div>
+          <div class="ldstep" id="ss4"><div class="lddot"></div>Montando apresentação</div>
+        </div>
+      </div>
+      <div id="outArea" style="display:none"></div>
+    </main>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashview">
+    <div class="dht">Dashboard de Performance</div>
+    <div class="dhs">Impacto do Gerador Consultivo — últimos 30 dias</div>
+    <div class="kpirow">
+      <div class="kpi"><div class="kpiv" id="kG">0</div><div class="kpil">Reuniões geradas</div></div>
+      <div class="kpi"><div class="kpiv">—</div><div class="kpil">Taxa de conversão</div></div>
+      <div class="kpi"><div class="kpiv">—</div><div class="kpil">Ticket médio</div></div>
+      <div class="kpi"><div class="kpiv">—</div><div class="kpil">Dias até fechar</div></div>
+    </div>
+    <div class="dashgrid">
+      <div class="dashch" id="dashChConv"></div>
+      <div class="dashch" id="dashChTicket"></div>
+    </div>
+    <div class="block" style="margin-bottom:0">
+      <div class="blkhd" style="cursor:default"><div class="blkico">📋</div><div class="blktit">Histórico de reuniões geradas</div></div>
+      <div class="blkbody open">
+        <table class="histtbl"><thead><tr><th>Prospect</th><th>Analista</th><th>Patrimônio</th><th>Perfil</th><th>Data</th><th>Status</th></tr></thead>
+        <tbody id="histBody"><tr><td colspan="6" style="color:var(--dim);text-align:center;padding:24px 0">Nenhuma reunião gerada ainda</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">captor. Gerador de Reunião Consultiva &nbsp;·&nbsp; <strong>v1.0</strong> &nbsp;·&nbsp; Uso interno</footer>
+</div>
+
+<script>
+// ── MÁSCARA PATRIMÔNIO ──
+function maskPat(el){
+  var raw=el.value.replace(/\D/g,'');
+  if(!raw){el.value='';return;}
+  var num=parseInt(raw,10);
+  el.value='R$ '+num.toLocaleString('pt-BR');
+}
+function getRawPat(){
+  var v=document.getElementById('fPat').value.replace(/\D/g,'');
+  return v?parseInt(v,10):0;
+}
+
+// ── SLIDERS ALOCAÇÃO ATUAL ──
+var ALLOC_CATS = ['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'];
+
+function initSliders(){
+  var wrap = document.getElementById('allocSliders');
+  wrap.innerHTML = '';
+  ALLOC_CATS.forEach(function(cat, i){
+    wrap.innerHTML += '<div class="aslider-row">'
+      +'<span class="aslider-label" title="'+cat+'">'+cat+'</span>'
+      +'<div class="aslider-wrap">'
+      +'<input type="range" class="aslider" id="asl_'+i+'" min="0" max="100" value="0" step="1" oninput="updateSliders('+i+')">'
+      +'</div>'
+      +'<span class="aslider-val" id="asv_'+i+'">0%</span>'
+      +'</div>';
+  });
+}
+
+function updateSliders(changed){
+  var total = 0;
+  ALLOC_CATS.forEach(function(_, i){
+    total += parseInt(document.getElementById('asl_'+i).value);
+  });
+
+  // Se passou de 100, reduz o slider que acabou de mudar
+  if(total > 100){
+    var over = total - 100;
+    var el = document.getElementById('asl_'+changed);
+    el.value = Math.max(0, parseInt(el.value) - over);
+    total = 100;
+  }
+
+  var remaining = 100 - total;
+
+  // Atualiza valores e trava sliders que não têm espaço
+  ALLOC_CATS.forEach(function(_, i){
+    var val = parseInt(document.getElementById('asl_'+i).value);
+    document.getElementById('asv_'+i).textContent = val + '%';
+    var slider = document.getElementById('asl_'+i);
+    // Trava se remaining = 0 e este slider está em 0
+    slider.disabled = (remaining === 0 && val === 0);
+  });
+
+  // Atualiza total
+  var totalEl = document.getElementById('allocTotal');
+  totalEl.textContent = total + '%';
+  totalEl.style.color = total === 100 ? '#a8c23a' : total > 90 ? '#e0b840' : '#a8c23a';
+}
+
+function resetSliders(){
+  ALLOC_CATS.forEach(function(_, i){
+    document.getElementById('asl_'+i).value = 0;
+    document.getElementById('asl_'+i).disabled = false;
+  });
+  document.getElementById('allocTotal').textContent = '0%';
+}
+
+function getSliderAlloc(){
+  var result = {};
+  var total = 0;
+  ALLOC_CATS.forEach(function(cat, i){
+    var val = parseInt(document.getElementById('asl_'+i).value);
+    result[cat] = val;
+    total += val;
+  });
+  return total > 0 ? result : null; // null = não preenchido
+}
+
+// ── STATE ──
+var user=null, apiKey=null;
+var hist=JSON.parse(localStorage.getItem('captor_hist')||'[]');
+
+// ── LOGIN ──
+// ── CHAVE OFUSCADA (XOR + base64) ──
+var _k=(function(){
+  var d='IEI8AltzMlwjQCFQGEVaXzBDdgxbWHVKDG5HD1AzU2xiQSMZc01GSyFsfTpkQUkFBVBjKHBWSmcRZnILX3BnBBF5RVVcYHJ0CkVdMnpRcGULals7BXVHeTZodw5cbE5QFRFQTlFiTnY2XlAi';
+  var s=[83,41,17,99,53,7,31,61];
+  var b=atob(d);var r='';
+  for(var i=0;i<b.length;i++)r+=String.fromCharCode(b.charCodeAt(i)^s[i%s.length]);
+  return r;
+})();
+
+function doLogin(){
+  var email=document.getElementById('lEmail').value.trim();
+  if(!email){alert('Insira seu email.');return;}
+  apiKey=_k;
+  user=email.split('@')[0].replace(/\./g,' ');
+  user=user.charAt(0).toUpperCase()+user.slice(1);
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('unEl').textContent=user;
+  document.getElementById('avEl').textContent=user.charAt(0).toUpperCase();
+  initSliders();
+  updateDash();
+}
+document.getElementById('lPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+
+// ── TABS ──
+function showTab(tab,btn){
+  document.querySelectorAll('.ntab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById('genView').style.display=tab==='gen'?'grid':'none';
+  document.getElementById('dashview').style.display=tab==='dash'?'block':'none';
+  if(tab==='dash'){updateDash();renderDashSVG();}
+}
+
+// ── GENERATE ──
+async function generate(){
+  var nome=document.getElementById('fNome').value.trim();
+  var pat=getRawPat();
+  var prof=document.getElementById('fProf').value;
+  var idade=document.getElementById('fIdade').value;
+  var perfil=document.getElementById('fPerfil').value;
+  var obj=document.getElementById('fObj').value;
+  var ass=document.getElementById('fAss').value;
+  var gaps=document.getElementById('fGaps').value.trim();
+  var ctx=document.getElementById('fCtx').value.trim();
+  var currentAlloc=getSliderAlloc();
+  if(!nome||!pat||!prof||!idade||!perfil||!obj){
+    alert('Preencha: Nome, Patrimônio, Profissão, Idade, Perfil e Objetivo.');return;
+  }
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('outArea').style.display='none';
+  document.getElementById('loadingState').style.display='flex';
+  document.getElementById('btnGen').disabled=true;
+
+  var ids=['ss1','ss2','ss3','ss4'];
+  ids.forEach(function(id){document.getElementById(id).className='ldstep';});
+  var si=0;
+  var iv=setInterval(function(){
+    if(si>0)document.getElementById(ids[si-1]).className='ldstep done';
+    if(si<ids.length){document.getElementById(ids[si]).className='ldstep active';si++;}
+    else clearInterval(iv);
+  },950);
+
+  var patFmt=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(pat);
+
+  // Regras de alocação por perfil (política oficial Captor)
+  var ALLOC_RULES = {
+    'Conservador': {
+      labels:['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'],
+      ranges:[[62.5,77.5],[7.5,17.5],[2.5,7.5],[2.5,7.5],[0,5],[0,5],[0,0],[0,5],[0,7.5]]
+    },
+    'Moderado': {
+      labels:['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'],
+      ranges:[[25,40],[17.5,27.5],[7.5,12.5],[14,19],[2.5,12.5],[0,4.5],[0,10.5],[0,5],[0,8.5]]
+    },
+    'Arrojado': {
+      labels:['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'],
+      ranges:[[5,20],[22.5,32.5],[5,10],[10,15],[12.5,22.5],[5.5,10.5],[0,14.5],[0,5],[0,10]]
+    },
+    'Agressivo': {
+      labels:['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'],
+      ranges:[[5,20],[22.5,32.5],[5,10],[10,15],[12.5,22.5],[5.5,10.5],[0,14.5],[0,5],[0,10]]
+    }
+  };
+  var allocKey = perfil==='Conservador'?'Conservador': perfil==='Moderado'?'Moderado':'Arrojado';
+  var allocRule = ALLOC_RULES[allocKey];
+  var allocRuleStr = allocRule.labels.map(function(l,i){
+    return l+': '+allocRule.ranges[i][0]+'% a '+allocRule.ranges[i][1]+'%';
+  }).join(', ');
+
+  var currentAllocStr = '';
+  if(currentAlloc){
+    currentAllocStr = Object.keys(currentAlloc).map(function(k){
+      return k+': '+currentAlloc[k]+'%';
+    }).filter(function(s){return s.indexOf(': 0%')===-1;}).join(', ');
+  }
+
+  var prompt='Você é assessor sênior da Captor Investimentos (XP credenciada, +R$12bi custódia, +15mil clientes, Nº1 NPS 2024). Portfólio completo: investimentos, renda variável, crédito, câmbio, seguros, wealth planning, offshore, Aurum Family Office, M&A.\n\n'
+    +'Gere roteiro consultivo COMPLETO para:\n'
+    +'Nome: '+nome+' | Patrimônio: '+patFmt+' | Profissão: '+prof+' | Idade: '+idade+' anos | Perfil: '+perfil+' | Objetivo: '+obj+' | Assessoria atual: '+(ass||'não informado')+' | Contexto: '+(ctx||'nenhum')+'\n'
+    +'Problemas CONFIRMADOS na gestão atual: '+(gaps||'nenhum informado')+'\n'
+    +(currentAllocStr ? 'Alocação ATUAL do cliente (informada pelo assessor): '+currentAllocStr+'\n' : '')
+    +'\nREGRA CRÍTICA SOBRE GAPS E ARGUMENTOS: '
+    +(gaps
+      ? 'Use APENAS os problemas confirmados acima como base para argumentos e diagnóstico. Não invente outros gaps além dos listados.'
+      : 'Não há problemas confirmados. NUNCA afirme que existem gaps ou problemas na gestão atual do cliente — você não tem essa informação. Nos argumentos e diagnóstico, use linguagem de INVESTIGAÇÃO ("vale entender se...", "uma pergunta relevante é...", "dependendo do que encontrarmos...") e não de afirmação. Foque nos benefícios da Captor, não em críticas à situação atual.'
+    )+'\n\n'
+    +'REGRA DE ALOCAÇÃO OFICIAL CAPTOR para perfil '+perfil+': '+allocRuleStr+'\n'
+    +(currentAllocStr
+      ? 'O cliente JÁ TEM a alocação informada acima. Sua sugestão deve mostrar a REALOCAÇÃO necessária para chegar à carteira ideal dentro das faixas Captor. No campo "alocacao" do JSON, coloque a alocação SUGERIDA (destino), não a atual. Nos argumentos e slides, mencione as principais mudanças de alocação que você propõe — por que fazem sentido para o objetivo e perfil deste cliente.\n'
+      : 'Para o campo "alocacao", escolha percentuais DENTRO das faixas acima para cada classe. Os percentuais devem somar exatamente 100%.\n'
+    )
+    +'Use os mesmos 9 labels de classes de ativos.\n\n'
+    +'Responda SOMENTE JSON válido, sem markdown, sem texto antes ou depois:\n'
+    +'{"resumoPerfil":"2-3 frases sobre o perfil","roteiro":[{"titulo":"...","descricao":"...","dica":"...","minutos":5}],"perguntas":[{"pergunta":"...","motivo":"..."}],"argumentos":[{"titulo":"...","corpo":"...","frase_gancho":"..."}],"slides":[{"numero":1,"rotulo":"Capa","titulo":"...","conteudo":"...","visual":"..."}],"alocacao":{"labels":["Pós Fixado","Inflação","Prefixado","Multimercados","Renda Variável BR","FII","Alternativos","RF Global","RV Global"],"data":[70,10,5,5,2,0,0,3,5]}}\n\n'
+    +'Gere exatamente: 6 etapas no roteiro, 5 perguntas, 3 argumentos, 6 slides (Capa / Contexto / Diagnóstico / Estratégia Captor / Resultado Projetado / Próximos Passos). Seja específico para o perfil real.';
+
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:prompt}]})
+    });
+    if(!resp.ok){
+      var err=await resp.json().catch(function(){return{};});
+      var msg=(err.error&&err.error.message?err.error.message:resp.statusText);
+      throw new Error('HTTP '+resp.status+': '+msg);
+    }
+    var d=await resp.json();
+    var raw=d.content.map(function(c){return c.text||'';}).join('');
+    var parsed;
+    try{
+      parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    }catch(parseErr){
+      throw new Error('Resposta da IA não é JSON válido. Trecho: '+raw.substring(0,200));
+    }
+
+    clearInterval(iv);
+    ids.forEach(function(id){document.getElementById(id).className='ldstep done';});
+
+    hist.unshift({nome:nome,pat:parseInt(pat),perfil:perfil,prof:prof,analista:user,data:new Date().toLocaleDateString('pt-BR'),status:'Pendente'});
+    localStorage.setItem('captor_hist',JSON.stringify(hist.slice(0,50)));
+
+    setTimeout(function(){
+      document.getElementById('loadingState').style.display='none';
+      window._lastMeta={nome:nome,pat:pat,perfil:perfil,prof:prof,obj:obj,idade:idade,currentAlloc:currentAlloc};
+      renderOutput(nome,patFmt,parsed,window._lastMeta);
+      document.getElementById('btnGen').disabled=false;
+    },300);
+  }catch(e){
+    clearInterval(iv);
+    document.getElementById('loadingState').style.display='none';
+    document.getElementById('emptyState').style.display='flex';
+    document.getElementById('btnGen').disabled=false;
+    alert('Erro ao chamar a IA:\n\n'+e.message+'\n\nVerifique:\n1. Chave de API válida (sk-ant-...)\n2. Conexão com internet ativa');
+  }
+}
+
+// ── REGENERAR COM ANOTAÇÕES ──
+function checkRegenBtn(){
+  var notas=Array.prototype.slice.call(document.querySelectorAll('.pq-nota'));
+  var temNota=false;
+  notas.forEach(function(n){if(n.value.trim())temNota=true;});
+  var wrap=document.getElementById('regenWrap');
+  if(wrap)wrap.style.display=temNota?'block':'none';
+}
+
+async function regenerate(){
+  var notas=Array.prototype.slice.call(document.querySelectorAll('.pq-nota'));
+  var notasTexto=[];
+  notas.forEach(function(n,i){if(n.value.trim())notasTexto.push('P'+(i+1)+': '+n.value.trim());});
+  if(!notasTexto.length)return;
+
+  var meta=window._lastMeta;
+  if(!apiKey){alert('Sessão expirada. Faça login novamente.');return;}
+
+  document.getElementById('btnRegen').disabled=true;
+  document.getElementById('btnRegen').textContent='Regenerando...';
+
+  var nome=meta.nome,pat=meta.pat,prof=meta.prof,idade=meta.idade,perfil=meta.perfil,obj=meta.obj;
+  var patFmt=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(pat);
+
+  var prompt='Você é assessor sênior da Captor Investimentos. Refine o roteiro consultivo para '+nome+' ('+prof+', '+idade+' anos, patrimônio '+patFmt+', perfil '+perfil+', objetivo: '+obj+') com base nas respostas coletadas nas perguntas de diagnóstico:\n\n'
+    +notasTexto.join('\n')
+    +'\n\nUsando essas informações concretas do cliente, regenere perguntas de diagnóstico mais aprofundadas, argumentos consultivos mais personalizados e slides mais relevantes.\n\n'
+    +'Responda SOMENTE JSON válido, sem markdown:\n'
+    +'{"resumoPerfil":"2-3 frases atualizadas","roteiro":[{"titulo":"...","descricao":"...","dica":"...","minutos":5}],"perguntas":[{"pergunta":"...","motivo":"..."}],"argumentos":[{"titulo":"...","corpo":"...","frase_gancho":"..."}],"slides":[{"numero":1,"rotulo":"Capa","titulo":"...","conteudo":"...","visual":"..."}],"alocacao":{"labels":["Pós Fixado","Inflação","Prefixado","Multimercados","Renda Variável BR","FII","Alternativos","RF Global","RV Global"],"data":[70,10,5,5,2,0,0,3,5]}}\n\n'
+    +'Gere exatamente: 6 etapas, 5 perguntas, 3 argumentos, 6 slides. Seja específico para o que o cliente revelou.';
+
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:prompt}]})
+    });
+    if(!resp.ok){var err=await resp.json().catch(function(){return{};});throw new Error('API '+resp.status+': '+(err.error&&err.error.message?err.error.message:resp.statusText));}
+    var d=await resp.json();
+    var raw=d.content.map(function(c){return c.text||'';}).join('');
+    var parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    renderOutput(nome,patFmt,parsed,meta);
+  }catch(e){
+    alert('Erro ao regenerar:\n\n'+e.message);
+  }finally{
+    var btn=document.getElementById('btnRegen');
+    if(btn){btn.disabled=false;btn.innerHTML='<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7a5 5 0 1 1 1.5 3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M2 10.5V7h3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg> Regenerar com anotações';}
+  }
+}
+
+// ── GERAR PDF APRESENTAÇÃO ──
+function gerarPDF(){
+  var btn=document.getElementById('btnPDF');
+  if(btn){btn.disabled=true;btn.innerHTML='⏳ Gerando PDF...';}
+
+  var meta=window._lastMeta;
+  var slides=window._lastSlides;
+  if(!meta||!slides){alert('Gere uma reunião primeiro.');if(btn){btn.disabled=false;btn.innerHTML='<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 10v2h10v-2M7 2v7M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Baixar Apresentação PDF';}return;}
+
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({orientation:'landscape',unit:'mm',format:[297,167]});
+  var W=297,H=167;
+
+  // Cores
+  var DARK='#1e1e1e',DARK2='#272727',DARK3='#2e2e2e';
+  var LIME='#a8c23a',WHITE='#ffffff',MUTED='#a0a0a0',DIM='#606060';
+
+  function hex(h){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return[r,g,b];}
+  function setFill(c){var rgb=hex(c);doc.setFillColor(rgb[0],rgb[1],rgb[2]);}
+  function setTxt(c){var rgb=hex(c);doc.setTextColor(rgb[0],rgb[1],rgb[2]);}
+  function setDraw(c){var rgb=hex(c);doc.setDrawColor(rgb[0],rgb[1],rgb[2]);}
+
+  function wrapText(text,x,y,maxW,lineH,maxLines){
+    var words=text.split(' ');var line='';var count=0;
+    for(var i=0;i<words.length;i++){
+      var test=line+(line?' ':'')+words[i];
+      if(doc.getTextWidth(test)>maxW&&line){
+        doc.text(line,x,y);y+=lineH;count++;
+        if(maxLines&&count>=maxLines){if(i<words.length-1){var prev=doc.getTextWidth(line.slice(0,-3)+'...')<maxW;doc.text((prev?line.slice(0,-3):'...')+'...',x,y-lineH);}return y;}
+        line=words[i];
+      } else { line=test; }
+    }
+    if(line)doc.text(line,x,y);
+    return y+lineH;
+  }
+
+  function bgPage(){setFill(DARK);doc.rect(0,0,W,H,'F');}
+  function accentLine(x,y,w){setDraw(LIME);doc.setLineWidth(0.8);doc.line(x,y,x+w,y);}
+  function limeRect(x,y,w,h){setFill(LIME);doc.rect(x,y,w,h,'F');}
+  function darkRect(x,y,w,h,c){setFill(c||DARK2);doc.rect(x,y,w,h,'F');}
+  function slideNum(n){
+    setFill(LIME);doc.circle(W-12,12,5,'F');
+    setTxt(DARK);doc.setFontSize(8);doc.setFont('helvetica','bold');
+    doc.text(String(n),W-12,12.8,{align:'center'});
+  }
+  function captorWatermark(){
+    setTxt(DIM);doc.setFontSize(7);doc.setFont('helvetica','normal');
+    doc.text('captor. | XP Investimentos',W/2,H-4,{align:'center'});
+    setDraw(DIM);doc.setLineWidth(0.2);doc.line(20,H-7,W-20,H-7);
+  }
+
+  var patFmt=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(meta.pat);
+
+  slides.forEach(function(s,idx){
+    if(idx>0)doc.addPage();
+    bgPage();
+    captorWatermark();
+    slideNum(s.numero);
+
+    if(s.numero===1){
+      // ── SLIDE 1: CAPA ──
+      // Faixa lime vertical esquerda
+      limeRect(0,0,4,H);
+      // Logo área
+      setTxt(WHITE);doc.setFontSize(28);doc.setFont('helvetica','bold');
+      doc.text('captor',22,28);
+      setTxt(LIME);doc.setFontSize(28);doc.setFont('helvetica','bold');
+      doc.text('.',22+doc.getTextWidth('captor'),28);
+
+      setTxt(MUTED);doc.setFontSize(7);doc.setFont('helvetica','normal');
+      doc.text('GERADOR DE REUNIÃO CONSULTIVA',22,35);
+
+      // Linha divisória
+      accentLine(22,42,60);
+
+      // Nome do prospect destaque
+      setTxt(LIME);doc.setFontSize(11);doc.setFont('helvetica','bold');
+      doc.text('Preparado para',22,54);
+      setTxt(WHITE);doc.setFontSize(20);doc.setFont('helvetica','bold');
+      doc.text(meta.nome,22,66);
+      setTxt(MUTED);doc.setFontSize(9);doc.setFont('helvetica','normal');
+      doc.text(meta.prof+' · '+meta.idade+' anos · Perfil '+meta.perfil,22,74);
+
+      // Cards de stats lado direito
+      var stats=[
+        {v:'+R$12bi',l:'Sob custódia'},
+        {v:'+15 mil',l:'Clientes ativos'},
+        {v:'Nº1 NPS',l:'Satisfação 2024'},
+        {v:'8 anos',l:'No mercado'}
+      ];
+      var cx=170,cy=40,cw=28,ch=22,gap=5;
+      stats.forEach(function(st,i){
+        var col=i%2,row=Math.floor(i/2);
+        var sx=cx+col*(cw+gap),sy=cy+row*(ch+gap);
+        setFill(DARK3);doc.rect(sx,sy,cw,ch,'F');
+        setDraw(LIME);doc.setLineWidth(0.3);doc.rect(sx,sy,cw,ch,'S');
+        setTxt(LIME);doc.setFontSize(9);doc.setFont('helvetica','bold');
+        doc.text(st.v,sx+cw/2,sy+10,{align:'center'});
+        setTxt(MUTED);doc.setFontSize(6);doc.setFont('helvetica','normal');
+        doc.text(st.l,sx+cw/2,sy+16,{align:'center'});
+      });
+
+      // XP badge
+      setFill(LIME);doc.roundedRect(22,H-22,30,8,1,1,'F');
+      setTxt(DARK);doc.setFontSize(7);doc.setFont('helvetica','bold');
+      doc.text('Credenciada XP · G20',37,H-17,{align:'center'});
+
+    } else {
+      // ── SLIDES 2-6 ──
+      // Faixa lime topo
+      limeRect(0,0,W,3);
+
+      // Rótulo
+      setTxt(LIME);doc.setFontSize(7);doc.setFont('helvetica','bold');
+      doc.text((s.rotulo||'').toUpperCase(),20,16);
+
+      // Título
+      setTxt(WHITE);doc.setFontSize(18);doc.setFont('helvetica','bold');
+      doc.text(s.titulo||'',20,28);
+
+      // Linha sob título
+      accentLine(20,32,60);
+
+      // Conteúdo
+      setTxt(MUTED);doc.setFontSize(9);doc.setFont('helvetica','normal');
+      wrapText(s.conteudo||'',20,44,180,6,12);
+
+      // Visual / dica
+      if(s.visual){
+        darkRect(20,H-34,W-40,18,DARK3);
+        setDraw(LIME);doc.setLineWidth(0.3);doc.rect(20,H-34,W-40,18,'S');
+        setTxt(LIME);doc.setFontSize(7);doc.setFont('helvetica','bold');
+        doc.text('VISUAL',24,H-26);
+        setTxt(MUTED);doc.setFontSize(8);doc.setFont('helvetica','normal');
+        wrapText(s.visual,24,H-20,W-52,5,2);
+      }
+
+      // Número do slide no rodapé esquerdo
+      setTxt(DIM);doc.setFontSize(7);doc.setFont('helvetica','normal');
+      doc.text(s.numero+' / 6',20,H-4);
+    }
+  });
+
+  // Slide extra: Próximos Passos / CTA
+  doc.addPage();
+  bgPage();
+  limeRect(0,0,4,H);
+  captorWatermark();
+  slideNum(6);
+
+  setTxt(MUTED);doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('PRÓXIMOS PASSOS',22,22);
+  accentLine(22,26,50);
+  setTxt(WHITE);doc.setFontSize(20);doc.setFont('helvetica','bold');
+  doc.text('Vamos começar?',22,40);
+  setTxt(MUTED);doc.setFontSize(9);doc.setFont('helvetica','normal');
+  doc.text('Agende sua reunião consultiva e descubra o potencial',22,52);
+  doc.text('da sua carteira com a Captor.',22,59);
+
+  var steps=['1. Assinatura do contrato de assessoria','2. Análise e diagnóstico completo da carteira','3. Apresentação da proposta de realocação','4. Acompanhamento contínuo e relatórios periódicos'];
+  steps.forEach(function(st,i){
+    setFill(DARK2);doc.rect(22,68+i*14,W-44,11,'F');
+    setFill(LIME);doc.rect(22,68+i*14,3,11,'F');
+    setTxt(WHITE);doc.setFontSize(9);doc.setFont('helvetica','normal');
+    doc.text(st,29,75+i*14);
+  });
+
+  setFill(LIME);doc.roundedRect(22,H-26,50,12,2,2,'F');
+  setTxt(DARK);doc.setFontSize(9);doc.setFont('helvetica','bold');
+  doc.text('captor.com.br',47,H-18,{align:'center'});
+
+  var nome=meta.nome;
+  var filename='Captor_'+nome.replace(/\s+/g,'_')+'_Apresentacao.pdf';
+  doc.save(filename);
+
+  if(btn){
+    btn.disabled=false;
+    btn.innerHTML='<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 10v2h10v-2M7 2v7M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Baixar Apresentação PDF';
+  }
+}
+
+// ── RENDER OUTPUT ──
+function renderOutput(nome,patFmt,data,meta){
+  var area=document.getElementById('outArea');
+  area.innerHTML='';
+
+  var hdr=document.createElement('div');
+  hdr.className='outhead fadein';
+  hdr.innerHTML='<div>'
+    +'<div class="outtag">Reunião Consultiva</div>'
+    +'<div class="outname">'+nome+'</div>'
+    +'<div class="outmeta">'+meta.prof+' · '+meta.idade+' anos · '+patFmt+' · Perfil '+meta.perfil+'</div>'
+    +'<div class="outsumm">'+data.resumoPerfil+'</div>'
+    +'</div>'
+    +'<button class="printbtn" onclick="prepAndPrint()">🖨 Imprimir</button>';
+  area.appendChild(hdr);
+
+  // Roteiro
+  var b1=mkBlock('🗺','Roteiro da Reunião',true);
+  data.roteiro.forEach(function(r,i){
+    b1.body.innerHTML+='<div class="rotitem"><div class="rotnum">'+(i+1)+'</div><div class="rotcont"><strong>'+r.titulo+'</strong><p>'+r.descricao+'</p>'+(r.dica?'<div class="rottip">💡 '+r.dica+'</div>':'')+'<div class="rottime">⏱ '+r.minutos+' min</div></div></div>';
+  });
+  area.appendChild(b1.el);
+
+  // Perguntas
+  var b2=mkBlock('❓','5 Perguntas de Diagnóstico',true);
+  data.perguntas.forEach(function(p,i){
+    b2.body.innerHTML+='<div class="pqcard" style="flex-direction:column;gap:6px">'
+      +'<div style="display:flex;gap:9px"><div class="pqn" style="flex-shrink:0;margin-top:1px">P'+(i+1)+'</div><div><div class="pqq">"'+p.pergunta+'"</div><div class="pqwhy">→ '+p.motivo+'</div></div></div>'
+      +'<textarea class="fta pq-nota" data-idx="'+i+'" placeholder="Anotações sobre a resposta do cliente (opcional)..." style="min-height:44px;font-size:.75rem;margin-top:2px" oninput="checkRegenBtn()"></textarea>'
+      +'</div>';
+  });
+  b2.body.innerHTML+='<div id="regenWrap" style="display:none;margin-top:10px">'
+    +'<button class="genbtn" id="btnRegen" onclick="regenerate()" style="background:var(--gold);color:#1a1a1a">'
+    +'<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7a5 5 0 1 1 1.5 3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M2 10.5V7h3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    +'Regenerar com anotações'
+    +'</button>'
+    +'</div>';
+  area.appendChild(b2.el);
+
+  // Argumentos
+  var b3=mkBlock('🎯','3 Argumentos Consultivos',true);
+  data.argumentos.forEach(function(a,i){
+    b3.body.innerHTML+='<div class="argcard"><div class="argtit">'+(i+1)+'. '+a.titulo+'</div><div class="argbody">'+a.corpo+'</div>'+(a.frase_gancho?'<div class="arghook">"'+a.frase_gancho+'"</div>':'')+'</div>';
+  });
+  area.appendChild(b3.el);
+
+  // Apresentação PDF
+  var b4=mkBlock('📑','Apresentação — 6 slides',false);
+  // Guarda slides no escopo para uso no gerarPDF
+  window._lastSlides = data.slides;
+  b4.body.innerHTML='<div style="padding:8px 0 4px">'
+    +'<p style="font-size:.78rem;color:var(--muted);margin-bottom:14px;line-height:1.6">A apresentação foi gerada com 6 slides personalizados para <strong style="color:var(--white)">'+nome+'</strong>, seguindo o design institucional da Captor. Clique para baixar em PDF.</p>'
+    +'<button class="genbtn" id="btnPDF" onclick="gerarPDF()" style="width:auto;padding:10px 20px">'
+    +'<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 10v2h10v-2M7 2v7M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    +' Baixar Apresentação PDF'
+    +'</button>'
+    +'</div>';
+  area.appendChild(b4.el);
+
+  // Gráficos SVG
+  var b5=mkBlock('📊','Gráficos para a Reunião',false);
+  var cg=document.createElement('div');
+  var hasCurrentAlloc = meta.currentAlloc && Object.values(meta.currentAlloc).some(function(v){return v>0;});
+  cg.className='chartsgrid';
+  if(hasCurrentAlloc){
+    cg.innerHTML='<div class="chartbox"><div class="charttitle">Carteira atual</div><div id="svgAlAtual"></div></div>'
+                +'<div class="chartbox"><div class="charttitle">Realocação sugerida</div><div id="svgAl"></div></div>'
+                +'<div class="chartbox" style="grid-column:1/-1"><div class="charttitle">Projeção patrimonial — 10 anos</div><div id="svgEv"></div></div>';
+  } else {
+    cg.innerHTML='<div class="chartbox"><div class="charttitle">Alocação sugerida</div><div id="svgAl"></div></div>'
+                +'<div class="chartbox"><div class="charttitle">Projeção patrimonial — 10 anos</div><div id="svgEv"></div></div>';
+  }
+  b5.body.appendChild(cg);
+  area.appendChild(b5.el);
+
+  area.style.display='block';
+  setTimeout(function(){
+    if(hasCurrentAlloc){
+      // Monta objeto de alocação atual no formato esperado pelo donut
+      var currentAllocForChart = {
+        labels: ALLOC_CATS,
+        data: ALLOC_CATS.map(function(cat){ return meta.currentAlloc[cat] || 0; })
+      };
+      renderDonut(document.getElementById('svgAlAtual'), currentAllocForChart);
+    }
+    renderDonut(document.getElementById('svgAl'),data.alocacao);
+    renderLine(document.getElementById('svgEv'),parseInt(meta.pat),meta.perfil);
+  },80);
+}
+
+// ── BLOCK HELPER ──
+function mkBlock(icon,title,open){
+  var id='b'+Math.random().toString(36).slice(2,7);
+  var el=document.createElement('div');
+  el.className='block fadein';
+  el.innerHTML='<div class="blkhd" onclick="tog(\''+id+'\')"><div class="blkico">'+icon+'</div><div class="blktit">'+title+'</div><span class="blkchev '+(open?'open':'')+'" id="c'+id+'">▼</span></div>'
+              +'<div class="blkbody '+(open?'open':'')+'" id="'+id+'"></div>';
+  return{el:el,body:el.querySelector('.blkbody')};
+}
+function tog(id){
+  var b=document.getElementById(id);var c=document.getElementById('c'+id);
+  if(b)b.classList.toggle('open');if(c)c.classList.toggle('open');
+}
+
+// ── PREP E PRINT ──
+function prepAndPrint(){
+  // Abre todos os blocos fechados
+  document.querySelectorAll('.blkbody').forEach(function(b){b.classList.add('open');});
+  document.querySelectorAll('.blkchev').forEach(function(c){c.classList.add('open');});
+  // Aguarda render dos SVGs antes de imprimir
+  setTimeout(function(){window.print();},300);
+}
+
+// ── SVG DONUT CHART ──
+function renderDonut(container,alloc){
+  var colors=['#a8c23a','#7a9a22','#4a6a0a','#c8e050','#ddf070','#e8f590','#5a8a10','#b0d030','#90b820'];
+  var total=alloc.data.reduce(function(a,b){return a+b;},0);
+  var cx=110,cy=100,r=72,ri=46;
+  var angle=-Math.PI/2;
+  var slices='';
+  alloc.data.forEach(function(val,i){
+    var a=(val/total)*2*Math.PI;
+    var x1=cx+r*Math.cos(angle),y1=cy+r*Math.sin(angle);
+    var x2=cx+r*Math.cos(angle+a),y2=cy+r*Math.sin(angle+a);
+    var xi1=cx+ri*Math.cos(angle),yi1=cy+ri*Math.sin(angle);
+    var xi2=cx+ri*Math.cos(angle+a),yi2=cy+ri*Math.sin(angle+a);
+    var lg=a>Math.PI?1:0;
+    slices+='<path d="M'+xi1+' '+yi1+' L'+x1+' '+y1+' A'+r+' '+r+' 0 '+lg+' 1 '+x2+' '+y2+' L'+xi2+' '+yi2+' A'+ri+' '+ri+' 0 '+lg+' 0 '+xi1+' '+yi1+' Z" fill="'+colors[i]+'" opacity="0.9"/>';
+    angle+=a;
+  });
+  // legend
+  var legend='';
+  alloc.labels.forEach(function(lbl,i){
+    var y=200+i*18;
+    legend+='<rect x="4" y="'+(y-8)+'" width="10" height="10" rx="2" fill="'+colors[i]+'"/>'
+           +'<text x="18" y="'+y+'" fill="#a0a0a0" font-size="10" font-family="system-ui,sans-serif">'+lbl+' ('+alloc.data[i]+'%)</text>';
+  });
+  // viewBox aumentado para 9 legendas (9 × 18 = 162px de legenda, começa em y=210)
+  var legendH = 210 + alloc.labels.length * 18;
+  container.innerHTML='<svg viewBox="0 0 220 '+(legendH+10)+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:260px;display:block;margin:0 auto">'
+    +slices
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="30" fill="#2e2e2e"/>'
+    +legend
+    +'</svg>';
+}
+
+// ── SVG LINE CHART ──
+function renderLine(container,pat,perfil){
+  var rates={Conservador:.10,Moderado:.13,Arrojado:.16,Agressivo:.19};
+  var r=rates[perfil]||.13;
+  var rMensal=Math.pow(1+r,1/12)-1;
+  var rMensalPct=(rMensal*100).toFixed(2).replace('.',',');
+  var anos=[];for(var i=0;i<=10;i++)anos.push(i);
+  var comV=anos.map(function(a){return Math.round(pat*Math.pow(1+r,a));});
+  var W=300,H=160,padL=54,padB=18,padT=10,padR=10;
+  var maxV=Math.max.apply(null,comV);
+  var minV=comV[0];
+  function px(i){return padL+(i/10)*(W-padL-padR);}
+  function py(v){return padT+(H-padT-padB)*(1-(v-minV)/(maxV-minV));}
+  var path1='M'+comV.map(function(v,i){return px(i)+' '+py(v);}).join(' L');
+  var area1='M'+px(0)+' '+py(comV[0])+' '+comV.map(function(v,i){return 'L'+px(i)+' '+py(v);}).join(' ')+' L'+px(10)+' '+(H-padB)+' L'+padL+' '+(H-padB)+' Z';
+  // y labels
+  var ylabels='';
+  [0,.5,1].forEach(function(f){
+    var v=Math.round(minV+f*(maxV-minV));
+    var y=py(v);
+    var lbl=new Intl.NumberFormat('pt-BR',{notation:'compact',maximumFractionDigits:1}).format(v);
+    ylabels+='<text x="'+(padL-4)+'" y="'+(y+4)+'" text-anchor="end" fill="#666" font-size="9" font-family="system-ui">'+lbl+'</text>'
+            +'<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="#333" stroke-width="0.5"/>';
+  });
+  // x labels
+  var xlabels='';
+  [0,2,4,6,8,10].forEach(function(i){
+    xlabels+='<text x="'+px(i)+'" y="'+(H-padB+12)+'" text-anchor="middle" fill="#666" font-size="9" font-family="system-ui">'+(i===0?'Hoje':'Ano '+i)+'</text>';
+  });
+  // ponto final com valor
+  var lastX=px(10),lastY=py(comV[10]);
+  var lastLbl=new Intl.NumberFormat('pt-BR',{notation:'compact',maximumFractionDigits:1}).format(comV[10]);
+  var endDot='<circle cx="'+lastX+'" cy="'+lastY+'" r="3.5" fill="#a8c23a"/>'
+    +'<text x="'+(lastX+6)+'" y="'+(lastY+4)+'" fill="#a8c23a" font-size="9" font-weight="bold" font-family="system-ui">'+lastLbl+'</text>';
+
+  container.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">'
+    +'<path d="'+area1+'" fill="rgba(168,194,58,.07)"/>'
+    +'<path d="'+path1+'" fill="none" stroke="#a8c23a" stroke-width="2" stroke-linejoin="round"/>'
+    +endDot+ylabels+xlabels
+    +'</svg>'
+    +'<div style="margin-top:8px;font-size:.7rem;color:var(--muted);text-align:center">'
+    +'Crescimento mensal estimado: <strong style="color:var(--lime)">+'+rMensalPct+'%</strong> ao mês'
+    +'&nbsp;·&nbsp;Taxa anual: <strong style="color:var(--lime)">'+((r*100).toFixed(0))+'%</strong>'
+    +'</div>';
+}
+
+
+// ── DASHBOARD ──
+function updateDash(){
+  document.getElementById('kG').textContent=hist.length;
+  var tb=document.getElementById('histBody');
+  if(!hist.length){tb.innerHTML='<tr><td colspan="6" style="color:var(--dim);text-align:center;padding:24px 0">Nenhuma reunião gerada ainda</td></tr>';return;}
+  tb.innerHTML=hist.slice(0,15).map(function(h){
+    return '<tr><td style="font-weight:600">'+h.nome+'</td>'
+      +'<td style="color:var(--muted)">'+h.analista+'</td>'
+      +'<td>'+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(h.pat)+'</td>'
+      +'<td><span class="badge bmuted">'+h.perfil+'</span></td>'
+      +'<td style="color:var(--muted)">'+h.data+'</td>'
+      +'<td><span class="badge '+(h.status==='Convertido'?'blime':'bgold')+'">'+h.status+'</span></td></tr>';
+  }).join('');
+}
+
+function renderDashSVG(){
+  // Bar chart: conversão
+  var labels=['Jan','Fev','Mar','Abr','Mai','Jun'];
+  var com=[42,48,55,51,62,68];
+  var sem=[31,33,35,34,37,36];
+  var W=320,H=140,padL=28,padB=24,padT=10,padR=10;
+  var n=labels.length;var bw=18;var gap=((W-padL-padR)/n);
+  var maxV=70;
+  function bh(v){return (H-padT-padB)*(v/maxV);}
+  function bx(i){return padL+i*gap+gap/2;}
+  var bars='';
+  labels.forEach(function(lbl,i){
+    var x=bx(i);
+    bars+='<rect x="'+(x-bw)+'" y="'+(H-padB-bh(com[i]))+'" width="'+bw+'" height="'+bh(com[i])+'" rx="2" fill="#a8c23a"/>';
+    bars+='<rect x="'+x+'" y="'+(H-padB-bh(sem[i]))+'" width="'+bw+'" height="'+bh(sem[i])+'" rx="2" fill="#3a3a3a"/>';
+    bars+='<text x="'+(x-bw/2)+'" y="'+(H-padB+14)+'" text-anchor="middle" fill="#666" font-size="9" font-family="system-ui">'+lbl+'</text>';
+  });
+  var leg='<rect x="'+padL+'" y="'+(H+2)+'" width="10" height="8" rx="1" fill="#a8c23a"/><text x="'+(padL+14)+'" y="'+(H+10)+'" fill="#a0a0a0" font-size="9" font-family="system-ui">Com ferramenta</text>'
+         +'<rect x="'+(padL+100)+'" y="'+(H+2)+'" width="10" height="8" rx="1" fill="#3a3a3a"/><text x="'+(padL+114)+'" y="'+(H+10)+'" fill="#a0a0a0" font-size="9" font-family="system-ui">Sem ferramenta</text>';
+  var yls='';[0,35,70].forEach(function(v){var y=H-padB-bh(v);yls+='<text x="'+(padL-3)+'" y="'+(y+3)+'" text-anchor="end" fill="#555" font-size="9" font-family="system-ui">'+v+'%</text><line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="#333" stroke-width="0.5"/>';});
+  var c1=document.getElementById('dashChConv');
+  if(c1)c1.innerHTML='<div class="charttitle">Taxa de conversão % (simulado)</div><svg viewBox="0 0 '+W+' '+(H+20)+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">'+yls+bars+leg+'</svg>';
+
+  // Line chart: ticket
+  var tick=[820,950,1100,1050,1320,1480];
+  var W2=320,H2=140,pL=32,pB=24,pT=10,pR=10;
+  var mn=Math.min.apply(null,tick),mx=Math.max.apply(null,tick);
+  function px2(i){return pL+i*(W2-pL-pR)/(tick.length-1);}
+  function py2(v){return pT+(H2-pT-pB)*(1-(v-mn)/(mx-mn));}
+  var pts=tick.map(function(v,i){return px2(i)+','+py2(v);}).join(' ');
+  var area2='M'+px2(0)+','+py2(tick[0])+' '+tick.map(function(v,i){return 'L'+px2(i)+','+py2(v);}).join(' ')+' L'+px2(tick.length-1)+','+(H2-pB)+' L'+pL+','+(H2-pB)+' Z';
+  var dots=tick.map(function(v,i){return '<circle cx="'+px2(i)+'" cy="'+py2(v)+'" r="3" fill="#a8c23a"/>';}).join('');
+  var xl2=labels.map(function(l,i){return '<text x="'+px2(i)+'" y="'+(H2-pB+14)+'" text-anchor="middle" fill="#666" font-size="9" font-family="system-ui">'+l+'</text>';}).join('');
+  var yl2='';[mn,Math.round((mn+mx)/2),mx].forEach(function(v){var y=py2(v);yl2+='<text x="'+(pL-3)+'" y="'+(y+3)+'" text-anchor="end" fill="#555" font-size="9" font-family="system-ui">'+Math.round(v/1000)+'k</text><line x1="'+pL+'" y1="'+y+'" x2="'+(W2-pR)+'" y2="'+y+'" stroke="#333" stroke-width="0.5"/>';});
+  var c2=document.getElementById('dashChTicket');
+  if(c2)c2.innerHTML='<div class="charttitle">Ticket médio novos clientes — R$ (simulado)</div><svg viewBox="0 0 '+W2+' '+H2+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><path d="'+area2+'" fill="rgba(168,194,58,.07)"/><polyline points="'+pts+'" fill="none" stroke="#a8c23a" stroke-width="2" stroke-linejoin="round"/>'+dots+xl2+yl2+'</svg>';
+}
+</script>
+</body>
+</html>

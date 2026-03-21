@@ -501,23 +501,13 @@ function getSliderAlloc(){
 }
 
 // ── STATE ──
-var user=null, apiKey=null;
+var user=null;
+var PROXY_URL='https://fllkczocfcbrfsyhxelg.supabase.co/functions/v1/anthropic-proxy';
 var hist=JSON.parse(localStorage.getItem('captor_hist')||'[]');
-
-// ── LOGIN ──
-// ── CHAVE OFUSCADA (XOR + base64) ──
-var _k=(function(){
-  var d='IEI8AltzMlwjQCFQGEVaXzBDdgxbWHVKDG5HD1AzU2xiQSMZc01GSyFsfTpkQUkFBVBjKHBWSmcRZnILX3BnBBF5RVVcYHJ0CkVdMnpRcGULals7BXVHeTZodw5cbE5QFRFQTlFiTnY2XlAi';
-  var s=[83,41,17,99,53,7,31,61];
-  var b=atob(d);var r='';
-  for(var i=0;i<b.length;i++)r+=String.fromCharCode(b.charCodeAt(i)^s[i%s.length]);
-  return r;
-})();
 
 function doLogin(){
   var email=document.getElementById('lEmail').value.trim();
   if(!email){alert('Insira seu email.');return;}
-  apiKey=_k;
   user=email.split('@')[0].replace(/\./g,' ');
   user=user.charAt(0).toUpperCase()+user.slice(1);
   document.getElementById('login').style.display='none';
@@ -622,14 +612,9 @@ async function generate(){
     +'Gere exatamente: 6 etapas no roteiro, 5 perguntas, 3 argumentos, 6 slides (Capa / Contexto / Diagnóstico / Estratégia Captor / Resultado Projetado / Próximos Passos). Seja específico para o perfil real.';
 
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+    var resp=await fetch(PROXY_URL,{
       method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key':apiKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:prompt}]})
     });
     if(!resp.ok){
@@ -663,7 +648,7 @@ async function generate(){
     document.getElementById('loadingState').style.display='none';
     document.getElementById('emptyState').style.display='flex';
     document.getElementById('btnGen').disabled=false;
-    alert('Erro ao chamar a IA:\n\n'+e.message+'\n\nVerifique:\n1. Chave de API válida (sk-ant-...)\n2. Conexão com internet ativa');
+    alert('Erro ao chamar a IA:\n\n'+e.message+'\n\nVerifique:\n1. Conexão com internet ativa\n2. Tente novamente em alguns segundos');
   }
 }
 
@@ -683,7 +668,7 @@ async function regenerate(){
   if(!notasTexto.length)return;
 
   var meta=window._lastMeta;
-  if(!apiKey){alert('Sessão expirada. Faça login novamente.');return;}
+  if(!meta){alert('Gere uma análise primeiro.');return;}
 
   document.getElementById('btnRegen').disabled=true;
   document.getElementById('btnRegen').textContent='Regenerando...';
@@ -699,9 +684,9 @@ async function regenerate(){
     +'Gere exatamente: 6 etapas, 5 perguntas, 3 argumentos, 6 slides. Seja específico para o que o cliente revelou.';
 
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+    var resp=await fetch(PROXY_URL,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:prompt}]})
     });
     if(!resp.ok){var err=await resp.json().catch(function(){return{};});throw new Error('API '+resp.status+': '+(err.error&&err.error.message?err.error.message:resp.statusText));}

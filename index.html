@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v2.1</title>
+<title>Captor — Pré-vendas eficiente e inteligente v2.2</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -340,7 +340,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
       <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
       <button class="lbtn" id="lBtn" onclick="doAuth()">Entrar</button>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v2.1</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v2.2</div>
     </div>
   </div>
 </div>
@@ -352,7 +352,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver">v2.1</div>
+      <div class="hver">v2.2</div>
     </div>
     <div class="hrr">
       <div class="ntabs">
@@ -496,7 +496,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v2.1</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v2.2</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -578,10 +578,10 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="modal-body" id="mStep3" style="display:none">
         <div style="background:var(--lime-dim);border:1px solid rgba(168,194,58,.35);border-radius:var(--r);padding:12px 14px;margin-bottom:16px">
           <div style="font-size:.78rem;font-weight:700;color:var(--lime);margin-bottom:4px">⚙ Faixas de alocação por perfil</div>
-          <div style="font-size:.88rem;font-weight:600;color:var(--white);line-height:1.6">Defina as faixas de alocação recomendadas por perfil de risco. Deixe em branco para usar os valores padrão.</div>
-          <div style="margin-top:8px;font-size:.82rem;font-weight:500;color:var(--white);background:var(--bg3);border-radius:5px;padding:7px 10px;border-left:2px solid var(--lime)">💡 Dica: as faixas são usadas como referência pela IA ao sugerir carteiras. Use o formato "mín-máx" (ex: 60-75).</div>
+          <div style="font-size:.78rem;font-weight:600;color:var(--white);line-height:1.6">Defina as faixas de alocação recomendadas por perfil de risco. Deixe em branco para usar os valores padrão.</div>
         </div>
         <div id="allocTableWrap"></div>
+        <div style="margin-top:10px;font-size:.82rem;font-weight:500;color:var(--white);background:var(--bg3);border-radius:5px;padding:7px 10px;border-left:2px solid var(--lime)">💡 Dica: as faixas são usadas como referência pela IA ao sugerir carteiras. Use o formato "mín-máx" (ex: 60-75).</div>
       </div>
 
       <div class="modal-footer">
@@ -1796,6 +1796,10 @@ function renderDashSVG(){
 
 <!-- ╔══════════════════════════════════════════════════════╗
      ║                    CHANGELOG                         ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ v2.2 — Ajustes visuais Step 3 de alocação            ║
+     ║        Fonte do texto principal alinhada ao título   ║
+     ║        Dica movida para abaixo da tabela             ║
      ╠══════════════════════════════════════════════════════╣
      ║ v2.1 — Extração de apresentação via IA (visão)       ║
      ║        PDF enviado como documento base64 ao Claude   ║

@@ -330,7 +330,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="ntabs">
         <button class="ntab active" onclick="showTab('gen',this)">Gerador</button>
         <button class="ntab" onclick="showTab('dash',this)">Dashboard</button>
-        <button class="ntab" onclick="openEmpresaModal()">⚙ Empresa</button>
+        <button class="ntab" onclick="openEmpresaModal()">⚙ Configurar</button>
       </div>
       <div class="upill" style="cursor:pointer" onclick="doLogout()" title="Sair">
         <div class="uav" id="avEl">?</div>
@@ -502,7 +502,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
           <div class="fg"><label class="fl">Credenciadora</label><input class="fi" id="eCred" placeholder="Ex: XP, BTG, Rico..."></div>
           <div class="fg"><label class="fl">Segmento</label><input class="fi" id="eSeg" placeholder="Ex: Wealth Management"></div>
           <div class="fg"><label class="fl">Anos no mercado</label><input class="fi" id="eAnos" placeholder="Ex: 8 anos" type="text"></div>
-          <div class="fg"><label class="fl">AuM (patrimônio sob custódia)</label><input class="fi" id="eAum" placeholder="Ex: +R$12 bilhões"></div>
+          <div class="fg"><label class="fl">AuM (patrimônio sob custódia)</label><input class="fi" id="eAum" type="text" placeholder="R$ 0" oninput="maskAum(this)" autocomplete="off"></div>
           <div class="fg"><label class="fl">Nº de clientes</label><input class="fi" id="eClientes" placeholder="Ex: +15 mil"></div>
         </div>
         <div class="fg" style="margin-top:4px"><label class="fl">Principais diferenciais <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0">(descreva em 2-4 frases)</span></label>
@@ -527,9 +527,12 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 
       <!-- Step 3: Alocação -->
       <div class="modal-body" id="mStep3" style="display:none">
-        <div class="fhint" style="margin-bottom:14px">Defina as faixas de alocação recomendadas por perfil de risco. Deixe em branco para usar os valores padrão.</div>
+        <div style="background:var(--lime-dim);border:1px solid rgba(168,194,58,.35);border-radius:var(--r);padding:12px 14px;margin-bottom:16px">
+          <div style="font-size:.78rem;font-weight:700;color:var(--lime);margin-bottom:4px">⚙ Faixas de alocação por perfil</div>
+          <div style="font-size:.76rem;color:var(--text);line-height:1.6">Defina as faixas de alocação recomendadas por perfil de risco. Deixe em branco para usar os valores padrão.</div>
+          <div style="margin-top:8px;font-size:.72rem;color:var(--muted);background:var(--bg3);border-radius:5px;padding:7px 10px;border-left:2px solid var(--lime)">💡 Dica: as faixas são usadas como referência pela IA ao sugerir carteiras. Use o formato "mín-máx" (ex: 60-75).</div>
+        </div>
         <div id="allocTableWrap"></div>
-        <div style="margin-top:10px;font-size:.68rem;color:var(--dim)">Dica: as faixas são usadas como referência pela IA ao sugerir carteiras. Use o formato "mín-máx" (ex: 60-75).</div>
       </div>
 
       <div class="modal-footer">
@@ -546,6 +549,12 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 <script>
 // ── MÁSCARA PATRIMÔNIO ──
 function maskPat(el){
+  var raw=el.value.replace(/\D/g,'');
+  if(!raw){el.value='';return;}
+  var num=parseInt(raw,10);
+  el.value='R$ '+num.toLocaleString('pt-BR');
+}
+function maskAum(el){
   var raw=el.value.replace(/\D/g,'');
   if(!raw){el.value='';return;}
   var num=parseInt(raw,10);
@@ -786,7 +795,8 @@ function openEmpresaModal(){
     f('eCred',empresaData.empresa_credenciadora);
     f('eSeg',empresaData.empresa_segmento);
     f('eAnos',empresaData.empresa_anos);
-    f('eAum',empresaData.empresa_aum);
+    if(empresaData.empresa_aum){var aumEl=document.getElementById('eAum');if(aumEl){aumEl.value=empresaData.empresa_aum;}}
+    
     f('eClientes',empresaData.empresa_clientes);
     f('eDiferenciais',empresaData.empresa_diferenciais);
     f('ePremios',empresaData.empresa_premios);

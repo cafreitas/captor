@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Captor — Pré-vendas eficiente e inteligente v1.1</title>
+<title>Captor — Pré-vendas eficiente e inteligente v1.2</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -216,6 +216,37 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 .alloc-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:2px}
 .alloc-bar-fill{height:100%;background:var(--lime);border-radius:3px;transition:width .2s}
 .alloc-bar-fill.over{background:var(--gold)}
+/* MODAL EMPRESA */
+.modal-overlay{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);width:min(620px,100%);max-height:90vh;overflow-y:auto;display:flex;flex-direction:column}
+.modal-header{padding:20px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.modal-title{font-size:1rem;font-weight:700;color:var(--white)}
+.modal-sub{font-size:.72rem;color:var(--muted);margin-top:3px}
+.modal-close{background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:1.1rem;padding:0;line-height:1;flex-shrink:0}
+.modal-close:hover{color:var(--text)}
+.modal-steps{display:flex;gap:0;padding:16px 24px 0}
+.modal-step{flex:1;text-align:center;position:relative}
+.modal-step::after{content:'';position:absolute;top:11px;left:50%;width:100%;height:1px;background:var(--border)}
+.modal-step:last-child::after{display:none}
+.step-dot{width:22px;height:22px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:var(--dim);margin:0 auto 4px;position:relative;z-index:1}
+.step-dot.active{background:var(--lime);border-color:var(--lime);color:#1a1a1a}
+.step-dot.done{background:var(--bg3);border-color:var(--lime);color:var(--lime)}
+.step-label{font-size:.62rem;color:var(--dim)}
+.step-label.active{color:var(--lime)}
+.modal-body{padding:20px 24px;flex:1}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:10px}
+.mbtn{padding:9px 18px;border-radius:var(--r);font-family:var(--f);font-size:.8rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.mbtn-sec{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.mbtn-sec:hover{border-color:var(--lime);color:var(--lime)}
+.mbtn-pri{background:var(--lime);color:#1a1a1a}
+.mbtn-pri:hover{background:var(--lime2)}
+.mbtn-pri:disabled{opacity:.4;cursor:not-allowed}
+.alloc-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.alloc-table th{text-align:left;padding:6px 8px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--border)}
+.alloc-table td{padding:5px 4px;border-bottom:1px solid var(--border)}
+.alloc-table td input{width:52px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-family:var(--f);font-size:.76rem;text-align:center;outline:none}
+.alloc-table td input:focus{border-color:var(--lime)}
+
 /* FOOTER */
 .footer{text-align:center;padding:13px;font-size:.62rem;color:var(--dim);border-top:1px solid var(--border);background:var(--bg2)}
 .footer strong{color:var(--lime)}
@@ -281,7 +312,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
       <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
       <button class="lbtn" id="lBtn" onclick="doAuth()">Entrar</button>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v1.1</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v1.2</div>
     </div>
   </div>
 </div>
@@ -293,12 +324,13 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver">v1.1</div>
+      <div class="hver">v1.2</div>
     </div>
     <div class="hrr">
       <div class="ntabs">
         <button class="ntab active" onclick="showTab('gen',this)">Gerador</button>
         <button class="ntab" onclick="showTab('dash',this)">Dashboard</button>
+        <button class="ntab" onclick="openEmpresaModal()">⚙ Empresa</button>
       </div>
       <div class="upill" style="cursor:pointer" onclick="doLogout()" title="Sair">
         <div class="uav" id="avEl">?</div>
@@ -308,8 +340,8 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </header>
   <!-- Banner perfil incompleto -->
-  <div id="bannerPerfil" style="display:none;background:var(--gold-dim);border-bottom:1px solid rgba(224,184,64,.3);padding:8px 24px;display:flex;align-items:center;justify-content:space-between">
-    <span style="font-size:.75rem;color:var(--gold)">⚠ Suas análises estão usando um perfil genérico. Configure sua empresa para resultados personalizados.</span>
+  <div id="bannerPerfil" style="display:none;background:var(--gold-dim);border-bottom:1px solid rgba(224,184,64,.3);padding:8px 24px;align-items:center;justify-content:space-between">
+    <span style="font-size:.75rem;color:var(--gold)">⚠ Suas análises estão usando um perfil genérico. <button onclick="openEmpresaModal()" style="background:transparent;border:none;color:var(--lime);font-size:.75rem;font-weight:700;cursor:pointer;padding:0;text-decoration:underline">Configure sua empresa →</button></span>
     <button onclick="document.getElementById('bannerPerfil').style.display='none'" style="background:transparent;border:none;color:var(--gold);cursor:pointer;font-size:.8rem;padding:0 4px">✕</button>
   </div>
 
@@ -436,7 +468,79 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v1.1</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v1.2</strong> &nbsp;·&nbsp; Uso interno</footer>
+
+  <!-- MODAL EMPRESA -->
+  <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">Configuração da empresa</div>
+          <div class="modal-sub">Personalize as análises com os dados da sua empresa</div>
+        </div>
+        <button class="modal-close" onclick="closeEmpresaModal()">✕</button>
+      </div>
+      <div class="modal-steps">
+        <div class="modal-step">
+          <div class="step-dot active" id="sdot1">1</div>
+          <div class="step-label active" id="slbl1">Identidade</div>
+        </div>
+        <div class="modal-step">
+          <div class="step-dot" id="sdot2">2</div>
+          <div class="step-label" id="slbl2">Produtos</div>
+        </div>
+        <div class="modal-step">
+          <div class="step-dot" id="sdot3">3</div>
+          <div class="step-label" id="slbl3">Alocação</div>
+        </div>
+      </div>
+
+      <!-- Step 1: Identidade -->
+      <div class="modal-body" id="mStep1">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label class="fl">Nome da empresa</label><input class="fi" id="eNome" placeholder="Ex: Captor Investimentos"></div>
+          <div class="fg"><label class="fl">Credenciadora</label><input class="fi" id="eCred" placeholder="Ex: XP, BTG, Rico..."></div>
+          <div class="fg"><label class="fl">Segmento</label><input class="fi" id="eSeg" placeholder="Ex: Wealth Management"></div>
+          <div class="fg"><label class="fl">Anos no mercado</label><input class="fi" id="eAnos" placeholder="Ex: 8 anos" type="text"></div>
+          <div class="fg"><label class="fl">AuM (patrimônio sob custódia)</label><input class="fi" id="eAum" placeholder="Ex: +R$12 bilhões"></div>
+          <div class="fg"><label class="fl">Nº de clientes</label><input class="fi" id="eClientes" placeholder="Ex: +15 mil"></div>
+        </div>
+        <div class="fg" style="margin-top:4px"><label class="fl">Principais diferenciais <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0">(descreva em 2-4 frases)</span></label>
+          <textarea class="fta" id="eDiferenciais" style="min-height:72px" placeholder="Ex: Assessoria financeira completa com foco no relacionamento de longo prazo, NPS líder do setor, equipe especializada em renda variável e offshore..."></textarea>
+        </div>
+        <div class="fg"><label class="fl">Prêmios e reconhecimentos <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
+          <input class="fi" id="ePremios" placeholder="Ex: Nº1 NPS 2024, Top 10 Escritórios XP, Selo Private"></div>
+      </div>
+
+      <!-- Step 2: Produtos -->
+      <div class="modal-body" id="mStep2" style="display:none">
+        <div class="fhint" style="margin-bottom:12px">Liste os produtos e serviços que sua empresa oferece. Quanto mais detalhado, mais personalizadas serão as análises.</div>
+        <div class="fg"><label class="fl">Produtos de investimento</label>
+          <textarea class="fta" id="eProdInvest" style="min-height:60px" placeholder="Ex: Renda fixa (CDB, LCI, LCA, debêntures), Renda variável (ações, FIIs, ETFs), Multimercados, Fundos exclusivos..."></textarea></div>
+        <div class="fg"><label class="fl">Serviços especializados</label>
+          <textarea class="fta" id="eProdServ" style="min-height:60px" placeholder="Ex: Câmbio e conta internacional, Seguros de vida e patrimonial, Crédito com garantia de imóvel, Consórcio..."></textarea></div>
+        <div class="fg"><label class="fl">Produtos premium / diferenciados <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
+          <textarea class="fta" id="eProdPremium" style="min-height:60px" placeholder="Ex: Family Office, Offshore, Wealth Planning, M&A, Previdência privada exclusiva..."></textarea></div>
+        <div class="fg"><label class="fl">Expertise e diferenciais técnicos <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
+          <textarea class="fta" id="eExpertise" style="min-height:60px" placeholder="Ex: Time dedicado de renda variável com track record, Mesa de câmbio própria, Parceria com gestoras internacionais..."></textarea></div>
+      </div>
+
+      <!-- Step 3: Alocação -->
+      <div class="modal-body" id="mStep3" style="display:none">
+        <div class="fhint" style="margin-bottom:14px">Defina as faixas de alocação recomendadas por perfil de risco. Deixe em branco para usar os valores padrão.</div>
+        <div id="allocTableWrap"></div>
+        <div style="margin-top:10px;font-size:.68rem;color:var(--dim)">Dica: as faixas são usadas como referência pela IA ao sugerir carteiras. Use o formato "mín-máx" (ex: 60-75).</div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="mbtn mbtn-sec" id="mBtnBack" onclick="empresaStepBack()" style="display:none">← Voltar</button>
+        <div style="display:flex;gap:8px;margin-left:auto">
+          <button class="mbtn mbtn-sec" onclick="closeEmpresaModal()">Fechar</button>
+          <button class="mbtn mbtn-pri" id="mBtnNext" onclick="empresaStepNext()">Próximo →</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -569,6 +673,7 @@ function enterApp(session){
   document.getElementById('bannerPerfil').style.display='flex';
   initSliders();
   updateDash();
+  loadEmpresaData();
 }
 
 async function doAuth(){
@@ -628,6 +733,173 @@ document.addEventListener('DOMContentLoaded',function(){
   if(lPass)lPass.addEventListener('keydown',function(e){if(e.key==='Enter')doAuth();});
 });
 
+// ── PERFIL DA EMPRESA ──
+var empresaData = null;
+var empresaStep = 1;
+
+var ALLOC_CATS_CONFIG = ['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'];
+var ALLOC_PERFIS = ['Conservador','Moderado','Arrojado','Agressivo'];
+var ALLOC_DEFAULT = {
+  Conservador: [[62,77],[7,17],[2,7],[2,7],[0,5],[0,5],[0,0],[0,5],[0,7]],
+  Moderado:    [[25,40],[17,27],[7,12],[14,19],[2,12],[0,4],[0,10],[0,5],[0,8]],
+  Arrojado:    [[5,20],[22,32],[5,10],[10,15],[12,22],[5,10],[0,14],[0,5],[0,10]],
+  Agressivo:   [[5,20],[22,32],[5,10],[10,15],[12,22],[5,10],[0,14],[0,5],[0,10]]
+};
+
+async function loadEmpresaData(){
+  if(!supabaseUserId)return;
+  var {data}=await sb.from('company_profiles').select('*').eq('user_id',supabaseUserId).single();
+  if(data){
+    empresaData=data;
+    document.getElementById('bannerPerfil').style.display='none';
+  }
+}
+
+function buildAllocTable(){
+  var wrap=document.getElementById('allocTableWrap');
+  var html='<table class="alloc-table"><thead><tr><th>Classe de ativo</th>';
+  ALLOC_PERFIS.forEach(function(p){html+='<th>'+p+'</th>';});
+  html+='</tr></thead><tbody>';
+  ALLOC_CATS_CONFIG.forEach(function(cat,i){
+    html+='<tr><td style="color:var(--text);font-size:.76rem">'+cat+'</td>';
+    ALLOC_PERFIS.forEach(function(p){
+      var def=ALLOC_DEFAULT[p][i];
+      var val=def[0]+'-'+def[1];
+      if(empresaData&&empresaData.regras_alocacao&&empresaData.regras_alocacao[p]&&empresaData.regras_alocacao[p][i]){
+        val=empresaData.regras_alocacao[p][i];
+      }
+      html+='<td><input type="text" value="'+val+'" id="alloc_'+p+'_'+i+'" placeholder="'+val+'"></td>';
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table>';
+  wrap.innerHTML=html;
+}
+
+function openEmpresaModal(){
+  empresaStep=1;
+  updateEmpresaStep();
+  // Preencher campos se já tiver dados
+  if(empresaData){
+    var f=function(id,val){var el=document.getElementById(id);if(el&&val)el.value=val;};
+    f('eNome',empresaData.empresa_nome);
+    f('eCred',empresaData.empresa_credenciadora);
+    f('eSeg',empresaData.empresa_segmento);
+    f('eAnos',empresaData.empresa_anos);
+    f('eAum',empresaData.empresa_aum);
+    f('eClientes',empresaData.empresa_clientes);
+    f('eDiferenciais',empresaData.empresa_diferenciais);
+    f('ePremios',empresaData.empresa_premios);
+    f('eProdInvest',empresaData.produtos_investimento);
+    f('eProdServ',empresaData.produtos_servicos);
+    f('eProdPremium',empresaData.produtos_premium);
+    f('eExpertise',empresaData.expertise);
+  }
+  buildAllocTable();
+  document.getElementById('modalEmpresa').style.display='flex';
+}
+
+function closeEmpresaModal(){
+  document.getElementById('modalEmpresa').style.display='none';
+}
+
+function updateEmpresaStep(){
+  [1,2,3].forEach(function(n){
+    document.getElementById('mStep'+n).style.display=n===empresaStep?'block':'none';
+    var dot=document.getElementById('sdot'+n);
+    var lbl=document.getElementById('slbl'+n);
+    dot.className='step-dot'+(n===empresaStep?' active':n<empresaStep?' done':'');
+    lbl.className='step-label'+(n===empresaStep?' active':'');
+    if(n<empresaStep)dot.textContent='✓';
+    else dot.textContent=String(n);
+  });
+  document.getElementById('mBtnBack').style.display=empresaStep>1?'block':'none';
+  document.getElementById('mBtnNext').textContent=empresaStep===3?'Salvar ✓':'Próximo →';
+}
+
+function empresaStepBack(){
+  if(empresaStep>1){empresaStep--;updateEmpresaStep();}
+}
+
+async function empresaStepNext(){
+  if(empresaStep<3){
+    empresaStep++;
+    updateEmpresaStep();
+    if(empresaStep===3)buildAllocTable();
+    return;
+  }
+  // Salvar no Supabase
+  var btn=document.getElementById('mBtnNext');
+  btn.disabled=true;btn.textContent='Salvando...';
+
+  // Coletar regras de alocação
+  var regras={};
+  ALLOC_PERFIS.forEach(function(p){
+    regras[p]=ALLOC_CATS_CONFIG.map(function(_,i){
+      var el=document.getElementById('alloc_'+p+'_'+i);
+      return el?el.value:'';
+    });
+  });
+
+  var payload={
+    user_id:supabaseUserId,
+    empresa_nome:document.getElementById('eNome').value.trim(),
+    empresa_credenciadora:document.getElementById('eCred').value.trim(),
+    empresa_segmento:document.getElementById('eSeg').value.trim(),
+    empresa_anos:document.getElementById('eAnos').value.trim(),
+    empresa_aum:document.getElementById('eAum').value.trim(),
+    empresa_clientes:document.getElementById('eClientes').value.trim(),
+    empresa_diferenciais:document.getElementById('eDiferenciais').value.trim(),
+    empresa_premios:document.getElementById('ePremios').value.trim(),
+    produtos_investimento:document.getElementById('eProdInvest').value.trim(),
+    produtos_servicos:document.getElementById('eProdServ').value.trim(),
+    produtos_premium:document.getElementById('eProdPremium').value.trim(),
+    expertise:document.getElementById('eExpertise').value.trim(),
+    regras_alocacao:regras,
+    updated_at:new Date().toISOString()
+  };
+
+  var {error}=await sb.from('company_profiles').upsert(payload,{onConflict:'user_id'});
+  if(error){
+    alert('Erro ao salvar: '+error.message);
+    btn.disabled=false;btn.textContent='Salvar ✓';
+    return;
+  }
+  empresaData=payload;
+  document.getElementById('bannerPerfil').style.display='none';
+  closeEmpresaModal();
+  btn.disabled=false;btn.textContent='Salvar ✓';
+}
+
+function buildEmpresaPrompt(){
+  if(!empresaData||!empresaData.empresa_nome)return null;
+  var e=empresaData;
+  var txt='DADOS DA EMPRESA DO ASSESSOR:\n';
+  if(e.empresa_nome)txt+='Empresa: '+e.empresa_nome+'\n';
+  if(e.empresa_credenciadora)txt+='Credenciadora: '+e.empresa_credenciadora+'\n';
+  if(e.empresa_segmento)txt+='Segmento: '+e.empresa_segmento+'\n';
+  if(e.empresa_anos)txt+='Tempo de mercado: '+e.empresa_anos+'\n';
+  if(e.empresa_aum)txt+='AuM: '+e.empresa_aum+'\n';
+  if(e.empresa_clientes)txt+='Clientes: '+e.empresa_clientes+'\n';
+  if(e.empresa_diferenciais)txt+='Diferenciais: '+e.empresa_diferenciais+'\n';
+  if(e.empresa_premios)txt+='Prêmios: '+e.empresa_premios+'\n';
+  if(e.produtos_investimento)txt+='Produtos de investimento: '+e.produtos_investimento+'\n';
+  if(e.produtos_servicos)txt+='Serviços: '+e.produtos_servicos+'\n';
+  if(e.produtos_premium)txt+='Produtos premium: '+e.produtos_premium+'\n';
+  if(e.expertise)txt+='Expertise: '+e.expertise+'\n';
+  return txt;
+}
+
+function buildAllocPrompt(perfil){
+  if(!empresaData||!empresaData.regras_alocacao||!empresaData.regras_alocacao[perfil]){
+    // usar defaults
+    var def=ALLOC_DEFAULT[perfil]||ALLOC_DEFAULT['Arrojado'];
+    return ALLOC_CATS_CONFIG.map(function(l,i){return l+': '+def[i][0]+'% a '+def[i][1]+'%';}).join(', ');
+  }
+  var regras=empresaData.regras_alocacao[perfil];
+  return ALLOC_CATS_CONFIG.map(function(l,i){return l+': '+regras[i];}).join(', ');
+}
+
 // ── TABS ──
 function showTab(tab,btn){
   document.querySelectorAll('.ntab').forEach(function(b){b.classList.remove('active');});
@@ -669,31 +941,6 @@ async function generate(){
 
   var patFmt=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(pat);
 
-  // Regras de alocação por perfil (política oficial Captor)
-  var ALLOC_RULES = {
-    'Conservador': {
-      labels:['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'],
-      ranges:[[62.5,77.5],[7.5,17.5],[2.5,7.5],[2.5,7.5],[0,5],[0,5],[0,0],[0,5],[0,7.5]]
-    },
-    'Moderado': {
-      labels:['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'],
-      ranges:[[25,40],[17.5,27.5],[7.5,12.5],[14,19],[2.5,12.5],[0,4.5],[0,10.5],[0,5],[0,8.5]]
-    },
-    'Arrojado': {
-      labels:['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'],
-      ranges:[[5,20],[22.5,32.5],[5,10],[10,15],[12.5,22.5],[5.5,10.5],[0,14.5],[0,5],[0,10]]
-    },
-    'Agressivo': {
-      labels:['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'],
-      ranges:[[5,20],[22.5,32.5],[5,10],[10,15],[12.5,22.5],[5.5,10.5],[0,14.5],[0,5],[0,10]]
-    }
-  };
-  var allocKey = perfil==='Conservador'?'Conservador': perfil==='Moderado'?'Moderado':'Arrojado';
-  var allocRule = ALLOC_RULES[allocKey];
-  var allocRuleStr = allocRule.labels.map(function(l,i){
-    return l+': '+allocRule.ranges[i][0]+'% a '+allocRule.ranges[i][1]+'%';
-  }).join(', ');
-
   var currentAllocStr = '';
   if(currentAlloc){
     currentAllocStr = Object.keys(currentAlloc).map(function(k){
@@ -701,7 +948,14 @@ async function generate(){
     }).filter(function(s){return s.indexOf(': 0%')===-1;}).join(', ');
   }
 
-  var prompt='Você é assessor sênior da Captor Investimentos (XP credenciada, +R$12bi custódia, +15mil clientes, Nº1 NPS 2024). Portfólio completo: investimentos, renda variável, crédito, câmbio, seguros, wealth planning, offshore, Aurum Family Office, M&A.\n\n'
+  var empresaPrompt=buildEmpresaPrompt();
+  var nomeEmpresa=(empresaData&&empresaData.empresa_nome)?empresaData.empresa_nome:'Captor Investimentos';
+  var allocRuleStr=buildAllocPrompt(perfil);
+
+  var prompt=(empresaPrompt
+    ? 'Você é assessor sênior da '+nomeEmpresa+'. '+empresaPrompt
+    : 'Você é assessor sênior da Captor Investimentos (XP credenciada, +R$12bi custódia, +15mil clientes, Nº1 NPS 2024). Portfólio completo: investimentos, renda variável, crédito, câmbio, seguros, wealth planning, offshore, Aurum Family Office, M&A.'
+  )+'\n\n'
     +'Gere roteiro consultivo COMPLETO para:\n'
     +'Nome: '+nome+' | Patrimônio: '+patFmt+' | Profissão: '+prof+' | Idade: '+idade+' anos | Perfil: '+perfil+' | Objetivo: '+obj+' | Assessoria atual: '+(ass||'não informado')+' | Contexto: '+(ctx||'nenhum')+'\n'
     +'Problemas CONFIRMADOS na gestão atual: '+(gaps||'nenhum informado')+'\n'

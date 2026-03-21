@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Captor — Pré-vendas eficiente e inteligente v1.0</title>
+<title>Captor — Pré-vendas eficiente e inteligente v1.1</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
 :root{
@@ -261,14 +262,26 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       </div>
     </div>
     <div class="lr">
-      <div class="lrt">Acesso à plataforma</div>
-      <div class="lrs">Entre com seu email para acessar a plataforma</div>
+      <div class="lrt" id="lTitle">Acesso à plataforma</div>
+      <div class="lrs" id="lSub">Entre com seu email para acessar a plataforma</div>
+
+      <div style="display:flex;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:3px;margin-bottom:18px">
+        <button id="tabLogin" onclick="switchAuthTab('login')" style="flex:1;padding:6px;border:none;border-radius:6px;background:var(--lime);color:#1a1a1a;font-family:var(--f);font-size:.76rem;font-weight:700;cursor:pointer">Entrar</button>
+        <button id="tabSignup" onclick="switchAuthTab('signup')" style="flex:1;padding:6px;border:none;border-radius:6px;background:transparent;color:var(--muted);font-family:var(--f);font-size:.76rem;font-weight:600;cursor:pointer">Criar conta</button>
+      </div>
+
       <label class="ll2">Email</label>
-      <input class="li" type="email" id="lEmail" placeholder="nome@captor.com.br">
+      <input class="li" type="email" id="lEmail" placeholder="nome@empresa.com.br">
       <label class="ll2">Senha</label>
       <input class="li" type="password" id="lPass" placeholder="••••••••">
-      <button class="lbtn" onclick="doLogin()">Entrar</button>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v1.0</div>
+      <div id="lPassConfirmWrap" style="display:none">
+        <label class="ll2">Confirmar senha</label>
+        <input class="li" type="password" id="lPassConfirm" placeholder="••••••••">
+      </div>
+      <div id="lError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
+      <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
+      <button class="lbtn" id="lBtn" onclick="doAuth()">Entrar</button>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v1.1</div>
     </div>
   </div>
 </div>
@@ -280,19 +293,25 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver">v1.0</div>
+      <div class="hver">v1.1</div>
     </div>
     <div class="hrr">
       <div class="ntabs">
         <button class="ntab active" onclick="showTab('gen',this)">Gerador</button>
         <button class="ntab" onclick="showTab('dash',this)">Dashboard</button>
       </div>
-      <div class="upill">
+      <div class="upill" style="cursor:pointer" onclick="doLogout()" title="Sair">
         <div class="uav" id="avEl">?</div>
         <span class="uname" id="unEl">Assessor</span>
+        <span style="font-size:.65rem;color:var(--dim);margin-left:2px">↩</span>
       </div>
     </div>
   </header>
+  <!-- Banner perfil incompleto -->
+  <div id="bannerPerfil" style="display:none;background:var(--gold-dim);border-bottom:1px solid rgba(224,184,64,.3);padding:8px 24px;display:flex;align-items:center;justify-content:space-between">
+    <span style="font-size:.75rem;color:var(--gold)">⚠ Suas análises estão usando um perfil genérico. Configure sua empresa para resultados personalizados.</span>
+    <button onclick="document.getElementById('bannerPerfil').style.display='none'" style="background:transparent;border:none;color:var(--gold);cursor:pointer;font-size:.8rem;padding:0 4px">✕</button>
+  </div>
 
   <div class="main" id="genView">
     <aside class="sb">
@@ -417,7 +436,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v1.0</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v1.1</strong> &nbsp;·&nbsp; Uso interno</footer>
 </div>
 
 <script>
@@ -502,22 +521,112 @@ function getSliderAlloc(){
 
 // ── STATE ──
 var user=null;
+var supabaseUserId=null;
 var PROXY_URL='https://fllkczocfcbrfsyhxelg.supabase.co/functions/v1/anthropic-proxy';
+var SUPABASE_URL='https://fllkczocfcbrfsyhxelg.supabase.co';
+var SUPABASE_KEY='sb_publishable_U2pVXIhyNH3s085cUjAmrA_PkeNP4P7';
+var sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 var hist=JSON.parse(localStorage.getItem('captor_hist')||'[]');
+var authMode='login';
 
-function doLogin(){
-  var email=document.getElementById('lEmail').value.trim();
-  if(!email){alert('Insira seu email.');return;}
+// ── AUTH HELPERS ──
+function switchAuthTab(mode){
+  authMode=mode;
+  var isLogin=mode==='login';
+  document.getElementById('tabLogin').style.background=isLogin?'var(--lime)':'transparent';
+  document.getElementById('tabLogin').style.color=isLogin?'#1a1a1a':'var(--muted)';
+  document.getElementById('tabSignup').style.background=isLogin?'transparent':'var(--lime)';
+  document.getElementById('tabSignup').style.color=isLogin?'var(--muted)':'#1a1a1a';
+  document.getElementById('lPassConfirmWrap').style.display=isLogin?'none':'block';
+  document.getElementById('lBtn').textContent=isLogin?'Entrar':'Criar conta';
+  document.getElementById('lTitle').textContent=isLogin?'Acesso à plataforma':'Criar conta';
+  document.getElementById('lSub').textContent=isLogin?'Entre com seu email para acessar a plataforma':'Preencha seus dados para começar';
+  document.getElementById('lError').style.display='none';
+  document.getElementById('lSuccess').style.display='none';
+}
+
+function showAuthError(msg){
+  var el=document.getElementById('lError');
+  el.textContent=msg;el.style.display='block';
+  document.getElementById('lSuccess').style.display='none';
+}
+
+function showAuthSuccess(msg){
+  var el=document.getElementById('lSuccess');
+  el.textContent=msg;el.style.display='block';
+  document.getElementById('lError').style.display='none';
+}
+
+function enterApp(session){
+  var email=session.user.email;
+  supabaseUserId=session.user.id;
   user=email.split('@')[0].replace(/\./g,' ');
   user=user.charAt(0).toUpperCase()+user.slice(1);
   document.getElementById('login').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('unEl').textContent=user;
   document.getElementById('avEl').textContent=user.charAt(0).toUpperCase();
+  document.getElementById('bannerPerfil').style.display='flex';
   initSliders();
   updateDash();
 }
-document.getElementById('lPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+
+async function doAuth(){
+  var email=document.getElementById('lEmail').value.trim();
+  var pass=document.getElementById('lPass').value;
+  if(!email||!pass){showAuthError('Preencha email e senha.');return;}
+  document.getElementById('lBtn').disabled=true;
+  document.getElementById('lBtn').textContent='Aguarde...';
+  try{
+    if(authMode==='login'){
+      var {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+      if(error)throw error;
+      enterApp(data.session);
+    } else {
+      var confirm=document.getElementById('lPassConfirm').value;
+      if(pass!==confirm){showAuthError('As senhas não coincidem.');return;}
+      if(pass.length<6){showAuthError('A senha deve ter pelo menos 6 caracteres.');return;}
+      var {data,error}=await sb.auth.signUp({email,password:pass});
+      if(error)throw error;
+      if(data.session){
+        enterApp(data.session);
+      } else {
+        showAuthSuccess('Conta criada! Verifique seu email para confirmar o cadastro.');
+      }
+    }
+  }catch(e){
+    var msg=e.message||'Erro desconhecido';
+    if(msg.includes('Invalid login'))msg='Email ou senha incorretos.';
+    if(msg.includes('already registered'))msg='Este email já possui uma conta. Faça login.';
+    if(msg.includes('Email not confirmed'))msg='Confirme seu email antes de entrar.';
+    showAuthError(msg);
+  }finally{
+    document.getElementById('lBtn').disabled=false;
+    document.getElementById('lBtn').textContent=authMode==='login'?'Entrar':'Criar conta';
+  }
+}
+
+async function doLogout(){
+  await sb.auth.signOut();
+  supabaseUserId=null;user=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('login').style.display='flex';
+  document.getElementById('lEmail').value='';
+  document.getElementById('lPass').value='';
+  document.getElementById('lError').style.display='none';
+  document.getElementById('lSuccess').style.display='none';
+}
+
+// Verificar sessão existente ao carregar
+(async function(){
+  var {data}=await sb.auth.getSession();
+  if(data.session)enterApp(data.session);
+})();
+
+document.addEventListener('DOMContentLoaded',function(){
+  var lPass=document.getElementById('lPass');
+  if(lPass)lPass.addEventListener('keydown',function(e){if(e.key==='Enter')doAuth();});
+});
 
 // ── TABS ──
 function showTab(tab,btn){
@@ -547,6 +656,7 @@ async function generate(){
   document.getElementById('outArea').style.display='none';
   document.getElementById('loadingState').style.display='flex';
   document.getElementById('btnGen').disabled=true;
+  document.getElementById('contentArea').scrollIntoView({behavior:'smooth',block:'start'});
 
   var ids=['ss1','ss2','ss3','ss4'];
   ids.forEach(function(id){document.getElementById(id).className='ldstep';});

@@ -849,93 +849,35 @@ function removeFile(){
   document.getElementById('fileInput').value='';
 }
 
-// ── EXTRACT TEXT FROM PDF ──
-async function extractTextFromPDF(file){
+// ── FILE TO BASE64 ──
+async function fileToBase64(file){
   return new Promise(function(resolve){
     var reader=new FileReader();
-    reader.onload=function(e){
-      var bytes=new Uint8Array(e.target.result);
-      // Extract readable ASCII text from PDF binary
-      var text='';
-      var buf=bytes;
-      for(var i=0;i<buf.length-1;i++){
-        var c=buf[i];
-        if(c>=32&&c<127)text+=String.fromCharCode(c);
-        else if(c===10||c===13)text+=' ';
-      }
-      // Clean up: remove excessive spaces, keep meaningful chunks
-      text=text.replace(/\s{3,}/g,' ').replace(/[^\x20-\x7E\u00C0-\u024F\u0080-\u00FF]/g,' ');
-      // Try to get chunks that look like real sentences (min 20 chars)
-      var chunks=text.split(/\s{2,}/).filter(function(s){return s.trim().length>15;});
-      resolve(chunks.slice(0,300).join('\n'));
-    };
-    reader.readAsArrayBuffer(file);
+    reader.onload=function(e){resolve(e.target.result.split(',')[1]);};
+    reader.readAsDataURL(file);
   });
 }
 
-// ── EXTRACT TEXT FROM PPTX ──
+// ── EXTRACT TEXT FROM PPTX (XML parsing) ──
 async function extractTextFromPPTX(file){
   return new Promise(function(resolve){
     var reader=new FileReader();
-    reader.onload=async function(e){
+    reader.onload=function(e){
       try{
-        // PPTX is a ZIP — use JSZip if available, else fallback to raw text extraction
         var bytes=new Uint8Array(e.target.result);
-        // Try to find XML text between tags in the raw bytes
         var raw='';
         for(var i=0;i<bytes.length;i++){
           var c=bytes[i];
           if(c>=32&&c<127)raw+=String.fromCharCode(c);
           else raw+=' ';
         }
-        // Extract content between <a:t> tags (PowerPoint text runs)
         var matches=raw.match(/<a:t[^>]*>([^<]{2,})<\/a:t>/g)||[];
         var text=matches.map(function(m){return m.replace(/<[^>]+>/g,'').trim();})
                         .filter(function(s){return s.length>1;})
                         .join('\n');
-        if(text.length<100){
-          // fallback: grab any text-like chunks
-          text=raw.replace(/[^\x20-\x7E]/g,' ').replace(/\s{3,}/g,' ');
-        }
+        if(text.length<100)text=raw.replace(/[^\x20-\x7E]/g,' ').replace(/\s{3,}/g,' ');
         resolve(text.substring(0,8000));
       }catch(err){resolve('');}
-    };
-    reader.readAsArrayBuffer(file);
-  });
-}
-
-// ── EXTRACT COLORS FROM FILE (render first page as image via canvas) ──
-async function extractColorsFromPDF(file){
-  return new Promise(function(resolve){
-    // We render the PDF to a canvas using a basic approach
-    // Since we don't have pdf.js, we extract hex color strings from the raw binary
-    var reader=new FileReader();
-    reader.onload=function(e){
-      var text='';
-      var bytes=new Uint8Array(e.target.result);
-      for(var i=0;i<Math.min(bytes.length,50000);i++){
-        var c=bytes[i];
-        if(c>=32&&c<127)text+=String.fromCharCode(c);
-      }
-      // Find RGB color commands in PDF: "R G B rg" or "R G B RG" patterns
-      var colors=new Set();
-      var rgbMatches=text.match(/(\d+\.?\d*)\s+(\d+\.?\d*)\s+(\d+\.?\d*)\s+(?:rg|RG)/g)||[];
-      rgbMatches.forEach(function(m){
-        var parts=m.trim().split(/\s+/);
-        if(parts.length>=3){
-          var r=Math.round(parseFloat(parts[0])*255);
-          var g=Math.round(parseFloat(parts[1])*255);
-          var b=Math.round(parseFloat(parts[2])*255);
-          if(r+g+b>30&&r+g+b<740){ // skip pure black and pure white
-            var hex='#'+[r,g,b].map(function(v){return Math.min(255,Math.max(0,v)).toString(16).padStart(2,'0');}).join('');
-            colors.add(hex);
-          }
-        }
-      });
-      // Also look for hex colors in PDF metadata/annotations
-      var hexMatches=text.match(/#[0-9a-fA-F]{6}/g)||[];
-      hexMatches.forEach(function(h){colors.add(h.toLowerCase());});
-      resolve(Array.from(colors).slice(0,8));
     };
     reader.readAsArrayBuffer(file);
   });
@@ -949,47 +891,49 @@ async function extractFromFile(){
 
   try{
     var ext=uploadedFile.name.split('.').pop().toLowerCase();
-    var text='';
+    var requestBody;
+
     if(ext==='pdf'){
-      text=await extractTextFromPDF(uploadedFile);
-      extractedColors=await extractColorsFromPDF(uploadedFile);
+      // Send PDF directly as document to Claude vision
+      var b64=await fileToBase64(uploadedFile);
+      requestBody={
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1400,
+        messages:[{
+          role:'user',
+          content:[
+            {type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},
+            {type:'text',text:'Você é um assistente especializado em extrair informações institucionais de apresentações corporativas.\n\nAnalise esta apresentação institucional de uma empresa de assessoria de investimentos e extraia todas as informações disponíveis.\n\nResponda SOMENTE com JSON válido, sem markdown, sem texto antes ou depois:\n{"empresa_nome":"","empresa_credenciadora":"","empresa_segmento":"","empresa_anos":"","empresa_aum":"","empresa_clientes":"","empresa_diferenciais":"","empresa_premios":"","produtos_investimento":"","produtos_servicos":"","produtos_premium":"","expertise":"","brand_color_hex":""}\n\nRegras:\n- empresa_aum: patrimônio sob custódia (ex: "R$ 12 bilhões")\n- empresa_anos: tempo de mercado (ex: "8 anos")\n- brand_color_hex: cor destaque principal da marca em hex (ex: "#8cb800")\n- produtos_investimento: produtos de investimento mencionados\n- produtos_servicos: outros serviços (câmbio, crédito, seguros etc)\n- produtos_premium: produtos exclusivos (Family Office, Offshore, Wealth Planning, M&A etc)\n- empresa_diferenciais: principais diferenciais em 2-4 frases\n- Deixe "" nos campos não encontrados'}
+          ]
+        }]
+      };
     } else {
-      text=await extractTextFromPPTX(uploadedFile);
+      // PPTX: extract text and send as text prompt
+      var text=await extractTextFromPPTX(uploadedFile);
+      if(!text||text.trim().length<50)throw new Error('Não foi possível extrair texto do PPTX. Verifique se o arquivo não está corrompido.');
+      requestBody={
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1400,
+        messages:[{
+          role:'user',
+          content:'Você é um assistente especializado em extrair informações institucionais de apresentações corporativas.\n\nAnalise o conteúdo abaixo extraído de uma apresentação PPTX e extraia as informações disponíveis.\n\nCONTEÚDO:\n'+text.substring(0,6000)+'\n\nResponda SOMENTE com JSON válido, sem markdown:\n{"empresa_nome":"","empresa_credenciadora":"","empresa_segmento":"","empresa_anos":"","empresa_aum":"","empresa_clientes":"","empresa_diferenciais":"","empresa_premios":"","produtos_investimento":"","produtos_servicos":"","produtos_premium":"","expertise":"","brand_color_hex":""}\n\nRegras:\n- empresa_aum: patrimônio sob custódia (ex: "R$ 12 bilhões")\n- empresa_anos: tempo de mercado (ex: "8 anos")\n- brand_color_hex: cor destaque principal da marca em hex se mencionada\n- Deixe "" nos campos não encontrados'
+        }]
+      };
     }
 
-    if(!text||text.trim().length<50){
-      throw new Error('Não foi possível extrair texto legível do arquivo. Tente um PDF com texto selecionável (não escaneado).');
-    }
-
-    // Call AI to extract structured data
-    var prompt='Você é um assistente especializado em extrair informações institucionais de apresentações corporativas.\n\n'
-      +'Analise o conteúdo abaixo extraído de uma apresentação institucional de uma empresa de assessoria de investimentos e extraia as informações disponíveis.\n\n'
-      +'CONTEÚDO:\n'+text.substring(0,6000)+'\n\n'
-      +'Responda SOMENTE com JSON válido, sem markdown, sem texto antes ou depois:\n'
-      +'{"empresa_nome":"","empresa_credenciadora":"","empresa_segmento":"","empresa_anos":"","empresa_aum":"","empresa_clientes":"","empresa_diferenciais":"","empresa_premios":"","produtos_investimento":"","produtos_servicos":"","produtos_premium":"","expertise":""}\n\n'
-      +'Regras:\n'
-      +'- Preencha apenas os campos que encontrar com clareza no texto\n'
-      +'- Deixe em branco "" os campos não encontrados\n'
-      +'- empresa_aum: valor do patrimônio sob custódia (ex: "R$ 12 bilhões")\n'
-      +'- empresa_anos: anos de mercado (ex: "8 anos")\n'
-      +'- produtos_investimento: lista dos produtos de investimento mencionados\n'
-      +'- produtos_servicos: outros serviços oferecidos\n'
-      +'- produtos_premium: produtos exclusivos ou premium\n'
-      +'- empresa_diferenciais: principais diferenciais competitivos em 2-4 frases\n'
-      +'- expertise: diferenciais técnicos e especializações';
-
-    var resp=await fetch(PROXY_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:prompt}]})
-    });
-    if(!resp.ok)throw new Error('Erro na API: '+resp.status);
+    var resp=await fetch(PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(requestBody)});
+    if(!resp.ok){var err=await resp.json().catch(function(){return{};});throw new Error('API '+resp.status+': '+(err.error&&err.error.message?err.error.message:resp.statusText));}
     var d=await resp.json();
     var raw=d.content.map(function(c){return c.text||'';}).join('');
     var extracted=JSON.parse(raw.replace(/```json|```/g,'').trim());
 
+    // Apply brand color if found
+    if(extracted.brand_color_hex&&extracted.brand_color_hex.match(/^#[0-9a-fA-F]{6}$/)){
+      extractedColors=[extracted.brand_color_hex];
+    }
+
     // Show extraction result preview
-    var fieldsFound=Object.keys(extracted).filter(function(k){return extracted[k]&&extracted[k].trim();});
+    var fieldsFound=Object.keys(extracted).filter(function(k){return k!=='brand_color_hex'&&extracted[k]&&extracted[k].trim();});
     var previewHtml='<div class="extract-result">'
       +'<div class="extract-result-title">✓ '+fieldsFound.length+' campos identificados</div>';
 
@@ -1002,19 +946,19 @@ async function extractFromFile(){
     if(fieldsFound.length>6)previewHtml+='<div style="font-size:.7rem;color:var(--muted);margin-top:4px">+ '+(fieldsFound.length-6)+' outros campos</div>';
 
     if(extractedColors.length){
-      previewHtml+='<div style="font-size:.7rem;font-weight:700;color:var(--lime);margin-top:10px;text-transform:uppercase;letter-spacing:.08em">Cores da apresentação</div>';
+      previewHtml+='<div style="font-size:.7rem;font-weight:700;color:var(--lime);margin-top:10px;text-transform:uppercase;letter-spacing:.08em">Cor da marca identificada</div>';
       previewHtml+='<div class="color-swatches">';
       extractedColors.forEach(function(c){
         previewHtml+='<div class="color-swatch" style="background:'+c+'" title="'+c+'" onclick="toggleBrandColor(\''+c+'\')"></div>';
       });
-      previewHtml+='</div><div style="font-size:.67rem;color:var(--dim);margin-top:4px">Clique para selecionar as cores que serão aplicadas nos gráficos</div>';
+      previewHtml+='</div><div style="font-size:.67rem;color:var(--dim);margin-top:4px">Clique para aplicar esta cor nos gráficos</div>';
     }
     previewHtml+='</div>';
 
     document.getElementById('extractResult').innerHTML=previewHtml;
     document.getElementById('extractResult').style.display='block';
 
-    // Pre-fill the form fields silently
+    // Pre-fill form fields
     var f=function(id,val){var el=document.getElementById(id);if(el&&val&&val.trim())el.value=val.trim();};
     f('eNome',extracted.empresa_nome);
     f('eCred',extracted.empresa_credenciadora);
@@ -1029,7 +973,6 @@ async function extractFromFile(){
     f('eProdPremium',extracted.produtos_premium);
     f('eExpertise',extracted.expertise);
 
-    // Change button to "Confirmar e continuar"
     btn.disabled=false;
     btn.innerHTML='Confirmar e revisar campos →';
     btn.onclick=function(){empresaGoToStep(1);};

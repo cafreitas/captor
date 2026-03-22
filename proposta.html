@@ -3,289 +3,313 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Proposta de Investimento — Captor</title>
+<title>Proposta de Investimento</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --bg:#f8f9fa;--bg2:#ffffff;--bg3:#f0f2f5;
-  --border:#e0e4e8;--text:#1a1a2e;--muted:#6b7280;--dim:#9ca3af;
-  --accent:#a8c23a;--accent2:#8aaa1e;--accent-dim:rgba(168,194,58,.1);
+  --bg:#f5f6f8;--bg2:#fff;--bg3:#f0f2f5;--border:#e2e5ea;
+  --text:#111827;--muted:#6b7280;--dim:#9ca3af;
+  --accent:#a8c23a;--accent2:#8aaa1e;--accent-dim:rgba(168,194,58,.1);--accent-rgb:168,194,58;
   --gold:#d97706;--r:10px;--rl:16px;
   --f:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --shadow:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
-
-/* LOADING / ERROR */
-.state-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:40px}
-.state-icon{font-size:2.5rem}
-.state-title{font-size:1.2rem;font-weight:700;color:var(--text)}
-.state-sub{font-size:.85rem;color:var(--muted);max-width:320px;line-height:1.6}
-.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+html{scroll-behavior:smooth}
+body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;font-size:16px;line-height:1.6}
+#readProgress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:999;width:0%;transition:width .1s linear;border-radius:0 2px 2px 0}
+.state-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:40px;background:var(--bg2)}
+.state-icon{font-size:3rem;margin-bottom:4px}
+.state-title{font-size:1.3rem;font-weight:700}
+.state-sub{font-size:.9rem;color:var(--muted);max-width:340px;line-height:1.65}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* HEADER */
-.prop-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:20px 0;position:sticky;top:0;z-index:50;box-shadow:0 1px 8px rgba(0,0,0,.06)}
-.prop-header-inner{max-width:760px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-.prop-logo{font-size:1.1rem;font-weight:800;color:var(--text);letter-spacing:-.02em}
-.prop-logo span{color:var(--accent)}
-.prop-company{font-size:.78rem;color:var(--muted)}
+.prop-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 0;position:sticky;top:0;z-index:50;box-shadow:var(--shadow)}
+.prop-header-inner{max-width:800px;margin:0 auto;padding:0 28px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.prop-logo{font-size:1.15rem;font-weight:800;color:var(--text);letter-spacing:-.025em}
+.prop-logo .dot{color:var(--accent)}
+.prop-company-name{font-size:.72rem;color:var(--muted);margin-top:2px}
+.header-actions{display:flex;align-items:center;gap:8px}
 .print-btn{padding:7px 14px;background:transparent;border:1px solid var(--border);border-radius:var(--r);color:var(--muted);font-family:var(--f);font-size:.74rem;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .2s}
 .print-btn:hover{border-color:var(--accent);color:var(--accent)}
-
-/* HERO */
-.prop-hero{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:#fff;padding:52px 0 44px}
-.prop-hero-inner{max-width:760px;margin:0 auto;padding:0 24px}
-.prop-tag{display:inline-block;background:var(--accent);color:#1a1a1a;font-size:.62rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:14px}
-.prop-hero-name{font-size:2rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
-.prop-hero-meta{font-size:.82rem;color:rgba(255,255,255,.6);margin-bottom:16px}
-.prop-hero-summary{font-size:.96rem;color:rgba(255,255,255,.85);line-height:1.75;max-width:580px}
-.prop-expires{margin-top:16px;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:5px 12px;font-size:.72rem;color:rgba(255,255,255,.6)}
-
-/* MAIN */
-.prop-main{max-width:760px;margin:0 auto;padding:32px 24px 120px}
-
-/* SEÇÕES */
-.prop-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:24px;margin-bottom:16px}
-.prop-section-header{display:flex;align-items:center;gap:10px;margin-bottom:18px}
-.prop-section-icon{width:32px;height:32px;border-radius:8px;background:var(--accent-dim);border:1px solid rgba(168,194,58,.2);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
-.prop-section-title{font-size:.95rem;font-weight:700;color:var(--text)}
-.prop-section-sub{font-size:.72rem;color:var(--muted);margin-top:1px}
-
-/* CARDS DE PERFIL */
-.profile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-.profile-card{background:var(--bg3);border-radius:var(--r);padding:12px 14px}
-.profile-card-label{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);margin-bottom:4px}
-.profile-card-value{font-size:.88rem;font-weight:600;color:var(--text)}
-
-/* CHARTS */
-.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.chart-box{background:var(--bg3);border-radius:var(--r);padding:14px}
-.chart-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px}
-
-/* BENEFÍCIOS */
-.benefit-item{display:flex;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)}
-.benefit-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.benefit-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px}
-.benefit-text{font-size:.88rem;color:var(--text);line-height:1.65}
-
-/* DISCLAIMER */
-.disclaimer{background:var(--bg3);border-radius:var(--r);padding:12px 14px;font-size:.7rem;color:var(--muted);line-height:1.6;margin-top:16px;border-left:3px solid var(--border)}
-
-/* IMPLEMENTAÇÃO */
-.impl-steps{display:flex;flex-direction:column;gap:0}
-.impl-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
-.impl-step:last-child{border-bottom:none}
-.impl-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#1a1a1a;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.impl-content strong{display:block;font-size:.86rem;font-weight:700;color:var(--text);margin-bottom:3px}
-.impl-content p{font-size:.8rem;color:var(--muted);line-height:1.55}
-
-/* COMENTÁRIOS */
-.comment-toggle{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--border);border-radius:var(--r);padding:6px 12px;color:var(--muted);font-family:var(--f);font-size:.72rem;cursor:pointer;margin-top:14px;transition:all .2s}
-.comment-toggle:hover{border-color:var(--accent);color:var(--accent)}
-.comment-area{margin-top:8px;display:none}
+.status-pill{padding:4px 10px;border-radius:20px;font-size:.67rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.status-enviada{background:rgba(107,114,128,.1);color:var(--muted)}
+.status-visualizada{background:rgba(59,130,246,.1);color:#3b82f6}
+.status-aceita{background:var(--accent-dim);color:var(--accent2)}
+.status-em_discussao,.status-detalhes_solicitados{background:rgba(217,119,6,.1);color:var(--gold)}
+.prop-hero{background:linear-gradient(150deg,#0f172a 0%,#1e293b 60%,#0f2027 100%);color:#fff;padding:60px 0 52px;position:relative;overflow:hidden}
+.prop-hero::before{content:'';position:absolute;top:-40px;right:-60px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(var(--accent-rgb),.12) 0%,transparent 70%);pointer-events:none}
+.prop-hero-inner{max-width:800px;margin:0 auto;padding:0 28px;position:relative;z-index:1}
+.prop-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(var(--accent-rgb),.15);border:1px solid rgba(var(--accent-rgb),.3);color:var(--accent);font-size:.67rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:20px}
+.prop-hero-greeting{font-size:.9rem;color:rgba(255,255,255,.5);margin-bottom:6px}
+.prop-hero-name{font-size:2.4rem;font-weight:800;letter-spacing:-.04em;line-height:1.1;margin-bottom:10px}
+.prop-hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.hero-badge{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:4px 10px;font-size:.74rem;color:rgba(255,255,255,.7)}
+.hero-badge strong{color:#fff;font-weight:600}
+.prop-hero-summary{font-size:1rem;color:rgba(255,255,255,.8);line-height:1.8;max-width:600px;margin-bottom:20px}
+.prop-expires{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;color:rgba(255,255,255,.45)}
+.prop-expires.expired{color:#fbbf24}
+.prop-main{max-width:800px;margin:0 auto;padding:32px 28px 140px}
+.prop-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow)}
+.prop-section-header{display:flex;align-items:flex-start;gap:12px;padding:22px 24px 18px}
+.prop-section-icon{width:36px;height:36px;border-radius:9px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.prop-section-title{font-size:1rem;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.prop-section-sub{font-size:.76rem;color:var(--muted);margin-top:2px;line-height:1.5}
+.prop-section-body{padding:0 24px 22px}
+.profile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.profile-card{background:var(--bg3);border-radius:var(--r);padding:14px 16px;border:1px solid var(--border)}
+.profile-card-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:5px}
+.profile-card-value{font-size:.92rem;font-weight:600;color:var(--text);line-height:1.3}
+.profile-card.hi{background:var(--accent-dim);border-color:rgba(var(--accent-rgb),.25)}
+.profile-card.hi .profile-card-label{color:var(--accent2)}
+.profile-card.hi .profile-card-value{color:var(--accent2)}
+.alloc-compare{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.alloc-compare.single{grid-template-columns:1fr;max-width:340px}
+.alloc-box-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:12px;text-align:center}
+.benefit-list{display:flex;flex-direction:column;gap:0}
+.benefit-item{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--border)}
+.benefit-item:last-child{border-bottom:none;padding-bottom:0}
+.benefit-item:first-child{padding-top:0}
+.benefit-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#1a1a1a;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.benefit-body strong{display:block;font-size:.92rem;font-weight:700;color:var(--text);margin-bottom:4px}
+.benefit-body p{font-size:.86rem;color:var(--muted);line-height:1.7}
+.benefit-hook{display:inline-block;margin-top:8px;font-size:.8rem;color:var(--gold);background:rgba(217,119,6,.08);border-left:2px solid var(--gold);padding:5px 10px;border-radius:0 5px 5px 0;font-style:italic}
+.disclaimer{background:var(--bg3);border-radius:var(--r);padding:14px 16px;font-size:.72rem;color:var(--dim);line-height:1.7;margin-top:20px;border:1px solid var(--border)}
+.disclaimer strong{color:var(--muted)}
+.projection-wrap{background:var(--bg3);border-radius:var(--r);padding:16px;border:1px solid var(--border)}
+.impl-steps{display:flex;flex-direction:column;position:relative}
+.impl-steps::before{content:'';position:absolute;left:13px;top:14px;bottom:14px;width:2px;background:var(--border);z-index:0}
+.impl-step{display:flex;gap:16px;padding:14px 0;position:relative;z-index:1}
+.impl-step:last-child{padding-bottom:0}
+.impl-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#1a1a1a;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 0 4px var(--bg2)}
+.impl-content{padding-top:3px}
+.impl-content strong{display:block;font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:3px}
+.impl-content p{font-size:.82rem;color:var(--muted);line-height:1.6}
+.contact-card{display:flex;align-items:center;gap:16px;background:var(--bg3);border-radius:var(--r);padding:16px 18px;border:1px solid var(--border)}
+.contact-avatar{width:44px;height:44px;border-radius:50%;background:var(--accent);color:#1a1a1a;font-size:1.1rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.contact-name{font-size:.92rem;font-weight:700;color:var(--text)}
+.contact-role{font-size:.74rem;color:var(--muted);margin-top:2px}
+.contact-company{font-size:.74rem;color:var(--accent2);margin-top:1px;font-weight:600}
+.expired-banner{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--r);padding:12px 16px;font-size:.82rem;color:#92400e;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.comment-wrap{margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+.comment-toggle{display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--border);border-radius:20px;padding:6px 14px;color:var(--muted);font-family:var(--f);font-size:.74rem;cursor:pointer;transition:all .2s}
+.comment-toggle:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.comment-area{margin-top:10px;display:none}
 .comment-area.open{display:block}
-.comment-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;font-family:var(--f);font-size:.82rem;color:var(--text);resize:vertical;min-height:72px;outline:none;transition:border-color .2s}
-.comment-input:focus{border-color:var(--accent)}
-.comment-send{margin-top:6px;padding:7px 14px;background:var(--accent);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.76rem;font-weight:700;cursor:pointer}
-.comment-sent{font-size:.76rem;color:var(--accent);margin-top:6px;display:none}
-
-/* STICKY FOOTER */
-.prop-footer-sticky{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);padding:14px 24px;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,.08)}
-.prop-footer-inner{max-width:760px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.prop-footer-label{font-size:.74rem;color:var(--muted)}
+.comment-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;font-family:var(--f);font-size:.84rem;color:var(--text);resize:vertical;min-height:80px;outline:none;transition:border-color .2s;line-height:1.5}
+.comment-input:focus{border-color:var(--accent);background:var(--bg2)}
+.comment-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.comment-hint{font-size:.7rem;color:var(--dim)}
+.comment-send{padding:8px 18px;background:var(--accent);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer}
+.comment-send:hover{background:var(--accent2)}
+.comment-sent{font-size:.78rem;color:var(--accent2);margin-top:8px;display:none;font-weight:600}
+.prop-footer-sticky{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--border);padding:14px 28px;z-index:100;box-shadow:0 -4px 24px rgba(0,0,0,.08)}
+.prop-footer-inner{max-width:800px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.prop-footer-label{font-size:.78rem;color:var(--muted);font-weight:500}
+.prop-footer-label.done{color:var(--accent2);font-weight:700}
 .prop-action-btns{display:flex;gap:8px;flex-wrap:wrap}
-.pabtn{padding:9px 18px;border-radius:var(--r);font-family:var(--f);font-size:.8rem;font-weight:700;cursor:pointer;border:none;transition:all .2s}
-.pabtn-accept{background:var(--accent);color:#1a1a1a}
-.pabtn-accept:hover{background:var(--accent2)}
-.pabtn-discuss{background:transparent;border:1px solid var(--border);color:var(--muted)}
-.pabtn-discuss:hover{border-color:var(--accent);color:var(--accent)}
-.pabtn-details{background:transparent;border:1px solid var(--border);color:var(--muted)}
-.pabtn-details:hover{border-color:var(--gold);color:var(--gold)}
-.pabtn-share{background:transparent;border:1px solid var(--border);color:var(--muted)}
-.pabtn-share:hover{border-color:var(--dim);color:var(--text)}
-
-/* MODAL AÇÃO */
-.action-modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center;padding:0}
-.action-modal{background:var(--bg2);border-radius:var(--rl) var(--rl) 0 0;width:100%;max-width:760px;padding:24px;box-shadow:0 -8px 32px rgba(0,0,0,.15)}
-.action-modal-title{font-size:.95rem;font-weight:700;margin-bottom:6px}
-.action-modal-sub{font-size:.78rem;color:var(--muted);margin-bottom:14px}
-.action-modal textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;font-family:var(--f);font-size:.84rem;color:var(--text);resize:vertical;min-height:80px;outline:none}
+.pabtn{padding:10px 20px;border-radius:var(--r);font-family:var(--f);font-size:.8rem;font-weight:700;cursor:pointer;border:none;transition:all .2s;white-space:nowrap}
+.pabtn-accept{background:var(--accent);color:#1a1a1a;box-shadow:0 2px 8px rgba(var(--accent-rgb),.3)}
+.pabtn-accept:hover{background:var(--accent2);transform:translateY(-1px)}
+.pabtn-accept:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.pabtn-sec{background:transparent;border:1.5px solid var(--border);color:var(--muted)}
+.pabtn-sec:hover{border-color:var(--accent);color:var(--accent)}
+.pabtn-share{background:transparent;border:1.5px solid var(--border);color:var(--muted)}
+.pabtn-share:hover{border-color:var(--text);color:var(--text)}
+.action-modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.action-modal{background:var(--bg2);border-radius:var(--rl) var(--rl) 0 0;width:100%;max-width:800px;padding:28px;box-shadow:0 -8px 40px rgba(0,0,0,.15)}
+.modal-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 20px}
+.action-modal-icon{font-size:1.8rem;margin-bottom:10px}
+.action-modal-title{font-size:1.05rem;font-weight:700;margin-bottom:5px}
+.action-modal-sub{font-size:.82rem;color:var(--muted);margin-bottom:16px;line-height:1.55}
+.action-modal textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-family:var(--f);font-size:.86rem;color:var(--text);resize:vertical;min-height:90px;outline:none;line-height:1.5}
 .action-modal textarea:focus{border-color:var(--accent)}
-.action-modal-btns{display:flex;gap:8px;margin-top:10px;justify-content:flex-end}
-.am-cancel{padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:var(--r);font-family:var(--f);font-size:.78rem;cursor:pointer;color:var(--muted)}
-.am-confirm{padding:8px 18px;background:var(--accent);border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer;color:#1a1a1a}
-
-/* EXPIRADA */
-.expired-banner{background:#fff3cd;border:1px solid #ffc107;border-radius:var(--r);padding:12px 16px;font-size:.82rem;color:#856404;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-
+.action-modal-btns{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+.am-cancel{padding:9px 18px;background:transparent;border:1.5px solid var(--border);border-radius:var(--r);font-family:var(--f);font-size:.8rem;cursor:pointer;color:var(--muted);font-weight:600}
+.am-confirm{padding:9px 20px;background:var(--accent);border:none;border-radius:var(--r);font-family:var(--f);font-size:.8rem;font-weight:700;cursor:pointer;color:#1a1a1a}
+.am-confirm:disabled{opacity:.5;cursor:not-allowed}
+.prop-legal{background:var(--bg3);border-top:1px solid var(--border);padding:28px;text-align:center}
+.prop-legal-inner{max-width:800px;margin:0 auto}
+.prop-legal p{font-size:.7rem;color:var(--dim);line-height:1.7;margin-bottom:4px}
+.prop-legal strong{color:var(--muted)}
 @media print{
-  .prop-header{position:relative;box-shadow:none}
-  .prop-footer-sticky,.print-btn,.comment-toggle,.action-modal-overlay{display:none!important}
-  .prop-hero{background:#1a1a2e!important;-webkit-print-color-adjust:exact}
-  body{background:#fff}
+  #readProgress,.prop-header,.prop-footer-sticky,.print-btn,.comment-wrap,.action-modal-overlay{display:none!important}
+  body{background:#fff;font-size:12px}
+  .prop-hero{background:#0f172a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:40px 0 32px}
+  .prop-main{padding:20px 28px 40px}
+  .prop-section{box-shadow:none;break-inside:avoid;margin-bottom:12px}
 }
-@media(max-width:600px){
-  .charts-row{grid-template-columns:1fr}
+@media(max-width:640px){
+  .prop-hero-name{font-size:1.8rem}
+  .prop-main{padding:20px 16px 140px}
+  .prop-section-body,.prop-section-header{padding-left:16px;padding-right:16px}
+  .alloc-compare{grid-template-columns:1fr}
   .profile-grid{grid-template-columns:1fr 1fr}
-  .prop-footer-inner{flex-direction:column;align-items:stretch}
-  .prop-action-btns{justify-content:stretch}
-  .pabtn{flex:1;text-align:center}
+  .prop-footer-sticky{padding:12px 16px}
+  .prop-footer-inner{flex-direction:column;align-items:stretch;gap:8px}
+  .prop-action-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .pabtn-accept{grid-column:1/-1}
 }
 </style>
 </head>
 <body>
-
+<div id="readProgress"></div>
 <div id="loadingScreen" class="state-screen">
   <div class="spinner"></div>
-  <div class="state-title">Carregando proposta...</div>
-  <div class="state-sub">Buscando sua proposta personalizada</div>
+  <div class="state-title">Carregando sua proposta</div>
+  <div class="state-sub">Buscando as informações preparadas especialmente para você</div>
 </div>
-
 <div id="errorScreen" class="state-screen" style="display:none">
   <div class="state-icon">🔍</div>
   <div class="state-title" id="errorTitle">Proposta não encontrada</div>
   <div class="state-sub" id="errorSub">Este link pode ter expirado ou sido removido. Entre em contato com seu assessor.</div>
 </div>
-
 <div id="propContent" style="display:none">
-
-  <!-- HEADER -->
   <header class="prop-header">
     <div class="prop-header-inner">
       <div>
-        <div class="prop-logo" id="headerLogo">captor<span>.</span></div>
-        <div class="prop-company" id="headerCompany"></div>
+        <div class="prop-logo" id="headerLogo">captor<span class="dot">.</span></div>
+        <div class="prop-company-name" id="headerCompany"></div>
       </div>
-      <button class="print-btn" onclick="window.print()">🖨 Imprimir</button>
+      <div class="header-actions">
+        <span class="status-pill" id="statusPill"></span>
+        <button class="print-btn" onclick="window.print()">🖨 Imprimir</button>
+      </div>
     </div>
   </header>
-
-  <!-- HERO -->
   <section class="prop-hero">
     <div class="prop-hero-inner">
-      <div class="prop-tag">Proposta de Investimento</div>
+      <div class="prop-tag">● Proposta de Investimento</div>
+      <div class="prop-hero-greeting" id="heroGreeting"></div>
       <div class="prop-hero-name" id="heroName"></div>
       <div class="prop-hero-meta" id="heroMeta"></div>
       <div class="prop-hero-summary" id="heroSummary"></div>
       <div class="prop-expires" id="heroExpires"></div>
     </div>
   </section>
-
-  <!-- MAIN -->
   <main class="prop-main">
-    <div id="expiredBanner" style="display:none" class="expired-banner">⚠ Esta proposta expirou. Entre em contato com seu assessor para uma proposta atualizada.</div>
-
-    <!-- PERFIL -->
+    <div id="expiredBanner" style="display:none" class="expired-banner">⚠ Esta proposta expirou. Entre em contato com seu assessor para uma versão atualizada.</div>
     <div class="prop-section">
       <div class="prop-section-header">
         <div class="prop-section-icon">👤</div>
-        <div><div class="prop-section-title">Seu Perfil</div><div class="prop-section-sub">Dados utilizados para elaborar esta proposta</div></div>
+        <div><div class="prop-section-title">Seu Perfil</div><div class="prop-section-sub">Dados utilizados para personalizar esta proposta</div></div>
       </div>
-      <div class="profile-grid" id="profileGrid"></div>
-      <button class="comment-toggle" onclick="toggleComment('comment-perfil')">💬 Alguma dúvida ou correção?</button>
-      <div class="comment-area" id="comment-perfil">
-        <textarea class="comment-input" placeholder="Escreva sua dúvida ou comentário sobre seu perfil..."></textarea>
-        <button class="comment-send" onclick="sendComment('perfil',this)">Enviar</button>
-        <div class="comment-sent">✓ Comentário enviado! Seu assessor irá responder em breve.</div>
+      <div class="prop-section-body">
+        <div class="profile-grid" id="profileGrid"></div>
+        <div class="comment-wrap">
+          <button class="comment-toggle" onclick="toggleComment('comment-perfil')">💬 Algum dado incorreto ou dúvida?</button>
+          <div class="comment-area" id="comment-perfil">
+            <textarea class="comment-input" placeholder="Ex: Meu perfil de risco mudou, ou tenho mais patrimônio para informar..."></textarea>
+            <div class="comment-footer"><span class="comment-hint">Seu assessor receberá este comentário</span><button class="comment-send" onclick="sendComment('perfil',this)">Enviar</button></div>
+            <div class="comment-sent">✓ Enviado! Seu assessor responderá em breve.</div>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- ALOCAÇÃO ATUAL (condicional) -->
     <div class="prop-section" id="sectionAtual" style="display:none">
       <div class="prop-section-header">
         <div class="prop-section-icon">📊</div>
-        <div><div class="prop-section-title">Sua Carteira Atual</div><div class="prop-section-sub">Como seus investimentos estão distribuídos hoje</div></div>
+        <div><div class="prop-section-title">Sua Carteira Atual</div><div class="prop-section-sub">Como seus recursos estão distribuídos hoje</div></div>
       </div>
-      <div id="chartAtual"></div>
-      <button class="comment-toggle" onclick="toggleComment('comment-atual')">💬 Dúvida sobre sua carteira atual?</button>
-      <div class="comment-area" id="comment-atual">
-        <textarea class="comment-input" placeholder="Escreva sua dúvida..."></textarea>
-        <button class="comment-send" onclick="sendComment('carteira_atual',this)">Enviar</button>
-        <div class="comment-sent">✓ Comentário enviado!</div>
+      <div class="prop-section-body">
+        <div id="chartAtual"></div>
+        <div class="comment-wrap">
+          <button class="comment-toggle" onclick="toggleComment('comment-atual')">💬 Sua carteira está diferente?</button>
+          <div class="comment-area" id="comment-atual">
+            <textarea class="comment-input" placeholder="Ex: Tenho também previdência privada que não foi considerada..."></textarea>
+            <div class="comment-footer"><span class="comment-hint">Seu assessor receberá este comentário</span><button class="comment-send" onclick="sendComment('carteira_atual',this)">Enviar</button></div>
+            <div class="comment-sent">✓ Enviado!</div>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- PROPOSTA DE ALOCAÇÃO -->
     <div class="prop-section">
       <div class="prop-section-header">
         <div class="prop-section-icon">🎯</div>
-        <div><div class="prop-section-title">Proposta de Alocação</div><div class="prop-section-sub">Como recomendamos organizar seus investimentos</div></div>
+        <div><div class="prop-section-title">Proposta de Alocação</div><div class="prop-section-sub" id="allocSub">Como recomendamos organizar seus investimentos</div></div>
       </div>
-      <div id="chartSugerida"></div>
-      <button class="comment-toggle" onclick="toggleComment('comment-alocacao')">💬 Dúvida sobre a alocação proposta?</button>
-      <div class="comment-area" id="comment-alocacao">
-        <textarea class="comment-input" placeholder="Escreva sua dúvida..."></textarea>
-        <button class="comment-send" onclick="sendComment('alocacao',this)">Enviar</button>
-        <div class="comment-sent">✓ Comentário enviado!</div>
+      <div class="prop-section-body">
+        <div id="chartCompare"></div>
+        <div class="comment-wrap">
+          <button class="comment-toggle" onclick="toggleComment('comment-alocacao')">💬 Dúvida sobre essa alocação?</button>
+          <div class="comment-area" id="comment-alocacao">
+            <textarea class="comment-input" placeholder="Ex: Por que tanto em renda fixa? Posso ter mais em renda variável?"></textarea>
+            <div class="comment-footer"><span class="comment-hint">Seu assessor receberá este comentário</span><button class="comment-send" onclick="sendComment('alocacao',this)">Enviar</button></div>
+            <div class="comment-sent">✓ Enviado!</div>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- BENEFÍCIOS -->
     <div class="prop-section">
       <div class="prop-section-header">
         <div class="prop-section-icon">✨</div>
-        <div><div class="prop-section-title">Por que esta proposta faz sentido para você</div><div class="prop-section-sub">Em linguagem simples, sem jargão</div></div>
+        <div><div class="prop-section-title">Por que faz sentido para você</div><div class="prop-section-sub">Os argumentos por trás desta proposta, sem jargão</div></div>
       </div>
-      <div id="benefitsList"></div>
-      <div class="disclaimer">⚖ Esta proposta tem caráter informativo e foi elaborada com base nos dados fornecidos. Não constitui recomendação de investimento individualizada nos termos da Resolução CVM 20. Rentabilidade passada não é garantia de retorno futuro. Investimentos envolvem riscos, incluindo perda do capital investido.</div>
-      <button class="comment-toggle" onclick="toggleComment('comment-beneficios')">💬 Ficou alguma dúvida?</button>
-      <div class="comment-area" id="comment-beneficios">
-        <textarea class="comment-input" placeholder="Escreva sua dúvida..."></textarea>
-        <button class="comment-send" onclick="sendComment('beneficios',this)">Enviar</button>
-        <div class="comment-sent">✓ Comentário enviado!</div>
+      <div class="prop-section-body">
+        <div class="benefit-list" id="benefitsList"></div>
+        <div class="disclaimer"><strong>⚖ Nota regulatória (ANBIMA / CVM):</strong> Esta proposta tem caráter informativo e educacional, elaborada com base nos dados fornecidos. Não constitui recomendação de investimento individualizada nos termos da Resolução CVM nº 20/2021. Rentabilidade passada não é garantia de rentabilidade futura. Todo investimento envolve riscos, incluindo a possível perda do capital investido.</div>
+        <div class="comment-wrap">
+          <button class="comment-toggle" onclick="toggleComment('comment-beneficios')">💬 Ficou alguma dúvida?</button>
+          <div class="comment-area" id="comment-beneficios">
+            <textarea class="comment-input" placeholder="Pergunte sobre qualquer argumento apresentado..."></textarea>
+            <div class="comment-footer"><span class="comment-hint">Seu assessor receberá este comentário</span><button class="comment-send" onclick="sendComment('beneficios',this)">Enviar</button></div>
+            <div class="comment-sent">✓ Enviado!</div>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- PROJEÇÃO -->
     <div class="prop-section">
       <div class="prop-section-header">
         <div class="prop-section-icon">📈</div>
-        <div><div class="prop-section-title">Projeção Patrimonial</div><div class="prop-section-sub">Estimativa para os próximos 10 anos</div></div>
+        <div><div class="prop-section-title">Projeção Patrimonial</div><div class="prop-section-sub">Uma estimativa do potencial do seu patrimônio nos próximos 10 anos</div></div>
       </div>
-      <div id="chartProjecao"></div>
-      <button class="comment-toggle" onclick="toggleComment('comment-projecao')">💬 Dúvida sobre a projeção?</button>
-      <div class="comment-area" id="comment-projecao">
-        <textarea class="comment-input" placeholder="Escreva sua dúvida..."></textarea>
-        <button class="comment-send" onclick="sendComment('projecao',this)">Enviar</button>
-        <div class="comment-sent">✓ Comentário enviado!</div>
+      <div class="prop-section-body">
+        <div class="projection-wrap" id="chartProjecao"></div>
+        <div class="comment-wrap">
+          <button class="comment-toggle" onclick="toggleComment('comment-projecao')">💬 Dúvida sobre a projeção?</button>
+          <div class="comment-area" id="comment-projecao">
+            <textarea class="comment-input" placeholder="Ex: Esses números consideram aportes mensais? Como a taxa foi calculada?"></textarea>
+            <div class="comment-footer"><span class="comment-hint">Seu assessor receberá este comentário</span><button class="comment-send" onclick="sendComment('projecao',this)">Enviar</button></div>
+            <div class="comment-sent">✓ Enviado!</div>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- IMPLEMENTAÇÃO -->
     <div class="prop-section">
       <div class="prop-section-header">
         <div class="prop-section-icon">🗺</div>
-        <div><div class="prop-section-title">Como chegamos lá</div><div class="prop-section-sub">Os próximos passos práticos</div></div>
+        <div><div class="prop-section-title">Como chegamos lá</div><div class="prop-section-sub">Os passos práticos para colocar esta estratégia em ação</div></div>
       </div>
-      <div class="impl-steps">
-        <div class="impl-step"><div class="impl-num">1</div><div class="impl-content"><strong>Abertura de conta</strong><p>Caso ainda não tenha conta na plataforma, o processo é 100% digital e leva cerca de 10 minutos.</p></div></div>
-        <div class="impl-step"><div class="impl-num">2</div><div class="impl-content"><strong>Análise e diagnóstico completo</strong><p>Seu assessor faz um mapeamento detalhado da sua situação atual antes de qualquer movimentação.</p></div></div>
-        <div class="impl-step"><div class="impl-num">3</div><div class="impl-content"><strong>Execução gradual da estratégia</strong><p>As realocações são feitas de forma planejada, respeitando prazos e custos de saída de posições existentes.</p></div></div>
-        <div class="impl-step"><div class="impl-num">4</div><div class="impl-content"><strong>Acompanhamento contínuo</strong><p>Relatórios periódicos e revisões regulares para garantir que a estratégia siga alinhada com seus objetivos.</p></div></div>
-      </div>
-      <button class="comment-toggle" onclick="toggleComment('comment-impl')">💬 Dúvida sobre a implementação?</button>
-      <div class="comment-area" id="comment-impl">
-        <textarea class="comment-input" placeholder="Escreva sua dúvida..."></textarea>
-        <button class="comment-send" onclick="sendComment('implementacao',this)">Enviar</button>
-        <div class="comment-sent">✓ Comentário enviado!</div>
+      <div class="prop-section-body">
+        <div class="impl-steps" id="implSteps"></div>
+        <div class="comment-wrap">
+          <button class="comment-toggle" onclick="toggleComment('comment-impl')">💬 Dúvida sobre algum passo?</button>
+          <div class="comment-area" id="comment-impl">
+            <textarea class="comment-input" placeholder="Ex: Quanto tempo leva? Tem custo de saída nas aplicações atuais?"></textarea>
+            <div class="comment-footer"><span class="comment-hint">Seu assessor receberá este comentário</span><button class="comment-send" onclick="sendComment('implementacao',this)">Enviar</button></div>
+            <div class="comment-sent">✓ Enviado!</div>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- CONTATO -->
-    <div class="prop-section" id="sectionContato">
+    <div class="prop-section">
       <div class="prop-section-header">
         <div class="prop-section-icon">📞</div>
-        <div><div class="prop-section-title">Fale com seu assessor</div></div>
+        <div><div class="prop-section-title">Fale com seu assessor</div><div class="prop-section-sub">Estamos prontos para responder qualquer dúvida</div></div>
       </div>
-      <div id="contatoInfo" style="font-size:.86rem;color:var(--muted);line-height:1.7"></div>
+      <div class="prop-section-body"><div class="contact-card" id="contactCard"></div></div>
     </div>
-
   </main>
-
-  <!-- MODAL AÇÃO -->
-  <div id="actionModal" class="action-modal-overlay" style="display:none">
+  <footer class="prop-legal">
+    <div class="prop-legal-inner">
+      <p>Proposta gerada pela plataforma <strong>Captor</strong> · <span id="legalCompany"></span></p>
+      <p>Elaborada em <span id="legalDate"></span> · Válida por 30 dias</p>
+    </div>
+  </footer>
+  <div id="actionModal" class="action-modal-overlay" style="display:none" onclick="if(event.target===this)closeActionModal()">
     <div class="action-modal">
+      <div class="modal-handle"></div>
+      <div class="action-modal-icon" id="modalIcon"></div>
       <div class="action-modal-title" id="modalTitle"></div>
       <div class="action-modal-sub" id="modalSub"></div>
       <textarea id="modalText" placeholder=""></textarea>
@@ -295,307 +319,172 @@ body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-sm
       </div>
     </div>
   </div>
-
-  <!-- STICKY FOOTER -->
   <div class="prop-footer-sticky">
     <div class="prop-footer-inner">
       <div class="prop-footer-label" id="footerLabel">O que você gostaria de fazer?</div>
       <div class="prop-action-btns">
         <button class="pabtn pabtn-accept" id="btnAccept" onclick="handleAction('aceita')">✅ Aceitar Proposta</button>
-        <button class="pabtn pabtn-discuss" onclick="handleAction('em_discussao')">💬 Quero discutir</button>
-        <button class="pabtn pabtn-details" onclick="handleAction('detalhes_solicitados')">📋 Mais detalhes</button>
+        <button class="pabtn pabtn-sec" onclick="handleAction('em_discussao')">💬 Quero discutir</button>
+        <button class="pabtn pabtn-sec" onclick="handleAction('detalhes_solicitados')">📋 Mais detalhes</button>
         <button class="pabtn pabtn-share" onclick="shareProposal()">🔗 Compartilhar</button>
       </div>
     </div>
   </div>
-
 </div>
-
 <script>
-var SUPABASE_URL = 'https://fllkczocfcbrfsyhxelg.supabase.co';
-var SUPABASE_KEY = 'sb_publishable_U2pVXIhyNH3s085cUjAmrA_PkeNP4P7';
-var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-var proposal = null;
-var currentAction = null;
-var isExpired = false;
-
-// ── INIT ──
+var SUPABASE_URL='https://fllkczocfcbrfsyhxelg.supabase.co';
+var SUPABASE_KEY='sb_publishable_U2pVXIhyNH3s085cUjAmrA_PkeNP4P7';
+var sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+var proposal=null,currentAction=null,isExpired=false;
+window.addEventListener('scroll',function(){var h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('readProgress').style.width=(h>0?(window.scrollY/h*100):0)+'%';});
+var statusLabels={enviada:'Enviada',visualizada:'Visualizada',aceita:'Aceita',em_discussao:'Em discussão',detalhes_solicitados:'Detalhes solicitados'};
+function renderStatusPill(s){var p=document.getElementById('statusPill');p.textContent=statusLabels[s]||s;p.className='status-pill status-'+s;}
 (async function(){
-  var hash = window.location.hash.replace('#','').trim();
-  if(!hash){ showError('Link inválido','Este link não contém um identificador de proposta válido.'); return; }
-
-  var {data, error} = await sb.from('proposals').select('*').eq('hash', hash).single();
-  if(error || !data){ showError('Proposta não encontrada','Este link pode ter expirado ou sido removido. Entre em contato com seu assessor.'); return; }
-
-  proposal = data;
-  isExpired = new Date(data.expires_at) < new Date();
-
-  // Marcar como visualizada (primeira vez)
-  if(data.status === 'enviada'){
-    await sb.from('proposals').update({status:'visualizada', visualizado_em: new Date().toISOString()}).eq('hash', hash);
-    proposal.status = 'visualizada';
-  }
-
-  renderProposal();
+  var hash=window.location.hash.replace('#','').trim();
+  if(!hash){showError('Link inválido','Este link não contém um identificador válido.');return;}
+  var r=await sb.from('proposals').select('*').eq('hash',hash).single();
+  if(r.error||!r.data){showError('Proposta não encontrada','Este link pode ter expirado. Entre em contato com seu assessor.');return;}
+  proposal=r.data;
+  isExpired=new Date(r.data.expires_at)<new Date();
+  if(r.data.status==='enviada'){await sb.from('proposals').update({status:'visualizada',visualizado_em:new Date().toISOString()}).eq('hash',hash);proposal.status='visualizada';}
+  render();
 })();
-
-function showError(title, sub){
-  document.getElementById('loadingScreen').style.display = 'none';
-  document.getElementById('errorScreen').style.display = 'flex';
-  document.getElementById('errorTitle').textContent = title;
-  document.getElementById('errorSub').textContent = sub;
+function showError(t,s){document.getElementById('loadingScreen').style.display='none';document.getElementById('errorScreen').style.display='flex';document.getElementById('errorTitle').textContent=t;document.getElementById('errorSub').textContent=s;}
+function setAccent(c){
+  document.documentElement.style.setProperty('--accent',c);
+  var h=c.replace('#','');
+  var rv=parseInt(h.slice(0,2),16),gv=parseInt(h.slice(2,4),16),bv=parseInt(h.slice(4,6),16);
+  document.documentElement.style.setProperty('--accent-rgb',rv+','+gv+','+bv);
+  document.documentElement.style.setProperty('--accent-dim','rgba('+rv+','+gv+','+bv+',.1)');
+  var lum=(rv*299+gv*587+bv*114)/1000;
+  document.documentElement.style.setProperty('--accent2',lum>128?darken(c,.15):lighten(c,.1));
 }
-
-// ── RENDER ──
-function renderProposal(){
-  document.getElementById('loadingScreen').style.display = 'none';
-
-  var p = proposal;
-  var emp = p.empresa_snapshot || {};
-  var ia = p.analise_ia || {};
-  var nomeEmp = emp.empresa_nome || 'Captor Investimentos';
-
-  // Tema — accent da empresa se tiver brand_colors
-  if(emp.brand_colors && emp.brand_colors.length){
-    document.documentElement.style.setProperty('--accent', emp.brand_colors[0]);
-    document.documentElement.style.setProperty('--accent2', emp.brand_colors[1] || emp.brand_colors[0]);
+function darken(hex,amt){var h=hex.replace('#','');var r=Math.max(0,parseInt(h.slice(0,2),16)-Math.round(255*amt));var g=Math.max(0,parseInt(h.slice(2,4),16)-Math.round(255*amt));var bv=Math.max(0,parseInt(h.slice(4,6),16)-Math.round(255*amt));return'#'+[r,g,bv].map(function(v){return v.toString(16).padStart(2,'0');}).join('');}
+function lighten(hex,amt){var h=hex.replace('#','');var r=Math.min(255,parseInt(h.slice(0,2),16)+Math.round(255*amt));var g=Math.min(255,parseInt(h.slice(2,4),16)+Math.round(255*amt));var bv=Math.min(255,parseInt(h.slice(4,6),16)+Math.round(255*amt));return'#'+[r,g,bv].map(function(v){return v.toString(16).padStart(2,'0');}).join('');}
+function render(){
+  document.getElementById('loadingScreen').style.display='none';
+  var p=proposal,emp=p.empresa_snapshot||{},ia=p.analise_ia||{};
+  var nomeEmp=emp.empresa_nome||'Captor Investimentos',cred=emp.empresa_credenciadora||'';
+  if(emp.brand_colors&&emp.brand_colors.length)setAccent(emp.brand_colors[0]);
+  document.getElementById('headerLogo').innerHTML=nomeEmp+'<span class="dot">.</span>';
+  document.getElementById('headerCompany').textContent=cred?nomeEmp+' · '+cred:nomeEmp;
+  renderStatusPill(p.status);
+  document.title='Proposta · '+p.cliente_nome+' · '+nomeEmp;
+  var now=new Date(),hour=now.getHours();
+  document.getElementById('heroGreeting').textContent=(hour<12?'Bom dia':hour<18?'Boa tarde':'Boa noite')+',';
+  document.getElementById('heroName').textContent=p.cliente_nome;
+  var patFmt=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(p.cliente_pat);
+  document.getElementById('heroMeta').innerHTML=[{l:'Patrimônio',v:patFmt},{l:'Perfil',v:p.cliente_perfil},{l:'Objetivo',v:p.cliente_obj}].map(function(b){return '<span class="hero-badge"><strong>'+b.l+'</strong> '+b.v+'</span>';}).join('');
+  document.getElementById('heroSummary').textContent=ia.resumoPerfil||'';
+  var expDate=new Date(p.expires_at).toLocaleDateString('pt-BR');
+  var exEl=document.getElementById('heroExpires');
+  if(isExpired){exEl.textContent='⚠ Proposta expirada em '+expDate;exEl.classList.add('expired');document.getElementById('expiredBanner').style.display='flex';document.getElementById('btnAccept').textContent='🔄 Atualizar proposta';}
+  else exEl.textContent='⏱ Válida até '+expDate;
+  if(p.status==='aceita'){document.getElementById('footerLabel').textContent='✅ Proposta aceita!';document.getElementById('footerLabel').className='prop-footer-label done';document.getElementById('btnAccept').disabled=true;document.getElementById('btnAccept').style.opacity='.5';}
+  document.getElementById('profileGrid').innerHTML=[{l:'Patrimônio estimado',v:patFmt,hi:true},{l:'Perfil de risco',v:p.cliente_perfil,hi:true},{l:'Objetivo',v:p.cliente_obj},{l:'Profissão',v:p.cliente_prof},{l:'Idade',v:p.cliente_idade+' anos'},{l:'Assessoria atual',v:p.cliente_ass||'Não informado'}].map(function(d){return '<div class="profile-card'+(d.hi?' hi':'')+'"><div class="profile-card-label">'+d.l+'</div><div class="profile-card-value">'+d.v+'</div></div>';}).join('');
+  var hasAtual=p.alocacao_atual&&Object.values(p.alocacao_atual).some(function(v){return v>0;});
+  if(hasAtual){
+    document.getElementById('sectionAtual').style.display='block';
+    renderDonut(document.getElementById('chartAtual'),{labels:Object.keys(p.alocacao_atual),data:Object.values(p.alocacao_atual)},emp.brand_colors);
+    document.getElementById('allocSub').textContent='Como recomendamos reorganizar seus investimentos';
   }
-
-  // Header
-  document.getElementById('headerLogo').innerHTML = nomeEmp.toLowerCase().replace(/\s/g,'<span style="color:var(--accent)">.</span>');
-  document.getElementById('headerCompany').textContent = emp.empresa_credenciadora ? nomeEmp + ' · ' + emp.empresa_credenciadora : nomeEmp;
-  document.title = 'Proposta — ' + p.cliente_nome + ' · ' + nomeEmp;
-
-  // Hero
-  document.getElementById('heroName').textContent = p.cliente_nome;
-  var patFmt = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(p.cliente_pat);
-  document.getElementById('heroMeta').textContent = p.cliente_prof + ' · ' + p.cliente_idade + ' anos · ' + patFmt + ' · Perfil ' + p.cliente_perfil;
-  document.getElementById('heroSummary').textContent = ia.resumoPerfil || '';
-  var expDate = new Date(p.expires_at).toLocaleDateString('pt-BR');
-  document.getElementById('heroExpires').textContent = isExpired ? '⚠ Proposta expirada em ' + expDate : '⏱ Válida até ' + expDate;
-
-  // Expirada
-  if(isExpired){
-    document.getElementById('expiredBanner').style.display = 'flex';
-    document.getElementById('btnAccept').textContent = '🔄 Atualizar proposta';
-  }
-
-  // Perfil
-  var profileData = [
-    {l:'Patrimônio', v: patFmt},
-    {l:'Perfil de risco', v: p.cliente_perfil},
-    {l:'Objetivo', v: p.cliente_obj},
-    {l:'Profissão', v: p.cliente_prof},
-    {l:'Idade', v: p.cliente_idade + ' anos'},
-    {l:'Assessoria atual', v: p.cliente_ass || 'Não informado'}
-  ];
-  document.getElementById('profileGrid').innerHTML = profileData.map(function(d){
-    return '<div class="profile-card"><div class="profile-card-label">'+d.l+'</div><div class="profile-card-value">'+d.v+'</div></div>';
-  }).join('');
-
-  // Alocação atual
-  if(p.alocacao_atual && Object.values(p.alocacao_atual).some(function(v){return v>0;})){
-    document.getElementById('sectionAtual').style.display = 'block';
-    var allocAtualObj = {
-      labels: Object.keys(p.alocacao_atual),
-      data: Object.values(p.alocacao_atual)
-    };
-    renderDonut(document.getElementById('chartAtual'), allocAtualObj, emp.brand_colors);
-  }
-
-  // Alocação sugerida
   if(p.alocacao_sugerida){
-    renderDonut(document.getElementById('chartSugerida'), p.alocacao_sugerida, emp.brand_colors);
+    var cc=document.getElementById('chartCompare');
+    if(hasAtual){
+      cc.innerHTML='<div class="alloc-compare"><div><div class="alloc-box-title">Carteira atual</div><div id="dA2"></div></div><div><div class="alloc-box-title">Proposta sugerida</div><div id="dS"></div></div></div>';
+      renderDonut(document.getElementById('dA2'),{labels:Object.keys(p.alocacao_atual),data:Object.values(p.alocacao_atual)},emp.brand_colors);
+      renderDonut(document.getElementById('dS'),p.alocacao_sugerida,emp.brand_colors);
+    } else {
+      cc.innerHTML='<div class="alloc-compare single"><div id="dS2"></div></div>';
+      renderDonut(document.getElementById('dS2'),p.alocacao_sugerida,emp.brand_colors);
+    }
   }
-
-  // Benefícios — usa argumentos da IA
-  var bList = document.getElementById('benefitsList');
-  if(ia.argumentos && ia.argumentos.length){
-    bList.innerHTML = ia.argumentos.map(function(a){
-      return '<div class="benefit-item"><div class="benefit-dot"></div><div class="benefit-text"><strong>'+a.titulo+'</strong><br>'+a.corpo+'</div></div>';
+  if(ia.argumentos&&ia.argumentos.length){
+    document.getElementById('benefitsList').innerHTML=ia.argumentos.map(function(a,i){
+      return '<div class="benefit-item"><div class="benefit-num">'+(i+1)+'</div><div class="benefit-body"><strong>'+a.titulo+'</strong><p>'+a.corpo+'</p>'+(a.frase_gancho?'<div class="benefit-hook">"'+a.frase_gancho+'"</div>':'')+'</div></div>';
     }).join('');
   }
-
-  // Projeção
-  renderLine(document.getElementById('chartProjecao'), p.cliente_pat, p.cliente_perfil);
-
-  // Contato
-  document.getElementById('contatoInfo').innerHTML = 'Seu assessor está disponível para esclarecer qualquer dúvida sobre esta proposta.<br><strong style="color:var(--text)">' + nomeEmp + '</strong>';
-
-  // Footer
-  if(p.status === 'aceita'){
-    document.getElementById('footerLabel').textContent = '✅ Proposta aceita';
-    document.getElementById('btnAccept').disabled = true;
-    document.getElementById('btnAccept').style.opacity = '.5';
-  }
-
-  document.getElementById('propContent').style.display = 'block';
+  renderLine(document.getElementById('chartProjecao'),p.cliente_pat,p.cliente_perfil,emp.brand_colors);
+  var defaultSteps=[{t:'Abertura de conta',d:'Caso ainda não tenha conta na plataforma, o processo é 100% digital e leva cerca de 10 minutos.'},{t:'Diagnóstico completo da carteira',d:'Seu assessor faz um mapeamento detalhado da sua situação atual antes de qualquer movimentação.'},{t:'Execução gradual da estratégia',d:'As realocações são feitas de forma planejada, respeitando prazos e custos de saída de posições existentes.'},{t:'Acompanhamento contínuo',d:'Relatórios periódicos e revisões regulares para garantir que a estratégia siga alinhada com seus objetivos.'}];
+  var steps=ia.roteiro&&ia.roteiro.length?ia.roteiro.slice(0,5).map(function(r){return{t:r.titulo,d:r.descricao};}):defaultSteps;
+  document.getElementById('implSteps').innerHTML=steps.map(function(s,i){return '<div class="impl-step"><div class="impl-num">'+(i+1)+'</div><div class="impl-content"><strong>'+s.t+'</strong><p>'+s.d+'</p></div></div>';}).join('');
+  document.getElementById('contactCard').innerHTML='<div class="contact-avatar">'+nomeEmp.charAt(0).toUpperCase()+'</div><div><div class="contact-name">'+nomeEmp+'</div>'+(cred?'<div class="contact-role">Assessoria de Investimentos</div><div class="contact-company">'+cred+'</div>':'')+'</div>';
+  document.getElementById('legalCompany').textContent=nomeEmp+(cred?' · '+cred:'');
+  document.getElementById('legalDate').textContent=new Date(p.created_at).toLocaleDateString('pt-BR');
+  document.getElementById('propContent').style.display='block';
 }
-
-// ── DONUT SVG ──
-function renderDonut(container, alloc, brandColors){
-  var defaultColors = ['#a8c23a','#7a9a22','#4a6a0a','#c8e050','#ddf070','#e8f590','#5a8a10','#b0d030','#90b820'];
-  var colors = defaultColors.map(function(d,i){ return (brandColors && brandColors[i]) ? brandColors[i] : d; });
-  var total = alloc.data.reduce(function(a,b){return a+b;},0);
-  if(!total){ container.innerHTML='<p style="color:var(--muted);font-size:.8rem">Sem dados de alocação.</p>'; return; }
-  var cx=110,cy=100,r=72,ri=46,angle=-Math.PI/2,slices='';
+function renderDonut(container,alloc,bc){
+  var def=['#a8c23a','#7a9a22','#4a6a0a','#c8e050','#ddf070','#e8f590','#5a8a10','#b0d030','#90b820'];
+  var colors=def.map(function(d,i){return(bc&&bc[i])?bc[i]:d;});
+  var total=alloc.data.reduce(function(a,b){return a+b;},0);
+  if(!total){container.innerHTML='<p style="color:var(--muted);font-size:.8rem;text-align:center;padding:20px">Sem dados.</p>';return;}
+  var cx=110,cy=100,r=72,ri=46,angle=-Math.PI/2,slices='',legend='';
+  var visible=alloc.labels.map(function(_,i){return alloc.data[i]>0;});
   alloc.data.forEach(function(val,i){
-    var a=(val/total)*2*Math.PI;
-    var x1=cx+r*Math.cos(angle),y1=cy+r*Math.sin(angle);
-    var x2=cx+r*Math.cos(angle+a),y2=cy+r*Math.sin(angle+a);
-    var xi1=cx+ri*Math.cos(angle),yi1=cy+ri*Math.sin(angle);
-    var xi2=cx+ri*Math.cos(angle+a),yi2=cy+ri*Math.sin(angle+a);
-    var lg=a>Math.PI?1:0;
-    slices+='<path d="M'+xi1+' '+yi1+' L'+x1+' '+y1+' A'+r+' '+r+' 0 '+lg+' 1 '+x2+' '+y2+' L'+xi2+' '+yi2+' A'+ri+' '+ri+' 0 '+lg+' 0 '+xi1+' '+yi1+' Z" fill="'+colors[i]+'" opacity="0.9"/>';
+    if(!val)return;
+    var a=(val/total)*2*Math.PI,x1=cx+r*Math.cos(angle),y1=cy+r*Math.sin(angle),x2=cx+r*Math.cos(angle+a),y2=cy+r*Math.sin(angle+a),xi1=cx+ri*Math.cos(angle),yi1=cy+ri*Math.sin(angle),xi2=cx+ri*Math.cos(angle+a),yi2=cy+ri*Math.sin(angle+a),lg=a>Math.PI?1:0;
+    slices+='<path d="M'+xi1+' '+yi1+' L'+x1+' '+y1+' A'+r+' '+r+' 0 '+lg+' 1 '+x2+' '+y2+' L'+xi2+' '+yi2+' A'+ri+' '+ri+' 0 '+lg+' 0 '+xi1+' '+yi1+' Z" fill="'+colors[i]+'"/>';
     angle+=a;
   });
-  var legend='';
+  var li=0;
   alloc.labels.forEach(function(lbl,i){
-    var y=210+i*18;
-    legend+='<rect x="4" y="'+(y-8)+'" width="10" height="10" rx="2" fill="'+colors[i]+'"/>'
-           +'<text x="18" y="'+y+'" fill="#6b7280" font-size="10" font-family="system-ui">'+lbl+' ('+alloc.data[i]+'%)</text>';
+    if(!alloc.data[i])return;
+    var y=210+li*18;li++;
+    legend+='<rect x="4" y="'+(y-8)+'" width="10" height="10" rx="2" fill="'+colors[i]+'"/><text x="18" y="'+y+'" fill="#6b7280" font-size="10" font-family="system-ui">'+lbl+' ('+alloc.data[i]+'%)</text>';
   });
-  var legendH=210+alloc.labels.length*18;
-  container.innerHTML='<svg viewBox="0 0 220 '+(legendH+10)+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:260px;display:block;margin:0 auto">'
-    +slices+'<circle cx="'+cx+'" cy="'+cy+'" r="30" fill="white"/>'
-    +legend+'</svg>';
+  var lh=210+li*18;
+  container.innerHTML='<svg viewBox="0 0 220 '+(lh+10)+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:240px;display:block;margin:0 auto">'+slices+'<circle cx="110" cy="100" r="30" fill="white"/>'+legend+'</svg>';
 }
-
-// ── LINE CHART ──
-function renderLine(container, pat, perfil){
+function renderLine(container,pat,perfil,bc){
   var rates={Conservador:.10,Moderado:.13,Arrojado:.16,Agressivo:.19};
-  var r=rates[perfil]||.13;
-  var rMensal=Math.pow(1+r,1/12)-1;
-  var anos=[];for(var i=0;i<=10;i++)anos.push(i);
-  var comV=anos.map(function(a){return Math.round(pat*Math.pow(1+r,a));});
-  var W=300,H=160,padL=54,padB=18,padT=10,padR=10;
-  var maxV=Math.max.apply(null,comV),minV=comV[0];
-  function px(i){return padL+(i/10)*(W-padL-padR);}
-  function py(v){return padT+(H-padT-padB)*(1-(v-minV)/(maxV-minV));}
+  var r=rates[perfil]||.13,rm=Math.pow(1+r,1/12)-1;
+  var comV=[];for(var i=0;i<=10;i++)comV.push(Math.round(pat*Math.pow(1+r,i)));
+  var W=340,H=160,pL=58,pB=22,pT=12,pR=16,maxV=Math.max.apply(null,comV),minV=comV[0];
+  function px(i){return pL+(i/10)*(W-pL-pR);}
+  function py(v){return pT+(H-pT-pB)*(1-(v-minV)/(maxV-minV));}
   var path1='M'+comV.map(function(v,i){return px(i)+' '+py(v);}).join(' L');
-  var area1='M'+px(0)+' '+py(comV[0])+' '+comV.map(function(v,i){return 'L'+px(i)+' '+py(v);}).join(' ')+' L'+px(10)+' '+(H-padB)+' L'+padL+' '+(H-padB)+' Z';
-  var ylabels='';
-  [0,.5,1].forEach(function(f){
-    var v=Math.round(minV+f*(maxV-minV));
-    var y=py(v);
-    var lbl=new Intl.NumberFormat('pt-BR',{notation:'compact',maximumFractionDigits:1}).format(v);
-    ylabels+='<text x="'+(padL-4)+'" y="'+(y+4)+'" text-anchor="end" fill="#9ca3af" font-size="9" font-family="system-ui">'+lbl+'</text>'
-            +'<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="#e0e4e8" stroke-width="0.5"/>';
-  });
-  var xlabels='';
-  [0,2,4,6,8,10].forEach(function(i){
-    xlabels+='<text x="'+px(i)+'" y="'+(H-padB+12)+'" text-anchor="middle" fill="#9ca3af" font-size="9" font-family="system-ui">'+(i===0?'Hoje':'Ano '+i)+'</text>';
-  });
-  var lastX=px(10),lastY=py(comV[10]);
-  var lastLbl=new Intl.NumberFormat('pt-BR',{notation:'compact',maximumFractionDigits:1}).format(comV[10]);
-  var accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#a8c23a';
-  container.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">'
-    +'<path d="'+area1+'" fill="rgba(168,194,58,.07)"/>'
-    +'<path d="'+path1+'" fill="none" stroke="'+accent+'" stroke-width="2" stroke-linejoin="round"/>'
-    +'<circle cx="'+lastX+'" cy="'+lastY+'" r="3.5" fill="'+accent+'"/>'
-    +'<text x="'+(lastX+6)+'" y="'+(lastY+4)+'" fill="'+accent+'" font-size="9" font-weight="bold" font-family="system-ui">'+lastLbl+'</text>'
-    +ylabels+xlabels+'</svg>'
-    +'<div style="margin-top:8px;font-size:.72rem;color:var(--muted);text-align:center">'
-    +'Crescimento mensal estimado: <strong style="color:var(--accent)">+'+(rMensal*100).toFixed(2).replace('.',',')+'%</strong>'
-    +'&nbsp;·&nbsp;Taxa anual: <strong style="color:var(--accent)">'+((r*100).toFixed(0))+'%</strong>'
-    +'<br><span style="font-size:.68rem">⚠ Projeção estimada. Rentabilidade passada não garante resultados futuros.</span></div>';
+  var area1='M'+px(0)+' '+py(comV[0])+' '+comV.map(function(v,i){return 'L'+px(i)+' '+py(v);}).join(' ')+' L'+px(10)+' '+(H-pB)+' L'+pL+' '+(H-pB)+' Z';
+  var ac=(bc&&bc[0])||'#a8c23a',ah=ac.replace('#','');
+  var ar=parseInt(ah.slice(0,2),16),ag=parseInt(ah.slice(2,4),16),ab=parseInt(ah.slice(4,6),16);
+  var yl='';[0,.5,1].forEach(function(f){var v=Math.round(minV+f*(maxV-minV)),y=py(v),l=new Intl.NumberFormat('pt-BR',{notation:'compact',maximumFractionDigits:1}).format(v);yl+='<text x="'+(pL-5)+'" y="'+(y+4)+'" text-anchor="end" fill="#9ca3af" font-size="9" font-family="system-ui">'+l+'</text><line x1="'+pL+'" y1="'+y+'" x2="'+(W-pR)+'" y2="'+y+'" stroke="#e8eaed" stroke-width="1"/>';});
+  var xl='';[0,2,4,6,8,10].forEach(function(i){xl+='<text x="'+px(i)+'" y="'+(H-pB+14)+'" text-anchor="middle" fill="#9ca3af" font-size="9" font-family="system-ui">'+(i===0?'Hoje':'Ano '+i)+'</text>';});
+  var lx=px(10),ly=py(comV[10]),ll=new Intl.NumberFormat('pt-BR',{notation:'compact',maximumFractionDigits:1}).format(comV[10]);
+  container.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><path d="'+area1+'" fill="rgba('+ar+','+ag+','+ab+',.08)"/><path d="'+path1+'" fill="none" stroke="'+ac+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="'+lx+'" cy="'+ly+'" r="4" fill="'+ac+'"/><text x="'+(lx+7)+'" y="'+(ly+4)+'" fill="'+ac+'" font-size="10" font-weight="bold" font-family="system-ui">'+ll+'</text>'+yl+xl+'</svg><div style="margin-top:10px;font-size:.74rem;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap"><span>📈 Taxa anual: <strong style="color:var(--text)">'+((r*100).toFixed(0))+'%</strong></span><span>📅 Mensal: <strong style="color:var(--text)">+'+(rm*100).toFixed(2).replace('.',',')+'%</strong></span></div><p style="margin-top:6px;font-size:.68rem;color:var(--dim)">⚠ Projeção estimada com base no perfil '+perfil+'. Rentabilidade passada não garante resultados futuros.</p>';
 }
-
-// ── COMENTÁRIOS ──
-function toggleComment(id){
-  var el = document.getElementById(id);
-  el.classList.toggle('open');
+function toggleComment(id){document.getElementById(id).classList.toggle('open');}
+async function sendComment(section,btn){
+  var wrap=btn.closest('.comment-area'),input=wrap.querySelector('.comment-input'),text=input.value.trim();
+  if(!text)return;
+  btn.disabled=true;btn.textContent='Enviando...';
+  var c=Array.isArray(proposal.comentarios)?proposal.comentarios:[];
+  c.push({secao:section,texto:text,enviado_em:new Date().toISOString()});
+  await sb.from('proposals').update({comentarios:c}).eq('hash',proposal.hash);
+  proposal.comentarios=c;
+  btn.style.display='none';wrap.querySelector('.comment-sent').style.display='block';input.value='';
 }
-
-async function sendComment(section, btn){
-  var wrap = btn.parentElement;
-  var input = wrap.querySelector('.comment-input');
-  var text = input.value.trim();
-  if(!text) return;
-
-  btn.disabled = true; btn.textContent = 'Enviando...';
-
-  var comentarios = Array.isArray(proposal.comentarios) ? proposal.comentarios : [];
-  comentarios.push({secao: section, texto: text, enviado_em: new Date().toISOString()});
-
-  await sb.from('proposals').update({comentarios: comentarios}).eq('hash', proposal.hash);
-  proposal.comentarios = comentarios;
-
-  btn.style.display = 'none';
-  wrap.querySelector('.comment-sent').style.display = 'block';
-  input.value = '';
-}
-
-// ── AÇÕES ──
+var actionConfig={aceita:{icon:'✅',title:'Aceitar esta proposta',sub:'Ótimo! Deixe uma mensagem opcional para seu assessor.',ph:'Mensagem opcional...'},em_discussao:{icon:'💬',title:'Quero discutir alguns pontos',sub:'Diga o que você gostaria de conversar antes de decidir.',ph:'Ex: Gostaria de entender melhor a alocação em renda variável...'},detalhes_solicitados:{icon:'📋',title:'Solicitar mais informações',sub:'Sobre quais aspectos gostaria de mais detalhes?',ph:'Ex: Quero entender melhor os riscos dos produtos sugeridos...'}};
 function handleAction(action){
-  currentAction = action;
-  var titles = {
-    aceita: 'Aceitar esta proposta',
-    em_discussao: 'Quero discutir alguns pontos',
-    detalhes_solicitados: 'Solicitar mais detalhes'
-  };
-  var subs = {
-    aceita: 'Ótimo! Você pode deixar uma mensagem opcional para seu assessor.',
-    em_discussao: 'Diga quais pontos você gostaria de discutir antes de decidir.',
-    detalhes_solicitados: 'Informe sobre quais aspectos gostaria de mais informações.'
-  };
-  var placeholders = {
-    aceita: 'Mensagem opcional para o assessor...',
-    em_discussao: 'Ex: Gostaria de entender melhor a parte de renda variável...',
-    detalhes_solicitados: 'Ex: Preciso entender melhor os riscos da proposta...'
-  };
-  document.getElementById('modalTitle').textContent = titles[action];
-  document.getElementById('modalSub').textContent = subs[action];
-  document.getElementById('modalText').placeholder = placeholders[action];
-  document.getElementById('modalText').value = '';
-  document.getElementById('actionModal').style.display = 'flex';
+  currentAction=action;var c=actionConfig[action];
+  document.getElementById('modalIcon').textContent=c.icon;
+  document.getElementById('modalTitle').textContent=c.title;
+  document.getElementById('modalSub').textContent=c.sub;
+  document.getElementById('modalText').placeholder=c.ph;
+  document.getElementById('modalText').value='';
+  document.getElementById('actionModal').style.display='flex';
 }
-
-function closeActionModal(){
-  document.getElementById('actionModal').style.display = 'none';
-  currentAction = null;
-}
-
+function closeActionModal(){document.getElementById('actionModal').style.display='none';currentAction=null;}
 async function confirmAction(){
-  if(!currentAction) return;
-  var btn = document.getElementById('modalConfirm');
-  btn.disabled = true; btn.textContent = 'Salvando...';
-  var msg = document.getElementById('modalText').value.trim();
-
-  await sb.from('proposals').update({
-    status: currentAction,
-    acao_cliente: currentAction,
-    mensagem_cliente: msg,
-    respondido_em: new Date().toISOString()
-  }).eq('hash', proposal.hash);
-
-  proposal.status = currentAction;
-  closeActionModal();
-
-  var labels = {
-    aceita: '✅ Proposta aceita! Seu assessor entrará em contato.',
-    em_discussao: '💬 Mensagem enviada! Seu assessor entrará em contato.',
-    detalhes_solicitados: '📋 Solicitação enviada! Seu assessor enviará mais detalhes.'
-  };
-  document.getElementById('footerLabel').textContent = labels[currentAction];
-  document.getElementById('footerLabel').style.color = 'var(--accent)';
-  if(currentAction === 'aceita'){
-    document.getElementById('btnAccept').disabled = true;
-    document.getElementById('btnAccept').style.opacity = '.5';
-  }
-  btn.disabled = false; btn.textContent = 'Confirmar';
+  if(!currentAction)return;
+  var btn=document.getElementById('modalConfirm');btn.disabled=true;btn.textContent='Salvando...';
+  var msg=document.getElementById('modalText').value.trim();
+  await sb.from('proposals').update({status:currentAction,acao_cliente:currentAction,mensagem_cliente:msg,respondido_em:new Date().toISOString()}).eq('hash',proposal.hash);
+  proposal.status=currentAction;renderStatusPill(currentAction);closeActionModal();
+  var labels={aceita:'✅ Proposta aceita — seu assessor entrará em contato!',em_discussao:'💬 Mensagem enviada! Seu assessor responderá em breve.',detalhes_solicitados:'📋 Solicitação enviada! Aguarde o retorno.'};
+  var lbl=document.getElementById('footerLabel');lbl.textContent=labels[currentAction];lbl.className='prop-footer-label done';
+  if(currentAction==='aceita'){document.getElementById('btnAccept').disabled=true;document.getElementById('btnAccept').style.opacity='.5';}
+  btn.disabled=false;btn.textContent='Confirmar';
 }
-
-function shareProposal(){
-  var url = window.location.href;
-  if(navigator.share){
-    navigator.share({title:'Minha Proposta de Investimento', url: url});
-  } else {
-    navigator.clipboard.writeText(url).then(function(){
-      alert('Link copiado para a área de transferência!');
-    });
-  }
-}
+function shareProposal(){var url=window.location.href;if(navigator.share)navigator.share({title:'Minha Proposta de Investimento',url:url});else navigator.clipboard.writeText(url).then(function(){alert('Link copiado!');});}
 </script>
 </body>
 </html>

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v3.4</title>
+<title>Captor — Pré-vendas eficiente e inteligente v3.5</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -59,24 +59,7 @@ header{height:54px;display:flex;align-items:center;justify-content:space-between
 .hpipe{width:1px;height:15px;background:var(--border2)}
 .hsub{font-size:.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.1em}
 .hver{font-size:.62rem;color:var(--lime);background:rgba(168,194,58,.12);border:1px solid rgba(168,194,58,.25);border-radius:4px;padding:2px 7px;font-weight:700}
-/* SLIDES INSTITUCIONAL */
-.sldeckgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.sldeck{background:var(--bg3);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .2s,transform .18s}
-.sldeck:hover{border-color:var(--lime);transform:translateY(-2px)}
-.sldeck-cover{background:linear-gradient(135deg,#1a1a1a 0%,#2a2a2a 100%);padding:18px 18px 14px;border-bottom:2px solid var(--lime);position:relative}
-.sldeck-num{position:absolute;top:12px;right:14px;width:22px;height:22px;border-radius:50%;background:var(--lime);color:#1a1a1a;font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center}
-.sldeck-rotulo{font-size:.6rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
-.sldeck-title{font-size:.9rem;font-weight:800;color:var(--white);line-height:1.3}
-.sldeck-body{padding:14px 16px}
-.sldeck-content{font-size:.76rem;color:var(--muted);line-height:1.65}
-.sldeck-visual{margin-top:8px;font-size:.67rem;color:var(--dim);background:var(--bg2);border-radius:5px;padding:6px 9px;font-style:italic}
-/* SLIDE 1 RESUMO EXECUTIVO */
-.sldeck-exec{background:linear-gradient(135deg,#1a2010 0%,#222 100%);border-color:var(--lime)}
-.sldeck-exec .sldeck-cover{background:linear-gradient(135deg,#0e1a06 0%,#1a2810 100%);border-bottom:2px solid var(--lime)}
-.exec-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.exec-stat{background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.2);border-radius:6px;padding:8px 10px;text-align:center}
-.exec-stat-val{font-size:1rem;font-weight:800;color:var(--lime);letter-spacing:-.02em}
-.exec-stat-lbl{font-size:.58rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.06em}
+
 .hrr{display:flex;align-items:center;gap:9px}
 .ntabs{display:flex;gap:2px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:3px}
 .ntab{padding:5px 14px;border-radius:6px;border:none;background:transparent;color:var(--muted);font-family:var(--f);font-size:.74rem;font-weight:600;cursor:pointer;transition:all .18s}
@@ -192,8 +175,17 @@ header{height:54px;display:flex;align-items:center;justify-content:space-between
 .kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px}
 .kpiv{font-size:1.6rem;font-weight:800;color:var(--lime);letter-spacing:-.03em}
 .kpil{font-size:.64rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
-.dashgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-.dashch{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px}
+.dash-status{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:4px;font-size:.65rem;font-weight:700}
+.ds-rascunho{background:rgba(255,255,255,.06);color:var(--dim)}
+.ds-enviada{background:rgba(59,130,246,.12);color:#60a5fa}
+.ds-visualizada{background:rgba(168,194,58,.12);color:var(--lime)}
+.ds-aprovado_sdr{background:rgba(168,194,58,.2);color:var(--lime2)}
+.ds-aceita{background:rgba(34,197,94,.12);color:#4ade80}
+.ds-detalhes_solicitados{background:rgba(251,191,36,.12);color:#fbbf24}
+.ds-expirada{background:rgba(239,68,68,.1);color:#f87171}
+.dash-link{background:transparent;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--muted);font-size:.65rem;cursor:pointer;font-family:var(--f);transition:all .15s}
+.dash-link:hover{border-color:var(--lime);color:var(--lime)}
+.dash-stars{color:#fbbf24;font-size:.75rem;letter-spacing:1px}
 .histtbl{width:100%;border-collapse:collapse}
 .histtbl th{text-align:left;padding:7px 10px;font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--border)}
 .histtbl td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:.76rem;color:var(--text)}
@@ -398,7 +390,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
       <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
       <button class="lbtn" id="lBtn" onclick="doAuth()">Entrar</button>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v3.4</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v3.5</div>
     </div>
   </div>
 </div>
@@ -410,7 +402,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver">v3.4</div>
+      <div class="hver">v3.5</div>
     </div>
     <div class="hrr">
       <div class="ntabs">
@@ -527,28 +519,48 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 
   <!-- DASHBOARD -->
   <div id="dashview">
-    <div class="dht">Dashboard de Performance</div>
-    <div class="dhs">Impacto do Gerador Consultivo — últimos 30 dias</div>
+    <div class="dht">Dashboard de Propostas</div>
+    <div class="dhs" id="dashSubtitle">Carregando...</div>
     <div class="kpirow">
-      <div class="kpi"><div class="kpiv" id="kG">0</div><div class="kpil">Reuniões geradas</div></div>
-      <div class="kpi"><div class="kpiv">—</div><div class="kpil">Taxa de conversão</div></div>
-      <div class="kpi"><div class="kpiv">—</div><div class="kpil">Ticket médio</div></div>
-      <div class="kpi"><div class="kpiv">—</div><div class="kpil">Dias até fechar</div></div>
+      <div class="kpi"><div class="kpiv" id="kTotal">—</div><div class="kpil">Total enviadas</div></div>
+      <div class="kpi"><div class="kpiv" id="kAceitas">—</div><div class="kpil">Aceitas</div></div>
+      <div class="kpi"><div class="kpiv" id="kTaxa">—</div><div class="kpil">Taxa de conversão</div></div>
+      <div class="kpi"><div class="kpiv" id="kPendentes">—</div><div class="kpil">Aguardando resposta</div></div>
     </div>
-    <div class="dashgrid">
-      <div class="dashch" id="dashChConv"></div>
-      <div class="dashch" id="dashChTicket"></div>
-    </div>
-    <div class="block" style="margin-bottom:0">
-      <div class="blkhd" style="cursor:default"><div class="blkico">📋</div><div class="blktit">Histórico de reuniões geradas</div></div>
-      <div class="blkbody open">
-        <table class="histtbl"><thead><tr><th>Prospect</th><th>Analista</th><th>Patrimônio</th><th>Perfil</th><th>Data</th><th>Status</th></tr></thead>
-        <tbody id="histBody"><tr><td colspan="6" style="color:var(--dim);text-align:center;padding:24px 0">Nenhuma reunião gerada ainda</td></tr></tbody></table>
+    <div class="block" style="margin-bottom:16px">
+      <div class="blkhd" style="cursor:default"><div class="blkico">📋</div><div class="blktit">Propostas</div>
+        <div style="margin-left:auto;display:flex;gap:6px;margin-right:8px">
+          <select id="dashFilter" class="fsel" style="width:auto;padding:4px 24px 4px 8px;font-size:.72rem" onchange="renderDashTable()">
+            <option value="">Todos os status</option>
+            <option value="rascunho">Rascunho</option>
+            <option value="enviada">Enviada</option>
+            <option value="visualizada">Visualizada</option>
+            <option value="aprovado_sdr">Aprovada SDR</option>
+            <option value="aceita">Aceita</option>
+            <option value="detalhes_solicitados">Dúvidas</option>
+            <option value="expirada">Expirada</option>
+          </select>
+        </div>
+      </div>
+      <div class="blkbody open" style="padding:0">
+        <table class="histtbl" id="dashTable">
+          <thead><tr>
+            <th>Cliente</th>
+            <th>Patrimônio</th>
+            <th>Perfil</th>
+            <th>Status</th>
+            <th>Enviada</th>
+            <th>Resposta</th>
+            <th>⭐</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="dashBody"><tr><td colspan="8" style="color:var(--dim);text-align:center;padding:24px 0">Carregando...</td></tr></tbody>
+        </table>
       </div>
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v3.4</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v3.5</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -1387,7 +1399,7 @@ function showTab(tab,btn){
   btn.classList.add('active');
   document.getElementById('genView').style.display=tab==='gen'?'grid':'none';
   document.getElementById('dashview').style.display=tab==='dash'?'block':'none';
-  if(tab==='dash'){updateDash();renderDashSVG();}
+  if(tab==='dash'){updateDash();}
 }
 
 // ── GENERATE ──
@@ -1918,70 +1930,80 @@ function renderLine(container,pat,perfil){
 
 
 // ── DASHBOARD ──
-function updateDash(){
-  document.getElementById('kG').textContent=hist.length;
-  var tb=document.getElementById('histBody');
-  if(!hist.length){tb.innerHTML='<tr><td colspan="6" style="color:var(--dim);text-align:center;padding:24px 0">Nenhuma reunião gerada ainda</td></tr>';return;}
-  tb.innerHTML=hist.slice(0,15).map(function(h){
-    return '<tr><td style="font-weight:600">'+h.nome+'</td>'
-      +'<td style="color:var(--muted)">'+h.analista+'</td>'
-      +'<td>'+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(h.pat)+'</td>'
-      +'<td><span class="badge bmuted">'+h.perfil+'</span></td>'
-      +'<td style="color:var(--muted)">'+h.data+'</td>'
-      +'<td><span class="badge '+(h.status==='Convertido'?'blime':'bgold')+'">'+h.status+'</span></td></tr>';
+var dashProposals = [];
+
+async function updateDash(){
+  if(!supabaseUserId) return;
+  document.getElementById('dashSubtitle').textContent = 'Carregando...';
+  var {data, error} = await sb.from('proposals').select('*').eq('user_id', supabaseUserId).order('created_at', {ascending: false});
+  if(error){ document.getElementById('dashSubtitle').textContent = 'Erro ao carregar propostas.'; return; }
+  dashProposals = data || [];
+
+  // KPIs
+  var total = dashProposals.filter(function(p){ return p.status !== 'rascunho'; }).length;
+  var aceitas = dashProposals.filter(function(p){ return p.status === 'aceita'; }).length;
+  var pendentes = dashProposals.filter(function(p){ return p.status === 'enviada' || p.status === 'visualizada'; }).length;
+  var taxa = total > 0 ? Math.round(aceitas/total*100) + '%' : '—';
+
+  document.getElementById('kTotal').textContent = total || '—';
+  document.getElementById('kAceitas').textContent = aceitas || '—';
+  document.getElementById('kTaxa').textContent = taxa;
+  document.getElementById('kPendentes').textContent = pendentes || '—';
+  document.getElementById('dashSubtitle').textContent = total + ' proposta' + (total !== 1 ? 's' : '') + ' · atualizado agora';
+
+  renderDashTable();
+}
+
+function renderDashTable(){
+  var filter = document.getElementById('dashFilter').value;
+  var rows = dashProposals.filter(function(p){ return !filter || p.status === filter; });
+  var tb = document.getElementById('dashBody');
+  var patFmt = function(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(v); };
+  var dateFmt = function(d){ return d ? new Date(d).toLocaleDateString('pt-BR') : '—'; };
+  var statusLabels = {rascunho:'Rascunho',enviada:'Enviada',visualizada:'Visualizada',aprovado_sdr:'Aprovada SDR',aceita:'Aceita',detalhes_solicitados:'Dúvidas',expirada:'Expirada'};
+
+  if(!rows.length){
+    tb.innerHTML = '<tr><td colspan="8" style="color:var(--dim);text-align:center;padding:24px 0">'+(filter?'Nenhuma proposta com este status.':'Nenhuma proposta enviada ainda.')+'</td></tr>';
+    return;
+  }
+
+  var baseUrl = window.location.href.replace('index.html','').replace(/\/$/, '');
+  tb.innerHTML = rows.map(function(p){
+    var stars = p.feedback_rating ? '★'.repeat(p.feedback_rating) + '☆'.repeat(5-p.feedback_rating) : '—';
+    var propUrl = baseUrl + '/proposta.html#' + p.hash;
+    var isExpired = new Date(p.expires_at) < new Date();
+    var status = isExpired && p.status === 'enviada' ? 'expirada' : p.status;
+    return '<tr>'
+      +'<td style="font-weight:600">'+p.cliente_nome+'</td>'
+      +'<td style="color:var(--muted)">'+patFmt(p.cliente_pat)+'</td>'
+      +'<td><span class="badge bmuted">'+p.cliente_perfil+'</span></td>'
+      +'<td><span class="dash-status ds-'+status+'">'+(statusLabels[status]||status)+'</span></td>'
+      +'<td style="color:var(--muted)">'+dateFmt(p.created_at)+'</td>'
+      +'<td style="color:var(--muted)">'+dateFmt(p.respondido_em)+'</td>'
+      +'<td><span class="dash-stars" title="'+(p.feedback_texto||'')+'">'+stars+'</span></td>'
+      +'<td><button class="dash-link" onclick="copyDashLink(\''+propUrl+'\')">🔗</button></td>'
+      +'</tr>';
   }).join('');
 }
 
-function renderDashSVG(){
-  // Bar chart: conversão
-  var labels=['Jan','Fev','Mar','Abr','Mai','Jun'];
-  var com=[42,48,55,51,62,68];
-  var sem=[31,33,35,34,37,36];
-  var W=320,H=140,padL=28,padB=24,padT=10,padR=10;
-  var n=labels.length;var bw=18;var gap=((W-padL-padR)/n);
-  var maxV=70;
-  function bh(v){return (H-padT-padB)*(v/maxV);}
-  function bx(i){return padL+i*gap+gap/2;}
-  var bars='';
-  labels.forEach(function(lbl,i){
-    var x=bx(i);
-    bars+='<rect x="'+(x-bw)+'" y="'+(H-padB-bh(com[i]))+'" width="'+bw+'" height="'+bh(com[i])+'" rx="2" fill="#a8c23a"/>';
-    bars+='<rect x="'+x+'" y="'+(H-padB-bh(sem[i]))+'" width="'+bw+'" height="'+bh(sem[i])+'" rx="2" fill="#3a3a3a"/>';
-    bars+='<text x="'+(x-bw/2)+'" y="'+(H-padB+14)+'" text-anchor="middle" fill="#666" font-size="9" font-family="system-ui">'+lbl+'</text>';
-  });
-  var leg='<rect x="'+padL+'" y="'+(H+2)+'" width="10" height="8" rx="1" fill="#a8c23a"/><text x="'+(padL+14)+'" y="'+(H+10)+'" fill="#a0a0a0" font-size="9" font-family="system-ui">Com ferramenta</text>'
-         +'<rect x="'+(padL+100)+'" y="'+(H+2)+'" width="10" height="8" rx="1" fill="#3a3a3a"/><text x="'+(padL+114)+'" y="'+(H+10)+'" fill="#a0a0a0" font-size="9" font-family="system-ui">Sem ferramenta</text>';
-  var yls='';[0,35,70].forEach(function(v){var y=H-padB-bh(v);yls+='<text x="'+(padL-3)+'" y="'+(y+3)+'" text-anchor="end" fill="#555" font-size="9" font-family="system-ui">'+v+'%</text><line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="#333" stroke-width="0.5"/>';});
-  var c1=document.getElementById('dashChConv');
-  if(c1)c1.innerHTML='<div class="charttitle">Taxa de conversão % (simulado)</div><svg viewBox="0 0 '+W+' '+(H+20)+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">'+yls+bars+leg+'</svg>';
-
-  // Line chart: ticket
-  var tick=[820,950,1100,1050,1320,1480];
-  var W2=320,H2=140,pL=32,pB=24,pT=10,pR=10;
-  var mn=Math.min.apply(null,tick),mx=Math.max.apply(null,tick);
-  function px2(i){return pL+i*(W2-pL-pR)/(tick.length-1);}
-  function py2(v){return pT+(H2-pT-pB)*(1-(v-mn)/(mx-mn));}
-  var pts=tick.map(function(v,i){return px2(i)+','+py2(v);}).join(' ');
-  var area2='M'+px2(0)+','+py2(tick[0])+' '+tick.map(function(v,i){return 'L'+px2(i)+','+py2(v);}).join(' ')+' L'+px2(tick.length-1)+','+(H2-pB)+' L'+pL+','+(H2-pB)+' Z';
-  var dots=tick.map(function(v,i){return '<circle cx="'+px2(i)+'" cy="'+py2(v)+'" r="3" fill="#a8c23a"/>';}).join('');
-  var xl2=labels.map(function(l,i){return '<text x="'+px2(i)+'" y="'+(H2-pB+14)+'" text-anchor="middle" fill="#666" font-size="9" font-family="system-ui">'+l+'</text>';}).join('');
-  var yl2='';[mn,Math.round((mn+mx)/2),mx].forEach(function(v){var y=py2(v);yl2+='<text x="'+(pL-3)+'" y="'+(y+3)+'" text-anchor="end" fill="#555" font-size="9" font-family="system-ui">'+Math.round(v/1000)+'k</text><line x1="'+pL+'" y1="'+y+'" x2="'+(W2-pR)+'" y2="'+y+'" stroke="#333" stroke-width="0.5"/>';});
-  var c2=document.getElementById('dashChTicket');
-  if(c2)c2.innerHTML='<div class="charttitle">Ticket médio novos clientes — R$ (simulado)</div><svg viewBox="0 0 '+W2+' '+H2+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><path d="'+area2+'" fill="rgba(168,194,58,.07)"/><polyline points="'+pts+'" fill="none" stroke="#a8c23a" stroke-width="2" stroke-linejoin="round"/>'+dots+xl2+yl2+'</svg>';
+function copyDashLink(url){
+  navigator.clipboard.writeText(url).then(function(){ alert('Link copiado!'); });
 }
 </script>
 
 <!-- ╔══════════════════════════════════════════════════════╗
      ║                    CHANGELOG                         ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v3.4 — Backlog completo                              ║
-     ║        Validação: alerta mostra só campos vazios     ║
-     ║        Highlight vermelho nos campos não preenchidos ║
-     ║        Highlight some ao preencher o campo           ║
-     ║        proposta.html fecha aba após aprovação SDR    ║
-     ║        resumoPerfil e argumentos na 2ª pessoa        ║
-     ║        Botões: remove "Quero discutir" e "Compartilhar"║
-     ║        "Mais detalhes" → "Dúvidas"                   ║
+     ║ v3.5 — Dashboard real + Feedback na proposta         ║
+     ║        Dashboard substituído por dados reais         ║
+     ║        KPIs: total, aceitas, taxa, pendentes         ║
+     ║        Lista de propostas com filtro por status      ║
+     ║        Badges coloridos por status                   ║
+     ║        Estrelas de feedback exibidas no dashboard    ║
+     ║        Feedback 1-5 estrelas + comentário            ║
+     ║        na proposta.html (só clientes, não SDR)       ║
+     ║        Slides institucionais removidos               ║
+     ║        SQL: feedback_rating, feedback_texto          ║
      ╠══════════════════════════════════════════════════════╣
      ║ v3.2 — Modo SDR na proposta + fluxo de aprovação    ║
      ║        Texto barra: "Revise e aprove antes de        ║
@@ -2058,7 +2080,7 @@ function renderDashSVG(){
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ BACKLOG — v3.4                                       ║
+     ║ BACKLOG — v3.5                                       ║
      ║  Validação de campos melhorada no formulário:        ║
      ║  · Alerta mostra apenas os campos não preenchidos    ║
      ║    (ex: "Preencha: Idade" em vez de listar tudo)     ║

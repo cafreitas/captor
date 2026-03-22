@@ -140,6 +140,22 @@ body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-sm
 .prop-legal-inner{max-width:800px;margin:0 auto}
 .prop-legal p{font-size:.7rem;color:var(--dim);line-height:1.7;margin-bottom:4px}
 .prop-legal strong{color:var(--muted)}
+
+/* FEEDBACK */
+.feedback-section{max-width:800px;margin:0 auto;padding:0 28px 32px}
+.feedback-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:24px;text-align:center}
+.feedback-title{font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:4px}
+.feedback-sub{font-size:.78rem;color:var(--muted);margin-bottom:18px}
+.stars-row{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
+.star-btn{background:transparent;border:none;font-size:2rem;cursor:pointer;transition:transform .15s;line-height:1;color:#d1d5db}
+.star-btn:hover,.star-btn.active{color:#fbbf24;transform:scale(1.15)}
+.feedback-comment{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;font-family:var(--f);font-size:.84rem;color:var(--text);resize:vertical;min-height:68px;outline:none;transition:border-color .2s;line-height:1.5;margin-bottom:10px}
+.feedback-comment:focus{border-color:var(--accent)}
+.feedback-submit{padding:9px 24px;background:var(--accent);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s}
+.feedback-submit:hover{background:var(--accent2)}
+.feedback-submit:disabled{opacity:.4;cursor:not-allowed}
+.feedback-done{font-size:.86rem;color:var(--accent2);font-weight:600;margin-top:8px;display:none}
+@media print{.feedback-section{display:none!important}}
 @media print{
   #readProgress,.prop-header,.prop-footer-sticky,.print-btn,.comment-wrap,.action-modal-overlay{display:none!important}
   body{background:#fff;font-size:12px}
@@ -317,6 +333,25 @@ body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-sm
       <div class="prop-section-body"><div class="contact-card" id="contactCard"></div></div>
     </div>
   </main>
+  <!-- FEEDBACK -->
+  <div class="feedback-section" id="feedbackSection" style="display:none">
+    <div class="feedback-card">
+      <div class="feedback-title">O que você achou desta proposta?</div>
+      <div class="feedback-sub">Sua opinião ajuda a melhorar o atendimento</div>
+      <div class="stars-row" id="starsRow">
+        <button class="star-btn" data-v="1" onclick="setRating(1)">★</button>
+        <button class="star-btn" data-v="2" onclick="setRating(2)">★</button>
+        <button class="star-btn" data-v="3" onclick="setRating(3)">★</button>
+        <button class="star-btn" data-v="4" onclick="setRating(4)">★</button>
+        <button class="star-btn" data-v="5" onclick="setRating(5)">★</button>
+      </div>
+      <textarea class="feedback-comment" id="feedbackText" placeholder="Comentário opcional — o que poderia ser melhor?"></textarea>
+      <br>
+      <button class="feedback-submit" id="feedbackSubmit" onclick="submitFeedback()" disabled>Enviar avaliação</button>
+      <div class="feedback-done" id="feedbackDone">✓ Obrigado pelo seu feedback!</div>
+    </div>
+  </div>
+
   <footer class="prop-legal">
     <div class="prop-legal-inner">
       <p>Proposta gerada pela plataforma <strong>Captor</strong> · <span id="legalCompany"></span></p>
@@ -451,7 +486,36 @@ function render(){
   document.getElementById('contactCard').innerHTML='<div class="contact-avatar">'+nomeEmp.charAt(0).toUpperCase()+'</div><div><div class="contact-name">'+nomeEmp+'</div>'+(cred?'<div class="contact-role">Assessoria de Investimentos</div><div class="contact-company">'+cred+'</div>':'')+'</div>';
   document.getElementById('legalCompany').textContent=nomeEmp+(cred?' · '+cred:'');
   document.getElementById('legalDate').textContent=new Date(p.created_at).toLocaleDateString('pt-BR');
+  // Mostrar feedback só para clientes (não SDR) e se ainda não avaliou
+  if(!isSdr && !proposal.feedback_rating){
+    document.getElementById('feedbackSection').style.display='block';
+  }
+
   document.getElementById('propContent').style.display='block';
+}
+
+// ── FEEDBACK ──
+var selectedRating = 0;
+function setRating(v){
+  selectedRating = v;
+  document.querySelectorAll('.star-btn').forEach(function(b){
+    b.classList.toggle('active', parseInt(b.dataset.v) <= v);
+  });
+  document.getElementById('feedbackSubmit').disabled = false;
+}
+async function submitFeedback(){
+  var btn = document.getElementById('feedbackSubmit');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  var texto = document.getElementById('feedbackText').value.trim();
+  await sb.from('proposals').update({
+    feedback_rating: selectedRating,
+    feedback_texto: texto || null,
+    feedback_em: new Date().toISOString()
+  }).eq('hash', proposal.hash);
+  btn.style.display = 'none';
+  document.getElementById('feedbackDone').style.display = 'block';
+  document.querySelectorAll('.star-btn').forEach(function(b){ b.disabled = true; });
+  document.getElementById('feedbackText').disabled = true;
 }
 function renderDonut(container,alloc,bc){
   var def=['#a8c23a','#7a9a22','#4a6a0a','#c8e050','#ddf070','#e8f590','#5a8a10','#b0d030','#90b820'];

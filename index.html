@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v3.2</title>
+<title>Captor — Pré-vendas eficiente e inteligente v3.4</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -330,6 +330,9 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 .prop-inline-approve{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);gap:10px}
 .prop-inline-approve-hint{font-size:.72rem;color:var(--muted)}
 
+.fi.field-error,.fsel.field-error{border-color:#e05555!important;background:rgba(224,85,85,.06)}
+.fi.field-error:focus,.fsel.field-error:focus{border-color:#e05555!important}
+
 /* FOOTER */
 .footer{text-align:center;padding:13px;font-size:.62rem;color:var(--dim);border-top:1px solid var(--border);background:var(--bg2)}
 .footer strong{color:var(--lime)}
@@ -395,7 +398,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
       <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
       <button class="lbtn" id="lBtn" onclick="doAuth()">Entrar</button>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v3.2</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v3.4</div>
     </div>
   </div>
 </div>
@@ -407,7 +410,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver">v3.2</div>
+      <div class="hver">v3.4</div>
     </div>
     <div class="hrr">
       <div class="ntabs">
@@ -433,10 +436,10 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="sbt">Perfil do Prospect</div>
       <div class="sbs">Preencha os dados para gerar o roteiro</div>
 
-      <div class="fg"><label class="fl">Nome</label><input class="fi" id="fNome" placeholder="Ex: Ricardo Almeida"></div>
+      <div class="fg"><label class="fl">Nome</label><input class="fi" id="fNome" placeholder="Ex: Ricardo Almeida" oninput="clearFieldError(this)"></div>
       <div class="fg">
         <label class="fl">Patrimônio estimado</label>
-        <input class="fi" id="fPat" type="text" placeholder="R$ 0" oninput="maskPat(this)" autocomplete="off">
+        <input class="fi" id="fPat" type="text" placeholder="R$ 0" oninput="maskPat(this);clearFieldError(this)" autocomplete="off">
         <div class="fhint">Imóveis + investimentos + reservas</div>
       </div>
       <div class="fg">
@@ -446,17 +449,17 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
           <div class="ac-drop" id="acDrop"></div>
         </div>
       </div>
-      <div class="fg"><label class="fl">Idade</label><input class="fi" id="fIdade" type="number" placeholder="Ex: 45" min="18" max="90"></div>
+      <div class="fg"><label class="fl">Idade</label><input class="fi" id="fIdade" type="number" placeholder="Ex: 45" min="18" max="90" oninput="clearFieldError(this)"></div>
       <div class="fg">
         <label class="fl">Perfil de risco</label>
-        <select class="fsel" id="fPerfil">
+        <select class="fsel" id="fPerfil" onchange="clearFieldError(this)">
           <option value="">Selecione...</option>
           <option>Conservador</option><option>Moderado</option><option>Arrojado</option><option>Agressivo</option>
         </select>
       </div>
       <div class="fg">
         <label class="fl">Objetivo principal</label>
-        <select class="fsel" id="fObj">
+        <select class="fsel" id="fObj" onchange="clearFieldError(this)">
           <option value="">Selecione...</option>
           <option>Aposentadoria / Independência financeira</option>
           <option>Sucessão patrimonial / família</option>
@@ -545,7 +548,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v3.2</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v3.4</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -770,6 +773,11 @@ function acKey(e){
 function acHighlight(items){
   items.forEach(function(el,i){ el.classList.toggle('sel', i===acIdx); });
   if(acIdx >= 0 && items[acIdx]) items[acIdx].scrollIntoView({block:'nearest'});
+}
+
+function clearFieldError(el){
+  el.style.borderColor='';
+  el.classList.remove('field-error');
 }
 
 // ── MÁSCARA PATRIMÔNIO ──
@@ -1395,8 +1403,33 @@ async function generate(){
   var ctx=document.getElementById('fCtx').value.trim();
   var currentAlloc=getSliderAlloc();
   if(!nome||!pat||!prof||!idade||!perfil||!obj){
-    alert('Preencha: Nome, Patrimônio, Profissão, Idade, Perfil e Objetivo.');return;
+    // Highlight campos vazios
+    var fields=[
+      {id:'fNome',val:nome,label:'Nome'},
+      {id:'fPat',val:pat,label:'Patrimônio'},
+      {id:'fProf',val:prof,label:'Profissão'},
+      {id:'fIdade',val:idade,label:'Idade'},
+      {id:'fPerfil',val:perfil,label:'Perfil de risco'},
+      {id:'fObj',val:obj,label:'Objetivo'}
+    ];
+    var missing=[];
+    fields.forEach(function(f){
+      var el=document.getElementById(f.id);
+      if(!f.val){
+        missing.push(f.label);
+        if(el){el.style.borderColor='#e05555';el.classList.add('field-error');}
+      } else {
+        if(el){el.style.borderColor='';el.classList.remove('field-error');}
+      }
+    });
+    alert('Preencha: '+missing.join(', ')+'.');
+    return;
   }
+  // Limpa highlights se tudo ok
+  ['fNome','fPat','fProf','fIdade','fPerfil','fObj'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el){el.style.borderColor='';el.classList.remove('field-error');}
+  });
   document.getElementById('emptyState').style.display='none';
   document.getElementById('outArea').style.display='none';
   document.getElementById('loadingState').style.display='flex';
@@ -1447,7 +1480,7 @@ async function generate(){
     )
     +'Use os mesmos 9 labels de classes de ativos.\n\n'
     +'Responda SOMENTE JSON válido, sem markdown, sem texto antes ou depois:\n'
-    +'{"resumoPerfil":"2-3 frases sobre o perfil","roteiro":[{"titulo":"...","descricao":"...","dica":"...","minutos":5}],"perguntas":[{"pergunta":"...","motivo":"..."}],"argumentos":[{"titulo":"...","corpo":"...","frase_gancho":"..."}],"slides":[{"numero":1,"rotulo":"Capa","titulo":"...","conteudo":"...","visual":"..."}],"alocacao":{"labels":["Pós Fixado","Inflação","Prefixado","Multimercados","Renda Variável BR","FII","Alternativos","RF Global","RV Global"],"data":[70,10,5,5,2,0,0,3,5]}}\n\n'
+    +'{"resumoPerfil":"2-3 frases dirigidas ao cliente na 2ª pessoa (\'Você é...\'), tom consultivo e humano","roteiro":[{"titulo":"...","descricao":"...","dica":"...","minutos":5}],"perguntas":[{"pergunta":"...","motivo":"..."}],"argumentos":[{"titulo":"...","corpo":"texto na 2ª pessoa dirigido ao cliente (\'Você se beneficia de...\')","frase_gancho":"..."}],"slides":[{"numero":1,"rotulo":"Capa","titulo":"...","conteudo":"...","visual":"..."}],"alocacao":{"labels":["Pós Fixado","Inflação","Prefixado","Multimercados","Renda Variável BR","FII","Alternativos","RF Global","RV Global"],"data":[70,10,5,5,2,0,0,3,5]}}\n\n'
     +'Gere exatamente: 6 etapas no roteiro, 5 perguntas, 3 argumentos, 6 slides (Capa / Contexto / Diagnóstico / Estratégia Captor / Resultado Projetado / Próximos Passos). Seja específico para o perfil real.';
 
   try{
@@ -1658,7 +1691,7 @@ function buildProposalBlock(data, meta, patFmt){
 
   // Botão aprovar + link para revisar na proposta
   html += '<div class="prop-inline-approve">'
-    +'<span class="prop-inline-approve-hint" id="approveHint">Salve o rascunho para revisar a proposta como o cliente vai ver</span>'
+    +'<span class="prop-inline-approve-hint" id="approveHint"></span>'
     +'<button class="pbtn pbtn-approve" id="btnApprove" onclick="saveDraftAndPreview()">'
     +'<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
     +' Salvar e revisar proposta'
@@ -1941,6 +1974,15 @@ function renderDashSVG(){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║                    CHANGELOG                         ║
      ╠══════════════════════════════════════════════════════╣
+     ║ v3.4 — Backlog completo                              ║
+     ║        Validação: alerta mostra só campos vazios     ║
+     ║        Highlight vermelho nos campos não preenchidos ║
+     ║        Highlight some ao preencher o campo           ║
+     ║        proposta.html fecha aba após aprovação SDR    ║
+     ║        resumoPerfil e argumentos na 2ª pessoa        ║
+     ║        Botões: remove "Quero discutir" e "Compartilhar"║
+     ║        "Mais detalhes" → "Dúvidas"                   ║
+     ╠══════════════════════════════════════════════════════╣
      ║ v3.2 — Modo SDR na proposta + fluxo de aprovação    ║
      ║        Texto barra: "Revise e aprove antes de        ║
      ║        publicar"                                     ║
@@ -2016,16 +2058,22 @@ function renderDashSVG(){
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ BACKLOG — v3.2                                       ║
-     ║  1. Texto barra: "Revise e aprove a proposta do      ║
-     ║     cliente antes de publicar"                       ║
-     ║  2. Remover "Sumário executivo" do bloco inline      ║
-     ║  3. Remover "Benefícios para o cliente" do bloco     ║
-     ║  4. Modo SDR na proposta.html: quando assessor       ║
-     ║     logado abre o link, vê campos editáveis e        ║
-     ║     botão de aprovação. Cliente (não logado) vê      ║
-     ║     versão de leitura normal. Aprovação na           ║
-     ║     proposta.html habilita "Publicar" no Captor.     ║
+     ║ BACKLOG — v3.4                                       ║
+     ║  Validação de campos melhorada no formulário:        ║
+     ║  · Alerta mostra apenas os campos não preenchidos    ║
+     ║    (ex: "Preencha: Idade" em vez de listar tudo)     ║
+     ║  · Highlight visual (borda vermelha) nos campos      ║
+     ║    vazios após tentativa de envio                    ║
+     ║  · Highlight some automaticamente ao preencher       ║
+     ║  Após aprovação SDR na proposta.html:                ║
+     ║  · Fechar a aba/janela automaticamente               ║
+     ║  Voz do sumário executivo:                           ║
+     ║  · Prompt instruído a gerar resumoPerfil na 2ª       ║
+     ║    pessoa ("Você é..."), dirigido ao cliente         ║
+     ║  · Revisão do tom geral da proposta.html             ║
+     ║  Botões da proposta.html:                            ║
+     ║  · Remover "Quero discutir" e "Compartilhar"         ║
+     ║  · "Mais detalhes" → "Dúvidas"                       ║
      ╚══════════════════════════════════════════════════════╝ -->
 </body>
 </html>

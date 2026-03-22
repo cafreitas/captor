@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v2.5</title>
+<title>Captor — Pré-vendas eficiente e inteligente v2.6</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -349,7 +349,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
       <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
       <button class="lbtn" id="lBtn" onclick="doAuth()">Entrar</button>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v2.5</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v2.6</div>
     </div>
   </div>
 </div>
@@ -361,7 +361,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver">v2.5</div>
+      <div class="hver">v2.6</div>
     </div>
     <div class="hrr">
       <div class="ntabs">
@@ -499,7 +499,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v2.5</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v2.6</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -1380,7 +1380,7 @@ async function generate(){
 
   var prompt=(empresaPrompt
     ? 'Você é assessor sênior da '+nomeEmpresa+'. '+empresaPrompt
-    : 'Você é assessor sênior da Captor Investimentos (XP credenciada, +R$12bi custódia, +15mil clientes, Nº1 NPS 2024). Portfólio completo: investimentos, renda variável, crédito, câmbio, seguros, wealth planning, offshore, Aurum Family Office, M&A.'
+    : 'Você é assessor sênior da Captor Investimentos (XP credenciada, +R$12bi custódia, +15mil clientes, Nº1 NPS 2024). Portfólio completo: investimentos, renda variável, crédito, câmbio, seguros, wealth planning, offshore, Captor Family Office, M&A.'
   )+'\n\n'
     +'Gere roteiro consultivo COMPLETO para:\n'
     +'Nome: '+nome+' | Patrimônio: '+patFmt+' | Profissão: '+prof+' | Idade: '+idade+' anos | Perfil: '+perfil+' | Objetivo: '+obj+' | Assessoria atual: '+(ass||'não informado')+' | Contexto: '+(ctx||'nenhum')+'\n'
@@ -1925,6 +1925,9 @@ function renderDashSVG(){
 
 <!-- ╔══════════════════════════════════════════════════════╗
      ║                    CHANGELOG                         ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ v2.6 — "Aurum Family Office" → "Captor Family Office"║
+     ║        Padronização do prompt padrão da IA           ║
      ╠══════════════════════════════════════════════════════╣
      ║ v2.5 — Label "Profissão / Setor" → "Profissão"       ║
      ║        Assessoria atual vira autocomplete            ║

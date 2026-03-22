@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v2.9</title>
+<title>Captor — Pré-vendas eficiente e inteligente v3.0</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -299,6 +299,24 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 .proposal-link-url{font-size:.75rem;color:var(--lime);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace}
 .proposal-link-copy{background:var(--lime);color:#1a1a1a;border:none;border-radius:5px;padding:4px 10px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:var(--f);white-space:nowrap}
 
+/* MODAL EDIÇÃO DE PROPOSTA */
+.edit-modal-overlay{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:16px}
+.edit-modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);width:min(780px,100%);max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.edit-modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-shrink:0}
+.edit-modal-title{font-size:1rem;font-weight:700;color:var(--white)}
+.edit-modal-sub{font-size:.72rem;color:var(--muted);margin-top:3px}
+.edit-modal-close{background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:1.1rem;padding:0;line-height:1;flex-shrink:0}
+.edit-modal-close:hover{color:var(--text)}
+.edit-modal-body{overflow-y:auto;padding:20px 24px;flex:1}
+.edit-section{margin-bottom:20px}
+.edit-section-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--lime);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.edit-field{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;color:var(--text);font-family:var(--f);font-size:.82rem;outline:none;transition:border-color .2s;resize:vertical;line-height:1.6}
+.edit-field:focus{border-color:var(--lime)}
+.edit-sub-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px}
+.edit-sub-item-label{font-size:.65rem;color:var(--dim);font-weight:600;margin-bottom:5px}
+.edit-modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-shrink:0}
+.edit-modal-hint{font-size:.7rem;color:var(--dim)}
+
 /* FOOTER */
 .footer{text-align:center;padding:13px;font-size:.62rem;color:var(--dim);border-top:1px solid var(--border);background:var(--bg2)}
 .footer strong{color:var(--lime)}
@@ -364,7 +382,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
       <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
       <button class="lbtn" id="lBtn" onclick="doAuth()">Entrar</button>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v2.9</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v3.0</div>
     </div>
   </div>
 </div>
@@ -376,7 +394,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver">v2.9</div>
+      <div class="hver">v3.0</div>
     </div>
     <div class="hrr">
       <div class="ntabs">
@@ -514,7 +532,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v2.9</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v3.0</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -611,9 +629,30 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       </div>
     </div>
   </div>
+  <!-- MODAL EDIÇÃO DE PROPOSTA -->
+  <div id="editModal" class="edit-modal-overlay" style="display:none" onclick="if(event.target===this)closeEditModal()">
+    <div class="edit-modal">
+      <div class="edit-modal-header">
+        <div>
+          <div class="edit-modal-title">✏ Revisar proposta antes de publicar</div>
+          <div class="edit-modal-sub">Edite os textos gerados pela IA. As alterações serão salvas na proposta enviada ao cliente.</div>
+        </div>
+        <button class="edit-modal-close" onclick="closeEditModal()">✕</button>
+      </div>
+      <div class="edit-modal-body" id="editModalBody"></div>
+      <div class="edit-modal-footer">
+        <span class="edit-modal-hint">💡 Alterações aqui não afetam o output do assessor — apenas a proposta enviada ao cliente</span>
+        <div style="display:flex;gap:8px">
+          <button class="mbtn mbtn-sec" onclick="closeEditModal()">Cancelar</button>
+          <button class="mbtn mbtn-pri" onclick="confirmEditAndApprove()">
+            <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Aprovar e habilitar publicação
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-
-<script>
 // ── AUTOCOMPLETE ASSESSORIA ──
 var ASS_LIST = [
   {g:'Sem assessoria',        items:['Não possui assessoria','Investe sozinho / direto']},
@@ -1527,13 +1566,15 @@ function renderOutput(nome,patFmt,data,meta){
 
   // Roteiro
   var b1=mkBlock('🗺','Roteiro da Reunião',true);
+  // Roteiro
+  var b1=mkBlock('🗺','Roteiro da Reunião',false);
   data.roteiro.forEach(function(r,i){
     b1.body.innerHTML+='<div class="rotitem"><div class="rotnum">'+(i+1)+'</div><div class="rotcont"><strong>'+r.titulo+'</strong><p>'+r.descricao+'</p>'+(r.dica?'<div class="rottip">💡 '+r.dica+'</div>':'')+'<div class="rottime">⏱ '+r.minutos+' min</div></div></div>';
   });
   area.appendChild(b1.el);
 
   // Perguntas
-  var b2=mkBlock('❓','5 Perguntas de Diagnóstico',true);
+  var b2=mkBlock('❓','5 Perguntas de Diagnóstico',false);
   data.perguntas.forEach(function(p,i){
     b2.body.innerHTML+='<div class="pqcard" style="flex-direction:column;gap:6px">'
       +'<div style="display:flex;gap:9px"><div class="pqn" style="flex-shrink:0;margin-top:1px">P'+(i+1)+'</div><div><div class="pqq">"'+p.pergunta+'"</div><div class="pqwhy">→ '+p.motivo+'</div></div></div>'
@@ -1549,38 +1590,22 @@ function renderOutput(nome,patFmt,data,meta){
   area.appendChild(b2.el);
 
   // Argumentos
-  var b3=mkBlock('🎯','3 Argumentos Consultivos',true);
+  var b3=mkBlock('🎯','3 Argumentos Consultivos',false);
   data.argumentos.forEach(function(a,i){
     b3.body.innerHTML+='<div class="argcard"><div class="argtit">'+(i+1)+'. '+a.titulo+'</div><div class="argbody">'+a.corpo+'</div>'+(a.frase_gancho?'<div class="arghook">"'+a.frase_gancho+'"</div>':'')+'</div>';
   });
   area.appendChild(b3.el);
-
-  // Gráficos SVG
-  var b5=mkBlock('📊','Gráficos para a Reunião',false);
-  var cg=document.createElement('div');
-  var hasCurrentAlloc = meta.currentAlloc && Object.values(meta.currentAlloc).some(function(v){return v>0;});
-  cg.className='chartsgrid';
-  if(hasCurrentAlloc){
-    cg.innerHTML='<div class="chartbox"><div class="charttitle">Carteira atual</div><div id="svgAlAtual"></div></div>'
-                +'<div class="chartbox"><div class="charttitle">Realocação sugerida</div><div id="svgAl"></div></div>'
-                +'<div class="chartbox" style="grid-column:1/-1"><div class="charttitle">Projeção patrimonial — 10 anos</div><div id="svgEv"></div></div>';
-  } else {
-    cg.innerHTML='<div class="chartbox"><div class="charttitle">Alocação sugerida</div><div id="svgAl"></div></div>'
-                +'<div class="chartbox"><div class="charttitle">Projeção patrimonial — 10 anos</div><div id="svgEv"></div></div>';
-  }
-  b5.body.appendChild(cg);
-  area.appendChild(b5.el);
 
   // Barra de aprovação e publicação de proposta
   var proposalBar = document.createElement('div');
   proposalBar.className = 'proposal-bar fadein';
   proposalBar.id = 'proposalBar';
   proposalBar.innerHTML = ''
-    +'<div class="proposal-bar-info"><strong>📋 Proposta para o cliente</strong>Revise o conteúdo acima antes de publicar. Após aprovação, um link será gerado para enviar ao cliente.</div>'
+    +'<div class="proposal-bar-info"><strong>📋 Proposta para o cliente</strong>Revise o conteúdo acima. Clique em "Revisar e aprovar" para editar os textos antes de publicar.</div>'
     +'<div class="proposal-btns">'
-    +'<button class="pbtn pbtn-approve" id="btnApprove" onclick="approveProposal()">'
-    +'<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-    +'Aprovar conteúdo'
+    +'<button class="pbtn pbtn-approve" id="btnApprove" onclick="openEditModal()">'
+    +'<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    +'Revisar e aprovar'
     +'</button>'
     +'<button class="pbtn pbtn-publish" id="btnPublish" onclick="publishProposal()" disabled>'
     +'<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg>'
@@ -1590,18 +1615,6 @@ function renderOutput(nome,patFmt,data,meta){
   area.appendChild(proposalBar);
 
   area.style.display='block';
-  setTimeout(function(){
-    if(hasCurrentAlloc){
-      // Monta objeto de alocação atual no formato esperado pelo donut
-      var currentAllocForChart = {
-        labels: ALLOC_CATS,
-        data: ALLOC_CATS.map(function(cat){ return meta.currentAlloc[cat] || 0; })
-      };
-      renderDonut(document.getElementById('svgAlAtual'), currentAllocForChart);
-    }
-    renderDonut(document.getElementById('svgAl'),data.alocacao);
-    renderLine(document.getElementById('svgEv'),parseInt(meta.pat),meta.perfil);
-  },80);
 }
 
 // ── BLOCK HELPER ──
@@ -1630,11 +1643,125 @@ function prepAndPrint(){
 // ── PROPOSTA ──
 var proposalApproved = false;
 
-function approveProposal(){
+function openEditModal(){
+  var data = window._lastOutput;
+  if(!data){ alert('Gere uma recomendação primeiro.'); return; }
+
+  var html = '';
+
+  // Resumo do perfil
+  html += '<div class="edit-section">'
+    +'<div class="edit-section-label">📝 Sumário executivo</div>'
+    +'<textarea class="edit-field" id="edit_resumo" rows="4">'+escHtml(data.resumoPerfil||'')+'</textarea>'
+    +'</div>';
+
+  // Roteiro
+  if(data.roteiro&&data.roteiro.length){
+    html += '<div class="edit-section"><div class="edit-section-label">🗺 Roteiro — títulos e descrições</div>';
+    data.roteiro.forEach(function(r,i){
+      html += '<div class="edit-sub-item">'
+        +'<div class="edit-sub-item-label">Etapa '+(i+1)+'</div>'
+        +'<input class="edit-field" id="edit_rot_titulo_'+i+'" value="'+escHtml(r.titulo||'')+'" style="margin-bottom:6px;resize:none" placeholder="Título">'
+        +'<textarea class="edit-field" id="edit_rot_desc_'+i+'" rows="2" placeholder="Descrição">'+escHtml(r.descricao||'')+'</textarea>'
+        +'</div>';
+    });
+    html += '</div>';
+  }
+
+  // Perguntas
+  if(data.perguntas&&data.perguntas.length){
+    html += '<div class="edit-section"><div class="edit-section-label">❓ Perguntas de diagnóstico</div>';
+    data.perguntas.forEach(function(p,i){
+      html += '<div class="edit-sub-item">'
+        +'<div class="edit-sub-item-label">Pergunta '+(i+1)+'</div>'
+        +'<textarea class="edit-field" id="edit_pq_'+i+'" rows="2">'+escHtml(p.pergunta||'')+'</textarea>'
+        +'</div>';
+    });
+    html += '</div>';
+  }
+
+  // Argumentos
+  if(data.argumentos&&data.argumentos.length){
+    html += '<div class="edit-section"><div class="edit-section-label">🎯 Argumentos consultivos</div>';
+    data.argumentos.forEach(function(a,i){
+      html += '<div class="edit-sub-item">'
+        +'<div class="edit-sub-item-label">Argumento '+(i+1)+'</div>'
+        +'<input class="edit-field" id="edit_arg_titulo_'+i+'" value="'+escHtml(a.titulo||'')+'" style="margin-bottom:6px;resize:none" placeholder="Título">'
+        +'<textarea class="edit-field" id="edit_arg_corpo_'+i+'" rows="3" placeholder="Corpo">'+escHtml(a.corpo||'')+'</textarea>'
+        +'<input class="edit-field" id="edit_arg_gancho_'+i+'" value="'+escHtml(a.frase_gancho||'')+'" style="margin-top:6px;resize:none" placeholder="Frase gancho (opcional)">'
+        +'</div>';
+    });
+    html += '</div>';
+  }
+
+  // Slides
+  if(data.slides&&data.slides.length){
+    html += '<div class="edit-section"><div class="edit-section-label">📑 Slides</div>';
+    data.slides.forEach(function(s,i){
+      html += '<div class="edit-sub-item">'
+        +'<div class="edit-sub-item-label">Slide '+(i+1)+' — '+(s.rotulo||'')+'</div>'
+        +'<input class="edit-field" id="edit_sl_titulo_'+i+'" value="'+escHtml(s.titulo||'')+'" style="margin-bottom:6px;resize:none" placeholder="Título">'
+        +'<textarea class="edit-field" id="edit_sl_cont_'+i+'" rows="3" placeholder="Conteúdo">'+escHtml(s.conteudo||'')+'</textarea>'
+        +'</div>';
+    });
+    html += '</div>';
+  }
+
+  document.getElementById('editModalBody').innerHTML = html;
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function closeEditModal(){
+  document.getElementById('editModal').style.display = 'none';
+}
+
+function confirmEditAndApprove(){
+  var data = window._lastOutput;
+  if(!data) return;
+
+  // Aplicar edições ao _lastOutput
+  if(document.getElementById('edit_resumo'))
+    data.resumoPerfil = document.getElementById('edit_resumo').value.trim();
+
+  if(data.roteiro) data.roteiro.forEach(function(r,i){
+    var t=document.getElementById('edit_rot_titulo_'+i);
+    var d=document.getElementById('edit_rot_desc_'+i);
+    if(t)r.titulo=t.value.trim();
+    if(d)r.descricao=d.value.trim();
+  });
+
+  if(data.perguntas) data.perguntas.forEach(function(p,i){
+    var el=document.getElementById('edit_pq_'+i);
+    if(el)p.pergunta=el.value.trim();
+  });
+
+  if(data.argumentos) data.argumentos.forEach(function(a,i){
+    var t=document.getElementById('edit_arg_titulo_'+i);
+    var c=document.getElementById('edit_arg_corpo_'+i);
+    var g=document.getElementById('edit_arg_gancho_'+i);
+    if(t)a.titulo=t.value.trim();
+    if(c)a.corpo=c.value.trim();
+    if(g)a.frase_gancho=g.value.trim();
+  });
+
+  if(data.slides) data.slides.forEach(function(s,i){
+    var t=document.getElementById('edit_sl_titulo_'+i);
+    var c=document.getElementById('edit_sl_cont_'+i);
+    if(t)s.titulo=t.value.trim();
+    if(c)s.conteudo=c.value.trim();
+  });
+
+  closeEditModal();
+
+  // Marcar como aprovado
   proposalApproved = true;
   var btn = document.getElementById('btnApprove');
   btn.classList.add('approved');
-  btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Conteúdo aprovado ✓';
+  btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Aprovado ✓';
   document.getElementById('btnPublish').disabled = false;
 }
 
@@ -1854,9 +1981,16 @@ function renderDashSVG(){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║                    CHANGELOG                         ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v2.9 — Remoção do PDF (substituído pela proposta.html║
-     ║        Remove jsPDF, bloco PDF e gerarPDF()          ║
-     ║        Arquivo mais leve, sem dependência jsPDF      ║
+     ║ v3.0 — Ajustes de UX no output do assessor          ║
+     ║        Remove seção "Gráficos para a Reunião"        ║
+     ║        Todos os blocos começam fechados              ║
+     ║        Modal "Revisar e aprovar" antes de publicar   ║
+     ║        Todos os campos de texto da IA são editáveis  ║
+     ║        (resumo, roteiro, perguntas, argumentos,      ║
+     ║         slides) antes da proposta ir ao cliente      ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ v2.9 — Remove bloco PDF do output                    ║
+     ║        jsPDF removido, arquivo mais leve             ║
      ╠══════════════════════════════════════════════════════╣
      ║ v2.8 — LP da proposta polida (Entrega 2)             ║
      ║        Design refinado: hero, cards, tipografia      ║

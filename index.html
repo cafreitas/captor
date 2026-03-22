@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v2.8</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<title>Captor — Pré-vendas eficiente e inteligente v2.9</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -365,7 +364,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
       <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
       <button class="lbtn" id="lBtn" onclick="doAuth()">Entrar</button>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v2.8</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v2.9</div>
     </div>
   </div>
 </div>
@@ -377,7 +376,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver">v2.8</div>
+      <div class="hver">v2.9</div>
     </div>
     <div class="hrr">
       <div class="ntabs">
@@ -515,7 +514,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v2.8</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v2.9</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -1510,187 +1509,6 @@ async function regenerate(){
   }
 }
 
-// ── GERAR PDF APRESENTAÇÃO ──
-function gerarPDF(){
-  var btn=document.getElementById('btnPDF');
-  if(btn){btn.disabled=true;btn.innerHTML='⏳ Gerando PDF...';}
-
-  var meta=window._lastMeta;
-  var slides=window._lastSlides;
-  if(!meta||!slides){alert('Gere uma reunião primeiro.');if(btn){btn.disabled=false;btn.innerHTML='<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 10v2h10v-2M7 2v7M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Baixar Apresentação PDF';}return;}
-
-  var jsPDF=window.jspdf.jsPDF;
-  var doc=new jsPDF({orientation:'landscape',unit:'mm',format:[297,167]});
-  var W=297,H=167;
-
-  // Cores
-  var DARK='#1e1e1e',DARK2='#272727',DARK3='#2e2e2e';
-  var LIME='#a8c23a',WHITE='#ffffff',MUTED='#a0a0a0',DIM='#606060';
-
-  function hex(h){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return[r,g,b];}
-  function setFill(c){var rgb=hex(c);doc.setFillColor(rgb[0],rgb[1],rgb[2]);}
-  function setTxt(c){var rgb=hex(c);doc.setTextColor(rgb[0],rgb[1],rgb[2]);}
-  function setDraw(c){var rgb=hex(c);doc.setDrawColor(rgb[0],rgb[1],rgb[2]);}
-
-  function wrapText(text,x,y,maxW,lineH,maxLines){
-    var words=text.split(' ');var line='';var count=0;
-    for(var i=0;i<words.length;i++){
-      var test=line+(line?' ':'')+words[i];
-      if(doc.getTextWidth(test)>maxW&&line){
-        doc.text(line,x,y);y+=lineH;count++;
-        if(maxLines&&count>=maxLines){if(i<words.length-1){var prev=doc.getTextWidth(line.slice(0,-3)+'...')<maxW;doc.text((prev?line.slice(0,-3):'...')+'...',x,y-lineH);}return y;}
-        line=words[i];
-      } else { line=test; }
-    }
-    if(line)doc.text(line,x,y);
-    return y+lineH;
-  }
-
-  function bgPage(){setFill(DARK);doc.rect(0,0,W,H,'F');}
-  function accentLine(x,y,w){setDraw(LIME);doc.setLineWidth(0.8);doc.line(x,y,x+w,y);}
-  function limeRect(x,y,w,h){setFill(LIME);doc.rect(x,y,w,h,'F');}
-  function darkRect(x,y,w,h,c){setFill(c||DARK2);doc.rect(x,y,w,h,'F');}
-  function slideNum(n){
-    setFill(LIME);doc.circle(W-12,12,5,'F');
-    setTxt(DARK);doc.setFontSize(8);doc.setFont('helvetica','bold');
-    doc.text(String(n),W-12,12.8,{align:'center'});
-  }
-  function captorWatermark(){
-    setTxt(DIM);doc.setFontSize(7);doc.setFont('helvetica','normal');
-    doc.text('captor. | XP Investimentos',W/2,H-4,{align:'center'});
-    setDraw(DIM);doc.setLineWidth(0.2);doc.line(20,H-7,W-20,H-7);
-  }
-
-  var patFmt=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(meta.pat);
-
-  slides.forEach(function(s,idx){
-    if(idx>0)doc.addPage();
-    bgPage();
-    captorWatermark();
-    slideNum(s.numero);
-
-    if(s.numero===1){
-      // ── SLIDE 1: CAPA ──
-      // Faixa lime vertical esquerda
-      limeRect(0,0,4,H);
-      // Logo área
-      setTxt(WHITE);doc.setFontSize(28);doc.setFont('helvetica','bold');
-      doc.text('captor',22,28);
-      setTxt(LIME);doc.setFontSize(28);doc.setFont('helvetica','bold');
-      doc.text('.',22+doc.getTextWidth('captor'),28);
-
-      setTxt(MUTED);doc.setFontSize(7);doc.setFont('helvetica','normal');
-      doc.text('GERADOR DE REUNIÃO CONSULTIVA',22,35);
-
-      // Linha divisória
-      accentLine(22,42,60);
-
-      // Nome do prospect destaque
-      setTxt(LIME);doc.setFontSize(11);doc.setFont('helvetica','bold');
-      doc.text('Preparado para',22,54);
-      setTxt(WHITE);doc.setFontSize(20);doc.setFont('helvetica','bold');
-      doc.text(meta.nome,22,66);
-      setTxt(MUTED);doc.setFontSize(9);doc.setFont('helvetica','normal');
-      doc.text(meta.prof+' · '+meta.idade+' anos · Perfil '+meta.perfil,22,74);
-
-      // Cards de stats lado direito
-      var stats=[
-        {v:'IA',l:'que facilita a pré-venda'},
-        {v:'Propostas',l:'em segundos'},
-        {v:'Suas regras',l:'para recomend.'},
-        {v:'© 2026',l:'Quantic'}
-      ];
-      var cx=170,cy=40,cw=28,ch=22,gap=5;
-      stats.forEach(function(st,i){
-        var col=i%2,row=Math.floor(i/2);
-        var sx=cx+col*(cw+gap),sy=cy+row*(ch+gap);
-        setFill(DARK3);doc.rect(sx,sy,cw,ch,'F');
-        setDraw(LIME);doc.setLineWidth(0.3);doc.rect(sx,sy,cw,ch,'S');
-        setTxt(LIME);doc.setFontSize(9);doc.setFont('helvetica','bold');
-        doc.text(st.v,sx+cw/2,sy+10,{align:'center'});
-        setTxt(MUTED);doc.setFontSize(6);doc.setFont('helvetica','normal');
-        doc.text(st.l,sx+cw/2,sy+16,{align:'center'});
-      });
-
-      // Badge rodapé
-      setFill(LIME);doc.roundedRect(22,H-22,30,8,1,1,'F');
-      setTxt(DARK);doc.setFontSize(7);doc.setFont('helvetica','bold');
-      doc.text('© 2026 Quantic',37,H-17,{align:'center'});
-
-    } else {
-      // ── SLIDES 2-6 ──
-      // Faixa lime topo
-      limeRect(0,0,W,3);
-
-      // Rótulo
-      setTxt(LIME);doc.setFontSize(7);doc.setFont('helvetica','bold');
-      doc.text((s.rotulo||'').toUpperCase(),20,16);
-
-      // Título
-      setTxt(WHITE);doc.setFontSize(18);doc.setFont('helvetica','bold');
-      doc.text(s.titulo||'',20,28);
-
-      // Linha sob título
-      accentLine(20,32,60);
-
-      // Conteúdo
-      setTxt(MUTED);doc.setFontSize(9);doc.setFont('helvetica','normal');
-      wrapText(s.conteudo||'',20,44,180,6,12);
-
-      // Visual / dica
-      if(s.visual){
-        darkRect(20,H-34,W-40,18,DARK3);
-        setDraw(LIME);doc.setLineWidth(0.3);doc.rect(20,H-34,W-40,18,'S');
-        setTxt(LIME);doc.setFontSize(7);doc.setFont('helvetica','bold');
-        doc.text('VISUAL',24,H-26);
-        setTxt(MUTED);doc.setFontSize(8);doc.setFont('helvetica','normal');
-        wrapText(s.visual,24,H-20,W-52,5,2);
-      }
-
-      // Número do slide no rodapé esquerdo
-      setTxt(DIM);doc.setFontSize(7);doc.setFont('helvetica','normal');
-      doc.text(s.numero+' / 6',20,H-4);
-    }
-  });
-
-  // Slide extra: Próximos Passos / CTA
-  doc.addPage();
-  bgPage();
-  limeRect(0,0,4,H);
-  captorWatermark();
-  slideNum(6);
-
-  setTxt(MUTED);doc.setFontSize(8);doc.setFont('helvetica','normal');
-  doc.text('PRÓXIMOS PASSOS',22,22);
-  accentLine(22,26,50);
-  setTxt(WHITE);doc.setFontSize(20);doc.setFont('helvetica','bold');
-  doc.text('Vamos começar?',22,40);
-  setTxt(MUTED);doc.setFontSize(9);doc.setFont('helvetica','normal');
-  doc.text('Agende sua reunião consultiva e descubra o potencial',22,52);
-  doc.text('da sua carteira com a Captor.',22,59);
-
-  var steps=['1. Assinatura do contrato de assessoria','2. Análise e diagnóstico completo da carteira','3. Apresentação da proposta de realocação','4. Acompanhamento contínuo e relatórios periódicos'];
-  steps.forEach(function(st,i){
-    setFill(DARK2);doc.rect(22,68+i*14,W-44,11,'F');
-    setFill(LIME);doc.rect(22,68+i*14,3,11,'F');
-    setTxt(WHITE);doc.setFontSize(9);doc.setFont('helvetica','normal');
-    doc.text(st,29,75+i*14);
-  });
-
-  setFill(LIME);doc.roundedRect(22,H-26,50,12,2,2,'F');
-  setTxt(DARK);doc.setFontSize(9);doc.setFont('helvetica','bold');
-  doc.text('captor.com.br',47,H-18,{align:'center'});
-
-  var nome=meta.nome;
-  var filename='Captor_'+nome.replace(/\s+/g,'_')+'_Apresentacao.pdf';
-  doc.save(filename);
-
-  if(btn){
-    btn.disabled=false;
-    btn.innerHTML='<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 10v2h10v-2M7 2v7M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Baixar Apresentação PDF';
-  }
-}
-
 // ── RENDER OUTPUT ──
 function renderOutput(nome,patFmt,data,meta){
   var area=document.getElementById('outArea');
@@ -1736,19 +1554,6 @@ function renderOutput(nome,patFmt,data,meta){
     b3.body.innerHTML+='<div class="argcard"><div class="argtit">'+(i+1)+'. '+a.titulo+'</div><div class="argbody">'+a.corpo+'</div>'+(a.frase_gancho?'<div class="arghook">"'+a.frase_gancho+'"</div>':'')+'</div>';
   });
   area.appendChild(b3.el);
-
-  // Apresentação PDF
-  var b4=mkBlock('📑','Apresentação — 6 slides',false);
-  // Guarda slides no escopo para uso no gerarPDF
-  window._lastSlides = data.slides;
-  b4.body.innerHTML='<div style="padding:8px 0 4px">'
-    +'<p style="font-size:.78rem;color:var(--muted);margin-bottom:14px;line-height:1.6">A apresentação foi gerada com 6 slides personalizados para <strong style="color:var(--white)">'+nome+'</strong>, seguindo o design institucional da Captor. Clique para baixar em PDF.</p>'
-    +'<button class="genbtn" id="btnPDF" onclick="gerarPDF()" style="width:auto;padding:10px 20px">'
-    +'<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 10v2h10v-2M7 2v7M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-    +' Baixar Apresentação PDF'
-    +'</button>'
-    +'</div>';
-  area.appendChild(b4.el);
 
   // Gráficos SVG
   var b5=mkBlock('📊','Gráficos para a Reunião',false);
@@ -2049,6 +1854,10 @@ function renderDashSVG(){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║                    CHANGELOG                         ║
      ╠══════════════════════════════════════════════════════╣
+     ║ v2.9 — Remoção do PDF (substituído pela proposta.html║
+     ║        Remove jsPDF, bloco PDF e gerarPDF()          ║
+     ║        Arquivo mais leve, sem dependência jsPDF      ║
+     ╠══════════════════════════════════════════════════════╣
      ║ v2.8 — LP da proposta polida (Entrega 2)             ║
      ║        Design refinado: hero, cards, tipografia      ║
      ║        Barra de progresso de leitura                 ║
@@ -2058,7 +1867,6 @@ function renderDashSVG(){
      ║        Implementação dinâmica via roteiro da IA      ║
      ║        Tema accent dinâmico com brand_colors         ║
      ║        Rodapé legal com disclaimer ANBIMA/CVM        ║
-     ║        CSS de print melhorado                        ║
      ╠══════════════════════════════════════════════════════╣
      ║ v2.7 — Infraestrutura de propostas (Entrega 1)       ║
      ║        Tabela proposals no Supabase                  ║

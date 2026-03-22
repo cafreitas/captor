@@ -128,7 +128,15 @@ body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-sm
 .am-cancel{padding:9px 18px;background:transparent;border:1.5px solid var(--border);border-radius:var(--r);font-family:var(--f);font-size:.8rem;cursor:pointer;color:var(--muted);font-weight:600}
 .am-confirm{padding:9px 20px;background:var(--accent);border:none;border-radius:var(--r);font-family:var(--f);font-size:.8rem;font-weight:700;cursor:pointer;color:#1a1a1a}
 .am-confirm:disabled{opacity:.5;cursor:not-allowed}
-.prop-legal{background:var(--bg3);border-top:1px solid var(--border);padding:28px;text-align:center}
+.sdr-bar{background:#1a1a2e;border-bottom:2px solid var(--accent);padding:12px 0;position:sticky;top:0;z-index:60}
+.sdr-bar-inner{max-width:800px;margin:0 auto;padding:0 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sdr-badge{background:var(--accent);color:#1a1a1a;font-size:.65rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:4px}
+.sdr-hint{font-size:.76rem;color:rgba(255,255,255,.7);flex:1}
+.sdr-approve-btn{padding:8px 18px;background:var(--accent);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap}
+.sdr-approve-btn:hover{background:var(--accent2)}
+.sdr-approve-btn.done{background:rgba(168,194,58,.15);border:1px solid var(--accent);color:var(--accent);cursor:default}
+@media print{.sdr-bar{display:none!important}}
+
 .prop-legal-inner{max-width:800px;margin:0 auto}
 .prop-legal p{font-size:.7rem;color:var(--dim);line-height:1.7;margin-bottom:4px}
 .prop-legal strong{color:var(--muted)}
@@ -165,6 +173,15 @@ body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-sm
   <div class="state-sub" id="errorSub">Este link pode ter expirado ou sido removido. Entre em contato com seu assessor.</div>
 </div>
 <div id="propContent" style="display:none">
+  <!-- SDR BAR (visível apenas para assessores logados) -->
+  <div id="sdrBar" style="display:none" class="sdr-bar">
+    <div class="sdr-bar-inner">
+      <span class="sdr-badge">Modo SDR</span>
+      <span class="sdr-hint" id="sdrHint">Revise a proposta como o cliente vai ver. Clique em Aprovar para liberar a publicação.</span>
+      <button class="sdr-approve-btn" id="sdrApproveBtn" onclick="sdrApprove()">✓ Aprovar proposta</button>
+    </div>
+  </div>
+
   <header class="prop-header">
     <div class="prop-header-inner">
       <div>
@@ -335,9 +352,9 @@ body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-sm
 var SUPABASE_URL='https://fllkczocfcbrfsyhxelg.supabase.co';
 var SUPABASE_KEY='sb_publishable_U2pVXIhyNH3s085cUjAmrA_PkeNP4P7';
 var sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-var proposal=null,currentAction=null,isExpired=false;
+var proposal=null,currentAction=null,isExpired=false,isSdr=false;
 window.addEventListener('scroll',function(){var h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('readProgress').style.width=(h>0?(window.scrollY/h*100):0)+'%';});
-var statusLabels={enviada:'Enviada',visualizada:'Visualizada',aceita:'Aceita',em_discussao:'Em discussão',detalhes_solicitados:'Detalhes solicitados'};
+var statusLabels={rascunho:'Rascunho',enviada:'Enviada',visualizada:'Visualizada',aceita:'Aceita',em_discussao:'Em discussão',detalhes_solicitados:'Detalhes solicitados',aprovado_sdr:'Aprovado'};
 function renderStatusPill(s){var p=document.getElementById('statusPill');p.textContent=statusLabels[s]||s;p.className='status-pill status-'+s;}
 (async function(){
   var hash=window.location.hash.replace('#','').trim();
@@ -346,7 +363,19 @@ function renderStatusPill(s){var p=document.getElementById('statusPill');p.textC
   if(r.error||!r.data){showError('Proposta não encontrada','Este link pode ter expirado. Entre em contato com seu assessor.');return;}
   proposal=r.data;
   isExpired=new Date(r.data.expires_at)<new Date();
-  if(r.data.status==='enviada'){await sb.from('proposals').update({status:'visualizada',visualizado_em:new Date().toISOString()}).eq('hash',hash);proposal.status='visualizada';}
+
+  // Detecta se é SDR (assessor logado que criou esta proposta)
+  var session=await sb.auth.getSession();
+  if(session.data&&session.data.session){
+    var uid=session.data.session.user.id;
+    if(uid===proposal.user_id) isSdr=true;
+  }
+
+  // Só marca como visualizada se não for SDR e status for enviada
+  if(!isSdr && r.data.status==='enviada'){
+    await sb.from('proposals').update({status:'visualizada',visualizado_em:new Date().toISOString()}).eq('hash',hash);
+    proposal.status='visualizada';
+  }
   render();
 })();
 function showError(t,s){document.getElementById('loadingScreen').style.display='none';document.getElementById('errorScreen').style.display='flex';document.getElementById('errorTitle').textContent=t;document.getElementById('errorSub').textContent=s;}
@@ -370,6 +399,19 @@ function render(){
   document.getElementById('headerCompany').textContent=cred?nomeEmp+' · '+cred:nomeEmp;
   renderStatusPill(p.status);
   document.title='Proposta · '+p.cliente_nome+' · '+nomeEmp;
+
+  // Modo SDR — mostrar barra de aprovação
+  if(isSdr){
+    document.getElementById('sdrBar').style.display='block';
+    // Esconder footer de ações do cliente
+    document.querySelector('.prop-footer-sticky').style.display='none';
+    if(p.status==='aprovado_sdr'){
+      var btn=document.getElementById('sdrApproveBtn');
+      btn.textContent='✓ Já aprovado';
+      btn.className='sdr-approve-btn done';
+      document.getElementById('sdrHint').textContent='Esta proposta já foi aprovada e pode ser publicada no Captor.';
+    }
+  }
   var now=new Date(),hour=now.getHours();
   document.getElementById('heroGreeting').textContent=(hour<12?'Bom dia':hour<18?'Boa tarde':'Boa noite')+',';
   document.getElementById('heroName').textContent=p.cliente_nome;
@@ -483,6 +525,17 @@ async function confirmAction(){
   var lbl=document.getElementById('footerLabel');lbl.textContent=labels[currentAction];lbl.className='prop-footer-label done';
   if(currentAction==='aceita'){document.getElementById('btnAccept').disabled=true;document.getElementById('btnAccept').style.opacity='.5';}
   btn.disabled=false;btn.textContent='Confirmar';
+}
+async function sdrApprove(){
+  var btn=document.getElementById('sdrApproveBtn');
+  btn.disabled=true;btn.textContent='Aprovando...';
+  var {error}=await sb.from('proposals').update({status:'aprovado_sdr'}).eq('hash',proposal.hash);
+  if(error){alert('Erro ao aprovar: '+error.message);btn.disabled=false;btn.textContent='✓ Aprovar proposta';return;}
+  proposal.status='aprovado_sdr';
+  renderStatusPill('aprovado_sdr');
+  btn.textContent='✓ Aprovado!';
+  btn.className='sdr-approve-btn done';
+  document.getElementById('sdrHint').textContent='✅ Proposta aprovada! Volte ao Captor e clique em Publicar para enviar ao cliente.';
 }
 function shareProposal(){var url=window.location.href;if(navigator.share)navigator.share({title:'Minha Proposta de Investimento',url:url});else navigator.clipboard.writeText(url).then(function(){alert('Link copiado!');});}
 </script>

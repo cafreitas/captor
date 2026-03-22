@@ -341,9 +341,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-sm
       <div class="prop-footer-label" id="footerLabel">O que você gostaria de fazer?</div>
       <div class="prop-action-btns">
         <button class="pabtn pabtn-accept" id="btnAccept" onclick="handleAction('aceita')">✅ Aceitar Proposta</button>
-        <button class="pabtn pabtn-sec" onclick="handleAction('em_discussao')">💬 Quero discutir</button>
-        <button class="pabtn pabtn-sec" onclick="handleAction('detalhes_solicitados')">📋 Mais detalhes</button>
-        <button class="pabtn pabtn-share" onclick="shareProposal()">🔗 Compartilhar</button>
+        <button class="pabtn pabtn-sec" onclick="handleAction('detalhes_solicitados')">💬 Dúvidas</button>
       </div>
     </div>
   </div>
@@ -504,7 +502,7 @@ async function sendComment(section,btn){
   proposal.comentarios=c;
   btn.style.display='none';wrap.querySelector('.comment-sent').style.display='block';input.value='';
 }
-var actionConfig={aceita:{icon:'✅',title:'Aceitar esta proposta',sub:'Ótimo! Deixe uma mensagem opcional para seu assessor.',ph:'Mensagem opcional...'},em_discussao:{icon:'💬',title:'Quero discutir alguns pontos',sub:'Diga o que você gostaria de conversar antes de decidir.',ph:'Ex: Gostaria de entender melhor a alocação em renda variável...'},detalhes_solicitados:{icon:'📋',title:'Solicitar mais informações',sub:'Sobre quais aspectos gostaria de mais detalhes?',ph:'Ex: Quero entender melhor os riscos dos produtos sugeridos...'}};
+var actionConfig={aceita:{icon:'✅',title:'Aceitar esta proposta',sub:'Ótimo! Deixe uma mensagem opcional para seu assessor.',ph:'Mensagem opcional...'},detalhes_solicitados:{icon:'💬',title:'Enviar uma dúvida',sub:'Sobre o que você gostaria de saber mais?',ph:'Ex: Gostaria de entender melhor como funciona a renda variável nesta proposta...'}};
 function handleAction(action){
   currentAction=action;var c=actionConfig[action];
   document.getElementById('modalIcon').textContent=c.icon;
@@ -535,7 +533,12 @@ async function sdrApprove(){
   renderStatusPill('aprovado_sdr');
   btn.textContent='✓ Aprovado!';
   btn.className='sdr-approve-btn done';
-  document.getElementById('sdrHint').textContent='✅ Proposta aprovada! Volte ao Captor e clique em Publicar para enviar ao cliente.';
+  document.getElementById('sdrHint').textContent='✅ Aprovado! Esta aba vai fechar em 3 segundos...';
+  setTimeout(function(){
+    window.close();
+    // Fallback se o browser bloquear window.close()
+    document.getElementById('sdrHint').textContent='✅ Aprovado! Volte ao Captor e clique em Publicar para enviar ao cliente.';
+  }, 3000);
 }
 function shareProposal(){var url=window.location.href;if(navigator.share)navigator.share({title:'Minha Proposta de Investimento',url:url});else navigator.clipboard.writeText(url).then(function(){alert('Link copiado!');});}
 </script>

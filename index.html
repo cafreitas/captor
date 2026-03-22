@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v3.1</title>
+<title>Captor — Pré-vendas eficiente e inteligente v3.2</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -395,7 +395,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
       <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
       <button class="lbtn" id="lBtn" onclick="doAuth()">Entrar</button>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v3.1</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v3.2</div>
     </div>
   </div>
 </div>
@@ -407,7 +407,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver">v3.1</div>
+      <div class="hver">v3.2</div>
     </div>
     <div class="hrr">
       <div class="ntabs">
@@ -545,7 +545,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v3.1</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v3.2</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -1402,6 +1402,7 @@ async function generate(){
   document.getElementById('loadingState').style.display='flex';
   document.getElementById('btnGen').disabled=true;
   proposalApproved = false;
+  proposalDraftHash = null;
   document.getElementById('contentArea').scrollIntoView({behavior:'smooth',block:'start'});
 
   var ids=['ss1','ss2','ss3','ss4'];
@@ -1597,7 +1598,7 @@ function renderOutput(nome,patFmt,data,meta){
   pubRow.className = 'proposal-bar fadein';
   pubRow.id = 'proposalBar';
   pubRow.innerHTML = ''
-    +'<div class="proposal-bar-info"><strong>Clique em "Revisar e aprovar" para editar os textos antes de publicar.</strong></div>'
+    +'<div class="proposal-bar-info"><strong>Revise e aprove a proposta do cliente antes de publicar.</strong></div>'
     +'<div class="proposal-btns">'
     +'<div style="position:relative;display:inline-block">'
     +'<div class="pub-tip" id="pubTip">👆 Aprove antes</div>'
@@ -1637,31 +1638,12 @@ function prepAndPrint(){
 
 // ── PROPOSTA INLINE ──
 var proposalApproved = false;
+var proposalDraftHash = null;
 
 function buildProposalBlock(data, meta, patFmt){
   var html = '';
 
-  // Sumário executivo
-  html += '<div class="prop-inline-section">'
-    +'<div class="prop-inline-label">📝 Sumário executivo</div>'
-    +'<textarea class="fta edit-field" id="pi_resumo" rows="3" style="font-size:.82rem">'+escHtml(data.resumoPerfil||'')+'</textarea>'
-    +'</div>';
-
-  // Argumentos / Benefícios
-  if(data.argumentos&&data.argumentos.length){
-    html += '<div class="prop-inline-section"><div class="prop-inline-label">✨ Benefícios para o cliente</div>';
-    data.argumentos.forEach(function(a,i){
-      html += '<div class="prop-inline-item">'
-        +'<div class="prop-inline-sublabel">Benefício '+(i+1)+'</div>'
-        +'<input class="fi edit-field" id="pi_arg_titulo_'+i+'" value="'+escHtml(a.titulo||'')+'" placeholder="Título" style="margin-bottom:6px">'
-        +'<textarea class="fta edit-field" id="pi_arg_corpo_'+i+'" rows="2" style="font-size:.82rem;margin-bottom:6px">'+escHtml(a.corpo||'')+'</textarea>'
-        +'<input class="fi edit-field" id="pi_arg_gancho_'+i+'" value="'+escHtml(a.frase_gancho||'')+'" placeholder="Frase gancho (opcional)">'
-        +'</div>';
-    });
-    html += '</div>';
-  }
-
-  // Slides
+  // Apenas slides editáveis
   if(data.slides&&data.slides.length){
     html += '<div class="prop-inline-section"><div class="prop-inline-label">📑 Slides da apresentação</div>';
     data.slides.forEach(function(s,i){
@@ -1674,12 +1656,12 @@ function buildProposalBlock(data, meta, patFmt){
     html += '</div>';
   }
 
-  // Botão aprovar dentro do bloco
+  // Botão aprovar + link para revisar na proposta
   html += '<div class="prop-inline-approve">'
-    +'<span class="prop-inline-approve-hint">Edite os campos acima se necessário e clique em Aprovar</span>'
-    +'<button class="pbtn pbtn-approve" id="btnApprove" onclick="confirmInlineApprove()">'
-    +'<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-    +' Aprovar conteúdo'
+    +'<span class="prop-inline-approve-hint" id="approveHint">Salve o rascunho para revisar a proposta como o cliente vai ver</span>'
+    +'<button class="pbtn pbtn-approve" id="btnApprove" onclick="saveDraftAndPreview()">'
+    +'<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    +' Salvar e revisar proposta'
     +'</button>'
     +'</div>';
 
@@ -1690,23 +1672,17 @@ function escHtml(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function confirmInlineApprove(){
+async function saveDraftAndPreview(){
   var data = window._lastOutput;
-  if(!data) return;
+  var meta = window._lastMeta;
+  if(!data||!meta){ alert('Gere uma recomendação primeiro.'); return; }
+  if(!supabaseUserId){ alert('Você precisa estar logado.'); return; }
 
-  // Aplicar edições ao _lastOutput
-  var resumo = document.getElementById('pi_resumo');
-  if(resumo) data.resumoPerfil = resumo.value.trim();
+  var btn = document.getElementById('btnApprove');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div> Salvando...';
 
-  if(data.argumentos) data.argumentos.forEach(function(a,i){
-    var t=document.getElementById('pi_arg_titulo_'+i);
-    var c=document.getElementById('pi_arg_corpo_'+i);
-    var g=document.getElementById('pi_arg_gancho_'+i);
-    if(t)a.titulo=t.value.trim();
-    if(c)a.corpo=c.value.trim();
-    if(g)a.frase_gancho=g.value.trim();
-  });
-
+  // Aplicar edições dos slides
   if(data.slides) data.slides.forEach(function(s,i){
     var t=document.getElementById('pi_sl_titulo_'+i);
     var c=document.getElementById('pi_sl_cont_'+i);
@@ -1714,50 +1690,13 @@ function confirmInlineApprove(){
     if(c)s.conteudo=c.value.trim();
   });
 
-  // Marcar como aprovado
-  proposalApproved = true;
-  var btn = document.getElementById('btnApprove');
-  if(btn){
-    btn.classList.add('approved');
-    btn.innerHTML='<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Aprovado ✓';
-    btn.disabled=true;
-  }
-  // Habilitar publicar e esconder tooltip
-  var pubBtn = document.getElementById('btnPublish');
-  if(pubBtn) pubBtn.disabled=false;
-  var tip = document.getElementById('pubTip');
-  if(tip) tip.style.display='none';
-}
-
-function generateHash(){
-  var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  var hash = '';
-  for(var i = 0; i < 8; i++) hash += chars[Math.floor(Math.random() * chars.length)];
-  return hash;
-}
-
-async function publishProposal(){
-  if(!proposalApproved){ alert('Aprove o conteúdo antes de publicar.'); return; }
-  if(!supabaseUserId){ alert('Você precisa estar logado para publicar.'); return; }
-
-  var btn = document.getElementById('btnPublish');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> Publicando...';
-
-  var meta = window._lastMeta;
-  var data = window._lastOutput;
-  if(!meta || !data){ alert('Gere uma recomendação primeiro.'); btn.disabled=false; return; }
-
-  var hash = generateHash();
+  // Salvar rascunho no Supabase com status 'rascunho'
+  var hash = proposalDraftHash || generateHash();
+  proposalDraftHash = hash;
   var baseUrl = window.location.href.replace('index.html','').replace(/\/$/, '');
-  var proposalUrl = baseUrl + '/proposta.html#' + hash;
+  var previewUrl = baseUrl + '/proposta.html#' + hash;
 
-  // Snapshot da empresa
   var empresaSnap = empresaData ? JSON.parse(JSON.stringify(empresaData)) : null;
-
-  // Alocação atual
-  var currentAlloc = meta.currentAlloc || null;
-
   var payload = {
     hash: hash,
     user_id: supabaseUserId,
@@ -1770,15 +1709,73 @@ async function publishProposal(){
     cliente_ass: document.getElementById('fAss').value || '',
     cliente_gaps: document.getElementById('fGaps').value || '',
     cliente_ctx: document.getElementById('fCtx').value || '',
-    alocacao_atual: currentAlloc,
+    alocacao_atual: meta.currentAlloc || null,
     alocacao_sugerida: data.alocacao,
     analise_ia: data,
     empresa_snapshot: empresaSnap,
-    status: 'enviada',
+    status: 'rascunho',
     expires_at: new Date(Date.now() + 30*24*60*60*1000).toISOString()
   };
 
-  var {error} = await sb.from('proposals').insert(payload);
+  // Upsert pelo hash (permite re-salvar rascunho)
+  var {error} = await sb.from('proposals').upsert(payload, {onConflict:'hash'});
+  if(error){
+    alert('Erro ao salvar rascunho: ' + error.message);
+    btn.disabled=false;
+    btn.innerHTML='<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Salvar e revisar proposta';
+    return;
+  }
+
+  // Atualizar UI — mostrar link de prévia e polling de aprovação
+  btn.innerHTML = '✓ Rascunho salvo';
+  var hint = document.getElementById('approveHint');
+  if(hint) hint.innerHTML = ''
+    +'Abra o link abaixo para revisar e aprovar como SDR. O botão Publicar será habilitado após aprovação.'
+    +'<br><a href="'+previewUrl+'" target="_blank" style="color:var(--lime);font-weight:700;font-size:.76rem">🔗 Abrir prévia da proposta →</a>';
+
+  // Polling: aguarda aprovação na proposta.html
+  startApprovalPolling(hash);
+}
+
+function startApprovalPolling(hash){
+  var interval = setInterval(async function(){
+    var {data} = await sb.from('proposals').select('status').eq('hash', hash).single();
+    if(data && data.status === 'aprovado_sdr'){
+      clearInterval(interval);
+      proposalApproved = true;
+      var pubBtn = document.getElementById('btnPublish');
+      if(pubBtn) pubBtn.disabled = false;
+      var tip = document.getElementById('pubTip');
+      if(tip) tip.style.display = 'none';
+      var hint = document.getElementById('approveHint');
+      if(hint) hint.innerHTML = '<span style="color:var(--lime);font-weight:700">✅ Proposta aprovada! Clique em Publicar para enviar ao cliente.</span>';
+    }
+  }, 3000); // checa a cada 3s
+  // Para o polling após 10 minutos para não ficar rodando para sempre
+  setTimeout(function(){ clearInterval(interval); }, 600000);
+}
+
+function generateHash(){
+  var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  var hash = '';
+  for(var i = 0; i < 8; i++) hash += chars[Math.floor(Math.random() * chars.length)];
+  return hash;
+}
+
+async function publishProposal(){
+  if(!proposalApproved){ alert('Aprove a proposta antes de publicar.'); return; }
+  if(!supabaseUserId){ alert('Você precisa estar logado para publicar.'); return; }
+  if(!proposalDraftHash){ alert('Salve o rascunho primeiro.'); return; }
+
+  var btn = document.getElementById('btnPublish');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div> Publicando...';
+
+  var baseUrl = window.location.href.replace('index.html','').replace(/\/$/, '');
+  var proposalUrl = baseUrl + '/proposta.html#' + proposalDraftHash;
+
+  // Atualiza status de rascunho para enviada
+  var {error} = await sb.from('proposals').update({status:'enviada'}).eq('hash', proposalDraftHash);
   if(error){
     alert('Erro ao publicar: ' + error.message);
     btn.disabled = false;
@@ -1786,7 +1783,6 @@ async function publishProposal(){
     return;
   }
 
-  // Mostra link copiável
   btn.innerHTML = '✅ Proposta publicada!';
   var bar = document.getElementById('proposalBar');
   var linkWrap = document.createElement('div');
@@ -1945,13 +1941,23 @@ function renderDashSVG(){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║                    CHANGELOG                         ║
      ╠══════════════════════════════════════════════════════╣
+     ║ v3.2 — Modo SDR na proposta + fluxo de aprovação    ║
+     ║        Texto barra: "Revise e aprove antes de        ║
+     ║        publicar"                                     ║
+     ║        Bloco inline mostra apenas slides editáveis   ║
+     ║        Sumário e benefícios removidos do bloco       ║
+     ║        Fluxo: salvar rascunho → abrir prévia SDR     ║
+     ║        proposta.html detecta assessor logado         ║
+     ║        Barra SDR com botão Aprovar na proposta       ║
+     ║        Aprovação grava status "aprovado_sdr"         ║
+     ║        Polling no Captor detecta aprovação e         ║
+     ║        habilita botão Publicar automaticamente       ║
+     ╠══════════════════════════════════════════════════════╣
      ║ v3.1 — Proposta inline no output do assessor         ║
      ║        Bloco "Proposta para o cliente" editável      ║
-     ║        Sumário, benefícios e slides editáveis inline ║
+     ║        Slides editáveis inline                       ║
      ║        Botão "Aprovar" dentro do bloco               ║
      ║        Tooltip "Aprove antes" no botão Publicar      ║
-     ║        Texto da barra simplificado                   ║
-     ║        Modal de edição removido                      ║
      ╠══════════════════════════════════════════════════════╣
      ║ v3.0 — Ajustes de UX no output                      ║
      ║        Blocos fechados por padrão                    ║
@@ -2009,6 +2015,17 @@ function renderDashSVG(){
      ║        Botão header renomeado para "Configuração"    ║
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ BACKLOG — v3.2                                       ║
+     ║  1. Texto barra: "Revise e aprove a proposta do      ║
+     ║     cliente antes de publicar"                       ║
+     ║  2. Remover "Sumário executivo" do bloco inline      ║
+     ║  3. Remover "Benefícios para o cliente" do bloco     ║
+     ║  4. Modo SDR na proposta.html: quando assessor       ║
+     ║     logado abre o link, vê campos editáveis e        ║
+     ║     botão de aprovação. Cliente (não logado) vê      ║
+     ║     versão de leitura normal. Aprovação na           ║
+     ║     proposta.html habilita "Publicar" no Captor.     ║
      ╚══════════════════════════════════════════════════════╝ -->
 </body>
 </html>

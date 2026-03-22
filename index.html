@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v2.3</title>
+<title>Captor — Pré-vendas eficiente e inteligente v2.5</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -349,7 +349,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
       <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
       <button class="lbtn" id="lBtn" onclick="doAuth()">Entrar</button>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v2.3</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v2.5</div>
     </div>
   </div>
 </div>
@@ -361,7 +361,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver">v2.3</div>
+      <div class="hver">v2.5</div>
     </div>
     <div class="hrr">
       <div class="ntabs">
@@ -394,7 +394,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         <div class="fhint">Imóveis + investimentos + reservas</div>
       </div>
       <div class="fg">
-        <label class="fl">Profissão / Setor</label>
+        <label class="fl">Profissão</label>
         <div class="ac-wrap" id="acWrap">
           <input class="fi" id="fProf" placeholder="Digite para buscar..." autocomplete="off" oninput="acFilter()" onfocus="acFilter()" onblur="setTimeout(acHide,180)" onkeydown="acKey(event)">
           <div class="ac-drop" id="acDrop"></div>
@@ -423,12 +423,10 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       </div>
       <div class="fg">
         <label class="fl">Assessoria atual</label>
-        <select class="fsel" id="fAss">
-          <option value="">Selecione...</option>
-          <option>Não possui</option><option>Gerente de banco</option>
-          <option>Outro escritório XP</option><option>BTG / Rico / outros</option>
-          <option>Investe sozinho</option>
-        </select>
+        <div class="ac-wrap" id="acAssWrap">
+          <input class="fi" id="fAss" placeholder="Digite ou selecione..." autocomplete="off" oninput="acAssFilter()" onfocus="acAssFilter()" onblur="setTimeout(acAssHide,180)" onkeydown="acAssKey(event)">
+          <div class="ac-drop" id="acAssDrop"></div>
+        </div>
       </div>
       <div class="fg">
         <label class="fl">Problemas confirmados na gestão atual <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
@@ -454,7 +452,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="fdiv"></div>
       <button class="genbtn" id="btnGen" onclick="generate()">
         <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg>
-        Gerar Reunião Consultiva
+        Gerar Recomendação
       </button>
     </aside>
 
@@ -501,7 +499,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v2.3</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v2.5</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -601,6 +599,51 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 </div>
 
 <script>
+// ── AUTOCOMPLETE ASSESSORIA ──
+var ASS_LIST = [
+  {g:'Sem assessoria',        items:['Não possui assessoria','Investe sozinho / direto']},
+  {g:'Bancos',                items:['Gerente de banco (Itaú)','Gerente de banco (Bradesco)','Gerente de banco (Santander)','Gerente de banco (Caixa)','Gerente de banco (BB)','Gerente de banco (Nubank)']},
+  {g:'Plataformas e corretoras', items:['XP Investimentos','BTG Pactual','Rico','Clear','Genial','Modal','Órama','Guide','Ágora','Toro','Easynvest / Nuinvest','Inter Invest','C6 Bank Invest','Avenue','Nomad','Mirae Asset']},
+  {g:'Outros escritórios XP', items:['Outro escritório XP']},
+  {g:'Gestoras e family offices', items:['Family Office próprio','Gestora independente','Multi Family Office']},
+  {g:'Outros',                items:['Assessor autônomo (AAI)','Outro']}
+];
+
+var acAssIdx = -1;
+var acAssVisible = [];
+
+function acAssFilter(){
+  var q = acNorm(document.getElementById('fAss').value.trim());
+  var drop = document.getElementById('acAssDrop');
+  acAssIdx = -1; acAssVisible = [];
+  var html = '';
+  ASS_LIST.forEach(function(group){
+    var matched = q ? group.items.filter(function(item){ return acNorm(item).indexOf(q) >= 0; }) : group.items;
+    if(!matched.length) return;
+    html += '<div class="ac-group">'+group.g+'</div>';
+    matched.forEach(function(item){
+      acAssVisible.push(item);
+      var display = q ? item.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')', 'gi'), '<mark>$1</mark>') : item;
+      html += '<div class="ac-item" onmousedown="acAssSelect(\''+item.replace(/'/g,"\\'")+'\')" >'+display+'</div>';
+    });
+  });
+  drop.innerHTML = html || (q ? '<div class="ac-item" style="color:var(--muted);cursor:default">Nenhuma sugestão — será salvo como digitado</div>' : '');
+  drop.classList.toggle('open', true);
+}
+function acAssSelect(val){ document.getElementById('fAss').value=val; acAssHide(); }
+function acAssHide(){ document.getElementById('acAssDrop').classList.remove('open'); acAssIdx=-1; }
+function acAssKey(e){
+  var items=document.getElementById('acAssDrop').querySelectorAll('.ac-item');
+  if(e.key==='ArrowDown'){e.preventDefault();acAssIdx=Math.min(acAssIdx+1,items.length-1);acAssHighlight(items);}
+  else if(e.key==='ArrowUp'){e.preventDefault();acAssIdx=Math.max(acAssIdx-1,0);acAssHighlight(items);}
+  else if(e.key==='Enter'&&acAssIdx>=0){e.preventDefault();if(acAssVisible[acAssIdx])acAssSelect(acAssVisible[acAssIdx]);}
+  else if(e.key==='Escape'){acAssHide();}
+}
+function acAssHighlight(items){
+  items.forEach(function(el,i){el.classList.toggle('sel',i===acAssIdx);});
+  if(acAssIdx>=0&&items[acAssIdx])items[acAssIdx].scrollIntoView({block:'nearest'});
+}
+
 // ── AUTOCOMPLETE PROFISSÃO ──
 var PROF_LIST = [
   // Saúde
@@ -1882,6 +1925,14 @@ function renderDashSVG(){
 
 <!-- ╔══════════════════════════════════════════════════════╗
      ║                    CHANGELOG                         ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ v2.5 — Label "Profissão / Setor" → "Profissão"       ║
+     ║        Assessoria atual vira autocomplete            ║
+     ║        20+ corretoras/plataformas pré-carregadas     ║
+     ║        Aceita valor livre se não der match           ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ v2.4 — Botão "Gerar Recomendação"                    ║
+     ║        (era "Gerar Reunião Consultiva")              ║
      ╠══════════════════════════════════════════════════════╣
      ║ v2.3 — Autocomplete de profissão                     ║
      ║        ~130 profissões em 14 categorias              ║

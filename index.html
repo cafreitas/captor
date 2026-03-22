@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v2.6</title>
+<title>Captor — Pré-vendas eficiente e inteligente v2.7</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -284,6 +284,22 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 .ac-item:hover,.ac-item.sel{background:var(--lime-dim);color:var(--lime)}
 .ac-item mark{background:transparent;color:var(--lime);font-weight:700}
 
+/* BARRA DE APROVAÇÃO DE PROPOSTA */
+.proposal-bar{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.proposal-bar-info{font-size:.78rem;color:var(--muted);line-height:1.5}
+.proposal-bar-info strong{color:var(--white);display:block;font-size:.84rem;margin-bottom:2px}
+.proposal-btns{display:flex;gap:8px;flex-shrink:0}
+.pbtn{padding:8px 16px;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer;border:none;transition:all .2s;display:flex;align-items:center;gap:6px}
+.pbtn-approve{background:var(--bg3);border:1px solid var(--border);color:var(--muted)}
+.pbtn-approve:hover{border-color:var(--lime);color:var(--lime)}
+.pbtn-approve.approved{background:rgba(168,194,58,.12);border-color:var(--lime);color:var(--lime)}
+.pbtn-publish{background:var(--lime);color:#1a1a1a}
+.pbtn-publish:hover{background:var(--lime2)}
+.pbtn-publish:disabled{opacity:.4;cursor:not-allowed}
+.proposal-link-wrap{background:var(--bg3);border:1px solid var(--lime);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;gap:10px;margin-top:8px;width:100%}
+.proposal-link-url{font-size:.75rem;color:var(--lime);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace}
+.proposal-link-copy{background:var(--lime);color:#1a1a1a;border:none;border-radius:5px;padding:4px 10px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:var(--f);white-space:nowrap}
+
 /* FOOTER */
 .footer{text-align:center;padding:13px;font-size:.62rem;color:var(--dim);border-top:1px solid var(--border);background:var(--bg2)}
 .footer strong{color:var(--lime)}
@@ -349,7 +365,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
       <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
       <button class="lbtn" id="lBtn" onclick="doAuth()">Entrar</button>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v2.6</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v2.7</div>
     </div>
   </div>
 </div>
@@ -361,7 +377,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver">v2.6</div>
+      <div class="hver">v2.7</div>
     </div>
     <div class="hrr">
       <div class="ntabs">
@@ -499,7 +515,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v2.6</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v2.7</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -1354,6 +1370,7 @@ async function generate(){
   document.getElementById('outArea').style.display='none';
   document.getElementById('loadingState').style.display='flex';
   document.getElementById('btnGen').disabled=true;
+  proposalApproved = false;
   document.getElementById('contentArea').scrollIntoView({behavior:'smooth',block:'start'});
 
   var ids=['ss1','ss2','ss3','ss4'];
@@ -1430,6 +1447,7 @@ async function generate(){
     setTimeout(function(){
       document.getElementById('loadingState').style.display='none';
       window._lastMeta={nome:nome,pat:pat,perfil:perfil,prof:prof,obj:obj,idade:idade,currentAlloc:currentAlloc};
+      window._lastOutput=parsed;
       renderOutput(nome,patFmt,parsed,window._lastMeta);
       document.getElementById('btnGen').disabled=false;
     },300);
@@ -1748,6 +1766,24 @@ function renderOutput(nome,patFmt,data,meta){
   b5.body.appendChild(cg);
   area.appendChild(b5.el);
 
+  // Barra de aprovação e publicação de proposta
+  var proposalBar = document.createElement('div');
+  proposalBar.className = 'proposal-bar fadein';
+  proposalBar.id = 'proposalBar';
+  proposalBar.innerHTML = ''
+    +'<div class="proposal-bar-info"><strong>📋 Proposta para o cliente</strong>Revise o conteúdo acima antes de publicar. Após aprovação, um link será gerado para enviar ao cliente.</div>'
+    +'<div class="proposal-btns">'
+    +'<button class="pbtn pbtn-approve" id="btnApprove" onclick="approveProposal()">'
+    +'<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    +'Aprovar conteúdo'
+    +'</button>'
+    +'<button class="pbtn pbtn-publish" id="btnPublish" onclick="publishProposal()" disabled>'
+    +'<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg>'
+    +'Publicar Proposta'
+    +'</button>'
+    +'</div>';
+  area.appendChild(proposalBar);
+
   area.style.display='block';
   setTimeout(function(){
     if(hasCurrentAlloc){
@@ -1784,6 +1820,93 @@ function prepAndPrint(){
   document.querySelectorAll('.blkchev').forEach(function(c){c.classList.add('open');});
   // Aguarda render dos SVGs antes de imprimir
   setTimeout(function(){window.print();},300);
+}
+
+// ── PROPOSTA ──
+var proposalApproved = false;
+
+function approveProposal(){
+  proposalApproved = true;
+  var btn = document.getElementById('btnApprove');
+  btn.classList.add('approved');
+  btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Conteúdo aprovado ✓';
+  document.getElementById('btnPublish').disabled = false;
+}
+
+function generateHash(){
+  var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  var hash = '';
+  for(var i = 0; i < 8; i++) hash += chars[Math.floor(Math.random() * chars.length)];
+  return hash;
+}
+
+async function publishProposal(){
+  if(!proposalApproved){ alert('Aprove o conteúdo antes de publicar.'); return; }
+  if(!supabaseUserId){ alert('Você precisa estar logado para publicar.'); return; }
+
+  var btn = document.getElementById('btnPublish');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> Publicando...';
+
+  var meta = window._lastMeta;
+  var data = window._lastOutput;
+  if(!meta || !data){ alert('Gere uma recomendação primeiro.'); btn.disabled=false; return; }
+
+  var hash = generateHash();
+  var baseUrl = window.location.href.replace('index.html','').replace(/\/$/, '');
+  var proposalUrl = baseUrl + '/proposta.html#' + hash;
+
+  // Snapshot da empresa
+  var empresaSnap = empresaData ? JSON.parse(JSON.stringify(empresaData)) : null;
+
+  // Alocação atual
+  var currentAlloc = meta.currentAlloc || null;
+
+  var payload = {
+    hash: hash,
+    user_id: supabaseUserId,
+    cliente_nome: meta.nome,
+    cliente_pat: parseInt(meta.pat),
+    cliente_perfil: meta.perfil,
+    cliente_prof: meta.prof,
+    cliente_idade: parseInt(meta.idade),
+    cliente_obj: meta.obj,
+    cliente_ass: document.getElementById('fAss').value || '',
+    cliente_gaps: document.getElementById('fGaps').value || '',
+    cliente_ctx: document.getElementById('fCtx').value || '',
+    alocacao_atual: currentAlloc,
+    alocacao_sugerida: data.alocacao,
+    analise_ia: data,
+    empresa_snapshot: empresaSnap,
+    status: 'enviada',
+    expires_at: new Date(Date.now() + 30*24*60*60*1000).toISOString()
+  };
+
+  var {error} = await sb.from('proposals').insert(payload);
+  if(error){
+    alert('Erro ao publicar: ' + error.message);
+    btn.disabled = false;
+    btn.innerHTML = '🔗 Publicar Proposta';
+    return;
+  }
+
+  // Mostra link copiável
+  btn.innerHTML = '✅ Proposta publicada!';
+  var bar = document.getElementById('proposalBar');
+  var linkWrap = document.createElement('div');
+  linkWrap.className = 'proposal-link-wrap';
+  linkWrap.innerHTML = '<span class="proposal-link-url">'+proposalUrl+'</span>'
+    +'<button class="proposal-link-copy" onclick="copyProposalLink(\''+proposalUrl+'\')">📋 Copiar link</button>';
+  bar.appendChild(linkWrap);
+  copyProposalLink(proposalUrl);
+}
+
+function copyProposalLink(url){
+  navigator.clipboard.writeText(url).then(function(){
+    var btns = document.querySelectorAll('.proposal-link-copy');
+    btns.forEach(function(b){ b.textContent = '✓ Copiado!'; });
+    setTimeout(function(){ btns.forEach(function(b){ b.textContent = '📋 Copiar link'; }); }, 2000);
+  });
 }
 
 // ── SVG DONUT CHART ──
@@ -1925,6 +2048,15 @@ function renderDashSVG(){
 
 <!-- ╔══════════════════════════════════════════════════════╗
      ║                    CHANGELOG                         ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ v2.7 — Infraestrutura de propostas (Entrega 1)       ║
+     ║        Tabela proposals no Supabase                  ║
+     ║        Botão "Aprovar conteúdo" no output            ║
+     ║        Botão "Publicar Proposta" pós-aprovação       ║
+     ║        Geração de hash único por proposta            ║
+     ║        Link copiável automaticamente                 ║
+     ║        proposta.html básica com carregamento         ║
+     ║        Rastreamento de visualização (status)         ║
      ╠══════════════════════════════════════════════════════╣
      ║ v2.6 — "Aurum Family Office" → "Captor Family Office"║
      ║        Padronização do prompt padrão da IA           ║

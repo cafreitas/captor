@@ -392,7 +392,7 @@ function renderStatusPill(s){var p=document.getElementById('statusPill');p.textC
 (async function(){
   var hash=window.location.hash.replace('#','').trim();
   if(!hash){showError('Link inválido','Este link não contém um identificador válido.');return;}
-  var r=await sb.from('proposals').select('*').eq('hash',hash).single();
+  var r=await sb.from('proposals').select('*').eq('hash',hash).maybeSingle();
   if(r.error||!r.data){showError('Proposta não encontrada','Este link pode ter expirado. Entre em contato com seu assessor.');return;}
   proposal=r.data;
   isExpired=new Date(r.data.expires_at)<new Date();

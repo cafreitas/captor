@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v3.5</title>
+<title>Captor — Pré-vendas eficiente e inteligente v3.6</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -309,6 +309,22 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 .edit-modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-shrink:0}
 .edit-modal-hint{font-size:.7rem;color:var(--dim)}
 
+/* ENERGY BAR */
+.energy-wrap{display:flex;align-items:center;gap:7px;cursor:pointer;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3);transition:border-color .2s}
+.energy-wrap:hover{border-color:var(--lime)}
+.energy-bar-bg{width:72px;height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+.energy-bar-fill{height:100%;border-radius:3px;transition:width .6s ease,background .6s ease}
+.energy-label{font-size:.65rem;color:var(--muted);font-weight:700;white-space:nowrap;min-width:28px;text-align:right}
+@keyframes pulse-red{0%,100%{opacity:1}50%{opacity:.5}}
+.energy-low{animation:pulse-red 1.2s ease-in-out infinite}
+.credit-pkg{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center}
+.credit-pkg-hi{border-color:var(--lime);background:rgba(168,194,58,.05)}
+.credit-pkg-name{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px}
+.credit-pkg-val{font-size:.95rem;font-weight:800;color:var(--white);margin-bottom:2px}
+.credit-pkg-price{font-size:.75rem;color:var(--lime);font-weight:700;margin-bottom:8px}
+.credit-pkg-btn{width:100%;padding:6px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:.7rem;cursor:not-allowed;font-family:var(--f)}
+.zero-credits-banner{background:rgba(220,50,50,.1);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:10px 14px;font-size:.78rem;color:#f08080;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+
 /* TOOLTIP PUBLICAR */
 .pub-tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:.68rem;color:var(--muted);white-space:nowrap;pointer-events:none}
 .pub-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--border)}
@@ -390,7 +406,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
       <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
       <button class="lbtn" id="lBtn" onclick="doAuth()">Entrar</button>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v3.5</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v3.6</div>
     </div>
   </div>
 </div>
@@ -402,13 +418,19 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver">v3.5</div>
+      <div class="hver">v3.6</div>
     </div>
     <div class="hrr">
       <div class="ntabs">
         <button class="ntab active" onclick="showTab('gen',this)">Gerador</button>
         <button class="ntab" onclick="showTab('dash',this)">Dashboard</button>
         <button class="ntab" onclick="openEmpresaModal()">⚙ Configuração</button>
+      </div>
+      <div class="energy-wrap" onclick="openCreditsModal()" title="Ver créditos">
+        <div class="energy-bar-bg">
+          <div class="energy-bar-fill" id="energyFill"></div>
+        </div>
+        <span class="energy-label" id="energyLabel">—</span>
       </div>
       <div class="upill" style="cursor:pointer" onclick="confirmLogout()" title="Sair">
         <div class="uav" id="avEl">?</div>
@@ -560,7 +582,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v3.5</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v3.6</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -657,6 +679,69 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       </div>
     </div>
   </div>
+  <!-- MODAL CRÉDITOS -->
+  <div id="creditsModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeCreditsModal()">
+    <div class="modal" style="max-width:580px">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">⚡ Meus Créditos</div>
+          <div class="modal-sub" id="creditsModalSub">Acompanhe o uso e recarregue seu saldo</div>
+        </div>
+        <button class="modal-close" onclick="closeCreditsModal()">✕</button>
+      </div>
+      <div style="padding:20px 24px">
+
+        <!-- Saldo + barra grande -->
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rl);padding:20px 22px;margin-bottom:16px">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:12px">
+            <div>
+              <div style="font-size:.65rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Saldo atual</div>
+              <div style="font-size:2.2rem;font-weight:800;color:var(--white);letter-spacing:-.04em;line-height:1" id="creditsBigNum">—</div>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:4px" id="creditsUsedLabel">—</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:.65rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Consumo</div>
+              <div style="font-size:.82rem;color:var(--muted)" id="creditsCostInfo">Geração: 0.4 · Extração: 0.2</div>
+            </div>
+          </div>
+          <div class="energy-bar-bg" style="height:12px;border-radius:6px">
+            <div class="energy-bar-fill" id="energyFillModal" style="height:12px;border-radius:6px;transition:width .6s ease,background .6s ease"></div>
+          </div>
+        </div>
+
+        <!-- Pacotes -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Comprar créditos</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="creditPackages">
+            <div class="credit-pkg"><div class="credit-pkg-name">Starter</div><div class="credit-pkg-val">20 créditos</div><div class="credit-pkg-price">R$ 29</div><button class="credit-pkg-btn" disabled>Em breve</button></div>
+            <div class="credit-pkg credit-pkg-hi"><div class="credit-pkg-name">Pro</div><div class="credit-pkg-val">100 créditos</div><div class="credit-pkg-price">R$ 99</div><button class="credit-pkg-btn" disabled>Em breve</button></div>
+            <div class="credit-pkg"><div class="credit-pkg-name">Growth</div><div class="credit-pkg-val">300 créditos</div><div class="credit-pkg-price">R$ 249</div><button class="credit-pkg-btn" disabled>Em breve</button></div>
+          </div>
+        </div>
+
+        <!-- Auto-recarga -->
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;opacity:.5" title="Disponível com integração de pagamento">
+          <div>
+            <div style="font-size:.78rem;font-weight:700;color:var(--white)">Auto-recarga</div>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:2px">Recarregar automaticamente quando o saldo ficar baixo</div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:.65rem;color:var(--dim);white-space:nowrap">Em breve</div>
+        </div>
+
+        <!-- Log -->
+        <div>
+          <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Histórico de uso</div>
+          <div style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r)">
+            <table class="histtbl" id="creditsLogTable">
+              <thead><tr><th>Data</th><th>Ação</th><th>Cliente</th><th style="text-align:right">Créditos</th><th style="text-align:right">Saldo</th></tr></thead>
+              <tbody id="creditsLogBody"><tr><td colspan="5" style="color:var(--dim);text-align:center;padding:16px">Carregando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL EDIÇÃO DE PROPOSTA removido — substituído por bloco inline -->
 </div>
 
@@ -926,8 +1011,124 @@ function enterApp(session){
   document.getElementById('avEl').textContent=user.charAt(0).toUpperCase();
   document.getElementById('bannerPerfil').style.display='flex';
   initSliders();
+  loadCredits();
   updateDash();
   loadEmpresaData();
+}
+
+// ── CRÉDITOS ──
+var userCredits = null;
+var CREDIT_COSTS = {geracao: 0.4, regeneracao: 0.4, extracao_pdf: 0.2};
+
+async function loadCredits(){
+  if(!supabaseUserId) return;
+  var {data} = await sb.from('user_credits').select('*').eq('user_id', supabaseUserId).single();
+  if(data){
+    userCredits = data;
+    renderEnergyBar(data.saldo);
+  }
+}
+
+function renderEnergyBar(saldo){
+  var max = 10;
+  var pct = Math.min(100, Math.max(0, (saldo / max) * 100));
+  // Cor: verde → amarelo → vermelho
+  var color;
+  if(pct > 50) color = '#a8c23a';
+  else if(pct > 20) color = '#e0b840';
+  else color = '#e05555';
+
+  var fill = document.getElementById('energyFill');
+  var fillM = document.getElementById('energyFillModal');
+  var label = document.getElementById('energyLabel');
+
+  if(fill){ fill.style.width = pct+'%'; fill.style.background = color; }
+  if(fillM){ fillM.style.width = pct+'%'; fillM.style.background = color; }
+  if(label){ label.textContent = saldo.toFixed(1); label.style.color = color; }
+
+  // Pulso quando saldo ≤ 1
+  var wrap = document.querySelector('.energy-wrap');
+  if(wrap){ wrap.classList.toggle('energy-low', saldo <= 1 && saldo > 0); }
+
+  // Banner zero no gerador
+  var existing = document.getElementById('zeroCredsBanner');
+  if(saldo <= 0){
+    if(!existing){
+      var banner = document.createElement('div');
+      banner.id = 'zeroCredsBanner';
+      banner.className = 'zero-credits-banner fadein';
+      banner.innerHTML = '⚡ Seus créditos acabaram. Recarregue para continuar gerando recomendações.'
+        +'<button onclick="openCreditsModal()" style="background:var(--lime);color:#1a1a1a;border:none;border-radius:6px;padding:5px 12px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">Ver créditos</button>';
+      var outArea = document.getElementById('outArea');
+      if(outArea && outArea.parentNode) outArea.parentNode.insertBefore(banner, outArea);
+    }
+    document.getElementById('btnGen').disabled = true;
+  } else {
+    if(existing) existing.remove();
+    document.getElementById('btnGen').disabled = false;
+  }
+
+  // Modal
+  var bigNum = document.getElementById('creditsBigNum');
+  var usedLabel = document.getElementById('creditsUsedLabel');
+  if(bigNum) bigNum.textContent = saldo.toFixed(1);
+  if(usedLabel && userCredits) usedLabel.textContent = userCredits.total_usado.toFixed(1) + ' usados · ' + userCredits.total_ganho.toFixed(1) + ' ganhos';
+}
+
+async function debitCredit(acao, clienteNome){
+  var custo = CREDIT_COSTS[acao] || 0.4;
+  if(!userCredits || userCredits.saldo < custo){
+    openCreditsModal();
+    throw new Error('Créditos insuficientes. Recarregue para continuar.');
+  }
+  var novoSaldo = Math.round((userCredits.saldo - custo) * 100) / 100;
+  // Atualiza Supabase
+  await sb.from('user_credits').update({
+    saldo: novoSaldo,
+    total_usado: Math.round((userCredits.total_usado + custo) * 100) / 100
+  }).eq('user_id', supabaseUserId);
+  // Grava log
+  var acaoLabels = {geracao:'Geração', regeneracao:'Regeneração', extracao_pdf:'Extração PDF/PPTX'};
+  await sb.from('credit_logs').insert({
+    user_id: supabaseUserId,
+    acao: acao,
+    cliente: clienteNome || null,
+    consumo: -custo,
+    saldo_apos: novoSaldo
+  });
+  userCredits.saldo = novoSaldo;
+  userCredits.total_usado = Math.round((userCredits.total_usado + custo) * 100) / 100;
+  renderEnergyBar(novoSaldo);
+}
+
+async function openCreditsModal(){
+  document.getElementById('creditsModal').style.display = 'flex';
+  if(userCredits) renderEnergyBar(userCredits.saldo);
+  // Carrega log
+  var {data} = await sb.from('credit_logs')
+    .select('*').eq('user_id', supabaseUserId)
+    .order('created_at', {ascending: false}).limit(30);
+  var acaoLabels = {geracao:'Geração',regeneracao:'Regeneração',extracao_pdf:'Extração PDF',bonus_cadastro:'Bônus cadastro',compra:'Compra'};
+  var tb = document.getElementById('creditsLogBody');
+  if(!data || !data.length){
+    tb.innerHTML = '<tr><td colspan="5" style="color:var(--dim);text-align:center;padding:16px">Nenhuma transação ainda.</td></tr>';
+    return;
+  }
+  tb.innerHTML = data.map(function(l){
+    var dateFmt = new Date(l.created_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    var isPositive = l.consumo > 0;
+    return '<tr>'
+      +'<td style="color:var(--muted);font-size:.7rem">'+dateFmt+'</td>'
+      +'<td>'+(acaoLabels[l.acao]||l.acao)+'</td>'
+      +'<td style="color:var(--muted)">'+(l.cliente||'—')+'</td>'
+      +'<td style="text-align:right;font-weight:700;color:'+(isPositive?'var(--lime)':'#f08080')+'">'+(isPositive?'+':'')+l.consumo.toFixed(1)+'</td>'
+      +'<td style="text-align:right;color:var(--muted)">'+l.saldo_apos.toFixed(1)+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function closeCreditsModal(){
+  document.getElementById('creditsModal').style.display = 'none';
 }
 
 async function doAuth(){
@@ -1084,6 +1285,10 @@ async function extractFromFile(){
   if(!uploadedFile)return;
   var btn=document.getElementById('extractBtn');
   btn.disabled=true;btn.innerHTML='<div class="spinner" style="width:16px;height:16px;border-width:2px;margin-right:6px"></div>Analisando com IA...';
+
+  // Debitar crédito
+  try{ await debitCredit('extracao_pdf', null); }
+  catch(e){ alert(e.message); btn.disabled=false; btn.innerHTML='Analisar com IA'; return; }
 
   try{
     var ext=uploadedFile.name.split('.').pop().toLowerCase();
@@ -1450,6 +1655,16 @@ async function generate(){
   proposalDraftHash = null;
   document.getElementById('contentArea').scrollIntoView({behavior:'smooth',block:'start'});
 
+  // Debitar crédito antes de chamar a IA
+  try{ await debitCredit('geracao', nome); }
+  catch(e){
+    document.getElementById('loadingState').style.display='none';
+    document.getElementById('emptyState').style.display='flex';
+    document.getElementById('btnGen').disabled=false;
+    alert(e.message);
+    return;
+  }
+
   var ids=['ss1','ss2','ss3','ss4'];
   ids.forEach(function(id){document.getElementById(id).className='ldstep';});
   var si=0;
@@ -1557,6 +1772,10 @@ async function regenerate(){
 
   document.getElementById('btnRegen').disabled=true;
   document.getElementById('btnRegen').textContent='Regenerando...';
+
+  // Debitar crédito
+  try{ await debitCredit('regeneracao', meta.nome); }
+  catch(e){ alert(e.message); document.getElementById('btnRegen').disabled=false; document.getElementById('btnRegen').textContent='Regenerar com anotações'; return; }
 
   var nome=meta.nome,pat=meta.pat,prof=meta.prof,idade=meta.idade,perfil=meta.perfil,obj=meta.obj;
   var patFmt=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(pat);
@@ -1994,18 +2213,24 @@ function copyDashLink(url){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║                    CHANGELOG                         ║
      ╠══════════════════════════════════════════════════════╣
+     ║ v3.6 — Sistema de créditos completo                  ║
+     ║        Barra de energia no header (verde→vermelho)   ║
+     ║        Clicável → abre modal de créditos             ║
+     ║        Pulsa quando saldo ≤ 1 crédito                ║
+     ║        Modal: saldo, barra, log, pacotes, auto-recarga║
+     ║        Log detalhado: data, ação, cliente, consumo   ║
+     ║        Geração/regeneração: −0.4 crédito             ║
+     ║        Extração PDF/PPTX: −0.2 crédito              ║
+     ║        Saldo zero: bloqueia geração, resto funciona  ║
+     ║        10 créditos grátis no cadastro                ║
+     ║        SQL: user_credits + credit_logs + trigger     ║
+     ╠══════════════════════════════════════════════════════╣
      ║ v3.5 — Dashboard real + Feedback na proposta         ║
      ║        Dashboard substituído por dados reais         ║
      ║        KPIs: total, aceitas, taxa, pendentes         ║
      ║        Lista de propostas com filtro por status      ║
-     ║        Badges coloridos por status                   ║
-     ║        Estrelas de feedback exibidas no dashboard    ║
      ║        Feedback 1-5 estrelas + comentário            ║
-     ║        na proposta.html (só clientes, não SDR)       ║
-     ║        Slides institucionais removidos               ║
      ║        SQL: feedback_rating, feedback_texto          ║
-     ╠══════════════════════════════════════════════════════╣
-     ║ v3.2 — Modo SDR na proposta + fluxo de aprovação    ║
      ║        Texto barra: "Revise e aprove antes de        ║
      ║        publicar"                                     ║
      ║        Bloco inline mostra apenas slides editáveis   ║
@@ -2080,22 +2305,35 @@ function copyDashLink(url){
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ BACKLOG — v3.5                                       ║
-     ║  Validação de campos melhorada no formulário:        ║
-     ║  · Alerta mostra apenas os campos não preenchidos    ║
-     ║    (ex: "Preencha: Idade" em vez de listar tudo)     ║
-     ║  · Highlight visual (borda vermelha) nos campos      ║
-     ║    vazios após tentativa de envio                    ║
-     ║  · Highlight some automaticamente ao preencher       ║
-     ║  Após aprovação SDR na proposta.html:                ║
-     ║  · Fechar a aba/janela automaticamente               ║
-     ║  Voz do sumário executivo:                           ║
-     ║  · Prompt instruído a gerar resumoPerfil na 2ª       ║
-     ║    pessoa ("Você é..."), dirigido ao cliente         ║
-     ║  · Revisão do tom geral da proposta.html             ║
-     ║  Botões da proposta.html:                            ║
-     ║  · Remover "Quero discutir" e "Compartilhar"         ║
-     ║  · "Mais detalhes" → "Dúvidas"                       ║
+     ║ BACKLOG — PRÉ-LANÇAMENTO                             ║
+     ║                                                      ║
+     ║  INFRA / AUTH                                        ║
+     ║  · Cadastro aberto (signup com email/senha)          ║
+     ║  · Créditos: 1 publicação = 1 crédito                ║
+     ║  · Saldo visível no header                           ║
+     ║  · Trigger Supabase: N créditos grátis no signup     ║
+     ║  · Publicar bloqueia se saldo zero                   ║
+     ║                                                      ║
+     ║  LEGAL                                               ║
+     ║  · Termos e Condições de Uso                         ║
+     ║  · Política de Privacidade                           ║
+     ║  · Aceite obrigatório no cadastro                    ║
+     ║                                                      ║
+     ║  MARKETING                                           ║
+     ║  · Landing page (fora do app)                        ║
+     ║  · Tag Google Analytics / GA4                        ║
+     ║  · Tag na proposta.html também (visitas do cliente)  ║
+     ║                                                      ║
+     ║  UX / QUALIDADE                                      ║
+     ║  · Teste em mobile (proposta.html e index.html)      ║
+     ║  · Página 404 amigável para links inválidos          ║
+     ║  · Onboarding: orientação no primeiro acesso         ║
+     ║  · Email de notificação quando cliente responde      ║
+     ║                                                      ║
+     ║  PÓS-LANÇAMENTO                                      ║
+     ║  · Integração de pagamento (Stripe ou Mercado Pago)  ║
+     ║  · Insights: análise de padrões de conversão         ║
+     ║  · Múltiplos SDRs por empresa                        ║
      ╚══════════════════════════════════════════════════════╝ -->
 </body>
 </html>

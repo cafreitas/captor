@@ -1022,7 +1022,7 @@ var CREDIT_COSTS = {geracao: 0.4, regeneracao: 0.4, extracao_pdf: 0.2};
 
 async function loadCredits(){
   if(!supabaseUserId) return;
-  var {data} = await sb.from('user_credits').select('*').eq('user_id', supabaseUserId).single();
+  var {data} = await sb.from('user_credits').select('*').eq('user_id', supabaseUserId).maybeSingle();
   if(data){
     userCredits = data;
     renderEnergyBar(data.saldo);
@@ -1410,7 +1410,7 @@ function toggleBrandColor(hex){
 
 async function loadEmpresaData(){
   if(!supabaseUserId)return;
-  var {data}=await sb.from('company_profiles').select('*').eq('user_id',supabaseUserId).single();
+  var {data}=await sb.from('company_profiles').select('*').eq('user_id',supabaseUserId).maybeSingle();
   if(data){
     empresaData=data;
     document.getElementById('bannerPerfil').style.display='none';
@@ -2003,7 +2003,7 @@ async function saveDraftAndPreview(){
 
 function startApprovalPolling(hash){
   var interval = setInterval(async function(){
-    var {data} = await sb.from('proposals').select('status').eq('hash', hash).single();
+    var {data} = await sb.from('proposals').select('status').eq('hash', hash).maybeSingle();
     if(data && data.status === 'aprovado_sdr'){
       clearInterval(interval);
       proposalApproved = true;

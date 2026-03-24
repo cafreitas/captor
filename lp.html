@@ -95,7 +95,7 @@ nav.scrolled{
 .hero{
   min-height:100vh;display:flex;align-items:center;
   padding:120px 0 80px;
-  position:relative;overflow:hidden;
+  position:relative;overflow:visible;
 }
 .hero::after{
   content:'';position:absolute;
@@ -111,15 +111,16 @@ nav.scrolled{
 .hero-tag{margin-bottom:28px}
 .hero h1{
   font-size:clamp(2.6rem,5vw,4rem);font-weight:800;
-  line-height:1.15;color:var(--white);margin-bottom:20px;
+  line-height:1.2;color:var(--white);margin-bottom:20px;
   overflow:visible;
+  padding-bottom:0.15em;
 }
 .hero h1 em{
   font-style:normal;color:var(--lime);
-  display:inline-block;
-  line-height:1.3;
-  border-bottom:2px solid rgba(168,194,58,.4);
-  padding-bottom:4px;
+  text-decoration:underline;
+  text-decoration-color:rgba(168,194,58,.4);
+  text-decoration-thickness:2px;
+  text-underline-offset:6px;
 }
 .hero-sub{
   font-size:1.1rem;color:var(--muted);line-height:1.75;
@@ -688,7 +689,7 @@ footer{
       <a href="#">Privacidade</a>
       <a href="#">Contato</a>
     </div>
-    <div class="footer-copy">© 2026 Captor. Todos os direitos reservados. <span style="color:var(--border2);margin-left:8px">v1.0</span></div>
+    <div class="footer-copy">© 2026 Captor. Todos os direitos reservados. <span style="color:var(--border2);margin-left:8px">v1.2</span></div>
   </div>
 </footer>
 

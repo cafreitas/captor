@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Captor — Propostas de investimento em segundos</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
@@ -114,13 +115,8 @@ nav.scrolled{
 }
 .hero h1 em{
   font-style:normal;color:var(--lime);
-  position:relative;display:inline-block;
-  padding-bottom:10px;margin-bottom:-4px;
-}
-.hero h1 em::after{
-  content:'';position:absolute;
-  left:0;bottom:0;width:100%;height:2px;
-  background:var(--lime);opacity:.4;border-radius:2px;
+  border-bottom:2px solid rgba(168,194,58,.4);
+  padding-bottom:2px;
 }
 .hero-sub{
   font-size:1.1rem;color:var(--muted);line-height:1.75;
@@ -689,7 +685,7 @@ footer{
       <a href="#">Privacidade</a>
       <a href="#">Contato</a>
     </div>
-    <div class="footer-copy">© 2026 Captor. Todos os direitos reservados.</div>
+    <div class="footer-copy">© 2026 Captor. Todos os direitos reservados. <span style="color:var(--border2);margin-left:8px">v1.0</span></div>
   </div>
 </footer>
 

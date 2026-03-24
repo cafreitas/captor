@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Captor — Propostas de investimento em segundos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & BASE ── */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d;
+  --bg2:#141414;
+  --bg3:#1a1a1a;
+  --bg4:#222;
+  --border:#2a2a2a;
+  --border2:#333;
+  --lime:#a8c23a;
+  --lime2:#bdd44a;
+  --lime3:#c8e050;
+  --lime-dim:rgba(168,194,58,.08);
+  --lime-glow:rgba(168,194,58,.18);
+  --text:#f0f0f0;
+  --muted:#888;
+  --dim:#555;
+  --white:#fff;
+  /* BRAND NAME — change here only */
+  --brand:"Captor";
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3,h4{font-family:'Syne',sans-serif;letter-spacing:-.02em}
+a{color:inherit;text-decoration:none}
+
+/* ── NOISE TEXTURE OVERLAY ── */
+body::before{
+  content:'';
+  position:fixed;inset:0;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;opacity:.4;
+}
+section,nav,footer{position:relative;z-index:1}
+
+/* ── UTILS ── */
+.container{max-width:1100px;margin:0 auto;padding:0 32px}
+.tag{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--lime-dim);border:1px solid rgba(168,194,58,.2);
+  color:var(--lime);font-family:'Syne',sans-serif;font-size:.72rem;
+  font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  padding:5px 14px;border-radius:20px;
+}
+.tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--lime);display:inline-block}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:20px 0;
+  transition:background .3s,border .3s,backdrop-filter .3s;
+}
+nav.scrolled{
+  background:rgba(13,13,13,.85);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  padding:14px 0;
+}
+.nav-inner{
+  max-width:1100px;margin:0 auto;padding:0 32px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-logo{
+  font-family:'Syne',sans-serif;font-size:1.35rem;font-weight:800;
+  color:var(--white);letter-spacing:-.03em;
+}
+.nav-logo span{color:var(--lime)}
+.nav-cta{
+  padding:9px 22px;background:var(--lime);color:#0d0d0d;
+  font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;
+  border-radius:8px;border:none;cursor:pointer;
+  transition:background .2s,transform .15s;
+  text-decoration:none;display:inline-block;
+}
+.nav-cta:hover{background:var(--lime2);transform:translateY(-1px)}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;display:flex;align-items:center;
+  padding:120px 0 80px;
+  position:relative;overflow:hidden;
+}
+.hero::after{
+  content:'';position:absolute;
+  top:-200px;right:-200px;
+  width:700px;height:700px;border-radius:50%;
+  background:radial-gradient(circle,rgba(168,194,58,.07) 0%,transparent 65%);
+  pointer-events:none;
+}
+.hero-inner{
+  max-width:1100px;margin:0 auto;padding:0 32px;
+  display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;
+}
+.hero-tag{margin-bottom:28px}
+.hero h1{
+  font-size:clamp(2.6rem,5vw,4rem);font-weight:800;
+  line-height:1.08;color:var(--white);margin-bottom:20px;
+}
+.hero h1 em{
+  font-style:normal;color:var(--lime);
+  position:relative;display:inline-block;
+}
+.hero h1 em::after{
+  content:'';position:absolute;
+  left:0;bottom:-4px;width:100%;height:2px;
+  background:var(--lime);opacity:.4;border-radius:2px;
+}
+.hero-sub{
+  font-size:1.1rem;color:var(--muted);line-height:1.75;
+  max-width:480px;margin-bottom:36px;font-weight:300;
+}
+.hero-sub strong{color:var(--text);font-weight:500}
+.hero-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.btn-primary{
+  padding:14px 28px;background:var(--lime);color:#0d0d0d;
+  font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;
+  border-radius:10px;border:none;cursor:pointer;
+  transition:background .2s,transform .15s,box-shadow .2s;
+  box-shadow:0 4px 24px rgba(168,194,58,.25);
+  display:inline-block;text-align:center;
+}
+.btn-primary:hover{background:var(--lime2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(168,194,58,.35)}
+.btn-ghost{
+  padding:14px 24px;background:transparent;color:var(--muted);
+  font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:400;
+  border:1px solid var(--border2);border-radius:10px;cursor:pointer;
+  transition:border-color .2s,color .2s;display:inline-block;
+}
+.btn-ghost:hover{border-color:var(--lime);color:var(--lime)}
+.hero-note{font-size:.74rem;color:var(--dim);margin-top:12px}
+
+/* HERO VISUAL */
+.hero-visual{position:relative}
+.mockup{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 40px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03);
+}
+.mockup-bar{
+  background:var(--bg3);border-bottom:1px solid var(--border);
+  padding:12px 16px;display:flex;align-items:center;gap:8px;
+}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.mockup-content{padding:20px}
+.m-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.m-title{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;color:var(--white)}
+.m-badge{background:var(--lime-dim);border:1px solid rgba(168,194,58,.25);color:var(--lime);font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:3px 8px;border-radius:4px}
+.m-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.m-card-label{font-size:.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;font-weight:600}
+.m-card-value{font-size:.82rem;color:var(--text);line-height:1.5}
+.m-card-value strong{color:var(--lime)}
+.m-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.m-stat{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px}
+.m-stat-n{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--lime)}
+.m-stat-l{font-size:.64rem;color:var(--dim);margin-top:2px}
+.m-bar-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.m-bar-label{font-size:.64rem;color:var(--dim);margin-bottom:6px}
+.m-bar-track{background:var(--bg);border-radius:4px;height:6px;overflow:hidden}
+.m-bar-fill{height:100%;border-radius:4px;background:var(--lime)}
+.m-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.2);color:var(--lime);font-size:.64rem;font-weight:700;padding:3px 8px;border-radius:20px;margin-top:4px}
+.float-card{
+  position:absolute;right:-28px;top:32px;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:12px;padding:12px 16px;
+  box-shadow:0 20px 40px rgba(0,0,0,.5);
+  font-size:.75rem;min-width:160px;
+}
+.float-card-label{color:var(--dim);font-size:.62rem;margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em}
+.float-card-val{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--lime)}
+.float-card2{
+  position:absolute;left:-24px;bottom:48px;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:12px;padding:10px 14px;
+  box-shadow:0 20px 40px rgba(0,0,0,.5);
+  font-size:.75rem;
+}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--lime);display:inline-block;margin-right:6px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+/* ── LOGOS ── */
+.logos{padding:48px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.logos-inner{
+  max-width:1100px;margin:0 auto;padding:0 32px;
+  display:flex;align-items:center;gap:48px;flex-wrap:wrap;justify-content:center;
+}
+.logos-label{font-size:.72rem;color:var(--dim);font-weight:500;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.logo-item{
+  font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;
+  color:var(--dim);letter-spacing:.04em;text-transform:uppercase;
+  transition:color .2s;
+}
+.logo-item:hover{color:var(--muted)}
+
+/* ── SEÇÕES GENÉRICAS ── */
+.section{padding:100px 0}
+.section-tag{margin-bottom:16px}
+.section-title{
+  font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;
+  color:var(--white);line-height:1.15;margin-bottom:16px;
+}
+.section-sub{font-size:1rem;color:var(--muted);line-height:1.75;max-width:560px;font-weight:300}
+
+/* ── PROBLEMA ── */
+.problema{background:var(--bg)}
+.problema-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:60px;
+}
+.prob-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:14px;padding:32px 28px;
+  transition:border-color .2s,transform .2s;
+  position:relative;overflow:hidden;
+}
+.prob-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--lime),transparent);
+  opacity:0;transition:opacity .3s;
+}
+.prob-card:hover{border-color:var(--border2);transform:translateY(-4px)}
+.prob-card:hover::before{opacity:.6}
+.prob-num{
+  font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;
+  color:var(--border2);margin-bottom:16px;line-height:1;
+}
+.prob-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--white);margin-bottom:10px}
+.prob-body{font-size:.88rem;color:var(--muted);line-height:1.7;font-weight:300}
+
+/* ── COMO FUNCIONA ── */
+.como{background:var(--bg2)}
+.como-steps{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+  margin-top:60px;position:relative;
+}
+.como-steps::before{
+  content:'';position:absolute;top:28px;left:calc(33.333% / 2);
+  right:calc(33.333% / 2);height:1px;
+  background:linear-gradient(90deg,transparent,var(--border2) 20%,var(--border2) 80%,transparent);
+}
+.step{padding:0 32px;position:relative}
+.step:first-child{padding-left:0}
+.step:last-child{padding-right:0}
+.step-num{
+  width:56px;height:56px;border-radius:50%;
+  background:var(--bg3);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;
+  color:var(--lime);margin-bottom:24px;position:relative;z-index:1;
+}
+.step-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--white);margin-bottom:10px}
+.step-body{font-size:.88rem;color:var(--muted);line-height:1.7;font-weight:300}
+
+/* ── FEATURES ── */
+.features{background:var(--bg)}
+.features-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:60px;
+}
+.feat-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:14px;padding:36px 32px;
+  display:grid;grid-template-columns:48px 1fr;gap:20px;align-items:start;
+  transition:border-color .25s,background .25s;
+}
+.feat-card:hover{border-color:rgba(168,194,58,.25);background:rgba(168,194,58,.03)}
+.feat-icon{
+  width:48px;height:48px;border-radius:10px;
+  background:var(--lime-dim);border:1px solid rgba(168,194,58,.15);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.feat-icon svg{color:var(--lime)}
+.feat-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--white);margin-bottom:8px}
+.feat-body{font-size:.88rem;color:var(--muted);line-height:1.7;font-weight:300}
+
+/* ── DEPOIMENTOS ── */
+.depos{background:var(--bg2);overflow:hidden}
+.depos-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:60px;
+}
+.depo-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:14px;padding:28px;
+}
+.depo-stars{color:var(--lime);font-size:.85rem;margin-bottom:16px;letter-spacing:3px}
+.depo-text{
+  font-size:.9rem;color:var(--text);line-height:1.75;
+  font-weight:300;font-style:italic;margin-bottom:24px;
+}
+.depo-author{display:flex;align-items:center;gap:12px}
+.depo-avatar{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--lime);color:#0d0d0d;
+  font-family:'Syne',sans-serif;font-size:.78rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.depo-name{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--white)}
+.depo-role{font-size:.72rem;color:var(--dim);margin-top:2px}
+
+/* ── FAQ ── */
+.faq{background:var(--bg)}
+.faq-list{max-width:760px;margin:60px auto 0}
+.faq-item{border-bottom:1px solid var(--border);overflow:hidden}
+.faq-q{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:22px 0;background:transparent;border:none;cursor:pointer;text-align:left;
+  font-family:'Syne',sans-serif;font-size:.95rem;font-weight:600;color:var(--text);
+  transition:color .2s;
+}
+.faq-q:hover{color:var(--lime)}
+.faq-arrow{
+  width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  color:var(--muted);font-size:.7rem;transition:transform .25s,border-color .2s,color .2s;
+}
+.faq-item.open .faq-arrow{transform:rotate(45deg);border-color:var(--lime);color:var(--lime)}
+.faq-a{
+  font-size:.88rem;color:var(--muted);line-height:1.75;font-weight:300;
+  max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s;
+  padding-bottom:0;
+}
+.faq-item.open .faq-a{max-height:200px;padding-bottom:20px}
+
+/* ── CTA FINAL ── */
+.cta-final{
+  padding:120px 0;
+  background:radial-gradient(ellipse at 50% 0%, rgba(168,194,58,.07) 0%, transparent 60%);
+  text-align:center;
+  border-top:1px solid var(--border);
+}
+.cta-final h2{
+  font-size:clamp(2rem,4vw,3.2rem);font-weight:800;
+  color:var(--white);margin-bottom:16px;line-height:1.1;
+}
+.cta-final p{
+  font-size:1rem;color:var(--muted);margin-bottom:40px;font-weight:300;
+}
+.cta-final-note{font-size:.74rem;color:var(--dim);margin-top:16px}
+
+/* ── FOOTER ── */
+footer{
+  padding:40px 0;border-top:1px solid var(--border);
+  background:var(--bg);
+}
+.footer-inner{
+  max-width:1100px;margin:0 auto;padding:0 32px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;
+}
+.footer-logo{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--white)}
+.footer-logo span{color:var(--lime)}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-size:.78rem;color:var(--dim);transition:color .2s}
+.footer-links a:hover{color:var(--muted)}
+.footer-copy{font-size:.72rem;color:var(--dim)}
+
+/* ── ANIMAÇÕES ── */
+.fade-up{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.fade-up.visible{opacity:1;transform:translateY(0)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .hero-inner{grid-template-columns:1fr;gap:60px}
+  .hero-visual{display:none}
+  .problema-grid,.como-steps,.features-grid,.depos-grid{grid-template-columns:1fr}
+  .como-steps::before{display:none}
+  .step{padding:0;margin-bottom:40px}
+}
+@media(max-width:600px){
+  .container{padding:0 20px}
+  .nav-inner{padding:0 20px}
+  .section{padding:70px 0}
+  .logos-inner{gap:24px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">captor<span>.</span></div>
+    <a href="#signup" class="nav-cta">Começar grátis</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-tag fade-up">
+        <span class="tag">Para assessores de investimentos</span>
+      </div>
+      <h1 class="fade-up" style="animation-delay:.1s">
+        Sua próxima proposta,<br>pronta em <em>segundos</em>
+      </h1>
+      <p class="hero-sub fade-up" style="animation-delay:.2s">
+        Captor é a ferramenta de pré-venda para assessores e consultores de investimentos. Gere roteiros, alocações personalizadas e propostas profissionais <strong>com a sua cara</strong>.
+      </p>
+      <div class="hero-actions fade-up" style="animation-delay:.3s">
+        <a href="#signup" class="btn-primary">Experimente sem custo</a>
+        <a href="#como" class="btn-ghost">Ver como funciona</a>
+      </div>
+      <p class="hero-note fade-up" style="animation-delay:.4s">Sem cartão de crédito. Sem compromisso.</p>
+    </div>
+    <div class="hero-visual fade-up" style="animation-delay:.25s">
+      <div class="mockup">
+        <div class="mockup-bar">
+          <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+          <div style="margin-left:8px;font-size:.65rem;color:var(--dim)">captor — Gerador</div>
+        </div>
+        <div class="mockup-content">
+          <div class="m-header">
+            <div class="m-title">Reunião Consultiva</div>
+            <div class="m-badge">Gerado</div>
+          </div>
+          <div class="m-card">
+            <div class="m-card-label">Resumo do cliente</div>
+            <div class="m-card-value">Médica, 38 anos, patrimônio de <strong>R$ 850 mil</strong>. Perfil moderado com foco em crescimento e proteção patrimonial.</div>
+          </div>
+          <div class="m-grid">
+            <div class="m-stat"><div class="m-stat-n">6</div><div class="m-stat-l">Etapas do roteiro</div></div>
+            <div class="m-stat"><div class="m-stat-n">5</div><div class="m-stat-l">Perguntas-chave</div></div>
+          </div>
+          <div class="m-bar-wrap">
+            <div class="m-bar-label">Alocação sugerida — Moderado</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+              <div><div class="m-bar-label">Renda Fixa 60%</div><div class="m-bar-track"><div class="m-bar-fill" style="width:60%"></div></div></div>
+              <div><div class="m-bar-label">Renda Variável 25%</div><div class="m-bar-track"><div class="m-bar-fill" style="width:25%"></div></div></div>
+            </div>
+          </div>
+          <div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between">
+            <div class="m-pill"><span class="pulse"></span>Proposta enviada</div>
+            <div style="font-size:.64rem;color:var(--dim)">há 3 min</div>
+          </div>
+        </div>
+      </div>
+      <div class="float-card">
+        <div class="float-card-label">Propostas este mês</div>
+        <div class="float-card-val">47</div>
+        <div style="font-size:.65rem;color:var(--lime);margin-top:3px">+38% vs mês anterior</div>
+      </div>
+      <div class="float-card2">
+        <div style="display:flex;align-items:center;font-size:.72rem;color:var(--text)"><span class="pulse"></span>Cliente aceitou a proposta</div>
+        <div style="font-size:.64rem;color:var(--dim);margin-top:4px">Agora mesmo</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGOS -->
+<div class="logos fade-up">
+  <div class="logos-inner">
+    <span class="logos-label">Usado por assessores de</span>
+    <span class="logo-item">XP Investimentos</span>
+    <span class="logo-item">BTG Pactual</span>
+    <span class="logo-item">Rico</span>
+    <span class="logo-item">Genial</span>
+    <span class="logo-item">Independentes</span>
+  </div>
+</div>
+
+<!-- PROBLEMA -->
+<section class="problema section">
+  <div class="container">
+    <div class="section-tag fade-up"><span class="tag">O problema</span></div>
+    <h2 class="section-title fade-up">Você passa horas preparando<br>o que deveria levar minutos</h2>
+    <div class="problema-grid">
+      <div class="prob-card fade-up">
+        <div class="prob-num">01</div>
+        <div class="prob-title">Montar uma proposta do zero é lento</div>
+        <p class="prob-body">Cada cliente tem um perfil diferente. Criar uma apresentação personalizada consome tempo que poderia ser gasto em mais reuniões e mais fechamentos.</p>
+      </div>
+      <div class="prob-card fade-up" style="animation-delay:.1s">
+        <div class="prob-num">02</div>
+        <div class="prob-title">Difícil manter consistência na alocação</div>
+        <p class="prob-body">Você tem suas regras e parâmetros. Mas aplicá-los de forma consistente para cada perfil, sem erro, sem improviso, é mais trabalhoso do que deveria ser.</p>
+      </div>
+      <div class="prob-card fade-up" style="animation-delay:.2s">
+        <div class="prob-num">03</div>
+        <div class="prob-title">Você não sabe o que o cliente achou</div>
+        <p class="prob-body">Enviou a proposta por email. O cliente viu? Gostou? Tem dúvidas? Você fica no escuro esperando um retorno que pode demorar ou não vir.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section class="como section" id="como">
+  <div class="container">
+    <div class="section-tag fade-up"><span class="tag">Como funciona</span></div>
+    <h2 class="section-title fade-up">De briefing a proposta aprovada<br>em três passos</h2>
+    <div class="como-steps">
+      <div class="step fade-up">
+        <div class="step-num">1</div>
+        <div class="step-title">Preencha o perfil do cliente</div>
+        <p class="step-body">Nome, patrimônio, perfil de risco, objetivo, alocação atual. Menos de um minuto. O Captor usa esses dados para personalizar tudo.</p>
+      </div>
+      <div class="step fade-up" style="animation-delay:.1s">
+        <div class="step-num">2</div>
+        <div class="step-title">A plataforma gera tudo</div>
+        <p class="step-body">Roteiro de reunião, perguntas de diagnóstico, argumentos consultivos e uma proposta completa, usando seus produtos e seus parâmetros de alocação.</p>
+      </div>
+      <div class="step fade-up" style="animation-delay:.2s">
+        <div class="step-num">3</div>
+        <div class="step-title">Envie e acompanhe em tempo real</div>
+        <p class="step-body">O cliente recebe um link com a proposta. Você vê quando ele abriu, o que achou e recebe a resposta diretamente na plataforma.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features section">
+  <div class="container">
+    <div class="section-tag fade-up"><span class="tag">Diferenciais</span></div>
+    <h2 class="section-title fade-up">Tudo que você precisa<br>para fechar mais</h2>
+    <div class="features-grid">
+      <div class="feat-card fade-up">
+        <div class="feat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <div>
+          <div class="feat-title">Proposta pronta em segundos</div>
+          <p class="feat-body">A plataforma usa o perfil do cliente e os parâmetros da sua empresa para gerar uma proposta completa e personalizada. Não é um template genérico.</p>
+        </div>
+      </div>
+      <div class="feat-card fade-up" style="animation-delay:.1s">
+        <div class="feat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <div>
+          <div class="feat-title">Alocação com os seus parâmetros</div>
+          <p class="feat-body">Configure uma vez as suas regras de alocação por perfil. O Captor aplica automaticamente em cada proposta gerada, sem variação, sem erro.</p>
+        </div>
+      </div>
+      <div class="feat-card fade-up" style="animation-delay:.15s">
+        <div class="feat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.6 19.79 19.79 0 01.22 1 2 2 0 012.2 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+        </div>
+        <div>
+          <div class="feat-title">Aceite online e feedback imediato</div>
+          <p class="feat-body">O cliente visualiza a proposta em uma página profissional, pode tirar dúvidas por seção e aceitar com um clique. Você recebe notificação em tempo real.</p>
+        </div>
+      </div>
+      <div class="feat-card fade-up" style="animation-delay:.2s">
+        <div class="feat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <div>
+          <div class="feat-title">Com a cara da sua empresa</div>
+          <p class="feat-body">Importe sua apresentação institucional e o Captor extrai automaticamente cores, produtos e diferenciais. Cada proposta reflete a identidade da sua assessoria.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEPOIMENTOS -->
+<section class="depos section">
+  <div class="container">
+    <div class="section-tag fade-up"><span class="tag">Resultados</span></div>
+    <h2 class="section-title fade-up">Quem usa economiza tempo<br>e fecha mais</h2>
+    <div class="depos-grid">
+      <div class="depo-card fade-up">
+        <div class="depo-stars">★★★★★</div>
+        <p class="depo-text">"Antes eu levava 40 minutos para montar uma proposta decente. Agora faço em menos de 5. O cliente recebe algo muito mais profissional do que eu conseguiria produzir sozinho."</p>
+        <div class="depo-author">
+          <div class="depo-avatar">RM</div>
+          <div>
+            <div class="depo-name">Ricardo Mendes</div>
+            <div class="depo-role">Assessor XP, São Paulo</div>
+          </div>
+        </div>
+      </div>
+      <div class="depo-card fade-up" style="animation-delay:.1s">
+        <div class="depo-stars">★★★★★</div>
+        <p class="depo-text">"O que me convenceu foi o cliente conseguir aceitar a proposta pelo link. Acabou com aquele limbo de mandar por email e ficar esperando. Agora tenho rastreamento de tudo."</p>
+        <div class="depo-author">
+          <div class="depo-avatar">AC</div>
+          <div>
+            <div class="depo-name">Ana Carolina Reis</div>
+            <div class="depo-role">Consultora independente, Rio de Janeiro</div>
+          </div>
+        </div>
+      </div>
+      <div class="depo-card fade-up" style="animation-delay:.2s">
+        <div class="depo-stars">★★★★★</div>
+        <p class="depo-text">"Uso para padronizar as propostas do escritório. Todos os assessores seguem os mesmos parâmetros de alocação agora. A consistência que a gente ganhou foi imediata."</p>
+        <div class="depo-author">
+          <div class="depo-avatar">FL</div>
+          <div>
+            <div class="depo-name">Felipe Loureiro</div>
+            <div class="depo-role">Sócio, escritório BTG, Belo Horizonte</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq section">
+  <div class="container">
+    <div class="section-tag fade-up"><span class="tag">Perguntas frequentes</span></div>
+    <h2 class="section-title fade-up">Tudo que você precisa saber</h2>
+    <div class="faq-list">
+      <div class="faq-item fade-up">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Para quem é o Captor?
+          <span class="faq-arrow">+</span>
+        </button>
+        <div class="faq-a">Para assessores de investimentos, consultores financeiros e profissionais de pré-venda de produtos financeiros. Tanto independentes quanto associados a uma credenciadora.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Preciso ter conhecimento técnico para usar?
+          <span class="faq-arrow">+</span>
+        </button>
+        <div class="faq-a">Não. O Captor foi desenvolvido para ser usado em minutos, sem configuração complexa. Você importa sua apresentação institucional em PDF ou PPTX e já está pronto para gerar sua primeira proposta.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Posso usar com a identidade da minha empresa?
+          <span class="faq-arrow">+</span>
+        </button>
+        <div class="faq-a">Sim. O Captor detecta automaticamente as cores, produtos e o perfil da sua empresa a partir da sua apresentação. Cada proposta gerada reflete a identidade visual da sua assessoria.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Os dados dos meus clientes estão seguros?
+          <span class="faq-arrow">+</span>
+        </button>
+        <div class="faq-a">Sim. Os dados são armazenados com criptografia e nunca são compartilhados com terceiros. A plataforma opera em conformidade com a LGPD (Lei nº 13.709/2018).</div>
+      </div>
+      <div class="faq-item fade-up">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Como funciona o sistema de créditos?
+          <span class="faq-arrow">+</span>
+        </button>
+        <div class="faq-a">Cada geração de proposta, extração de apresentação ou regeneração consome uma fração de crédito. Você começa com créditos gratuitos, sem cartão de crédito. Recarregue quando precisar, no volume que fizer sentido para você.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          O cliente precisa ter conta para ver a proposta?
+          <span class="faq-arrow">+</span>
+        </button>
+        <div class="faq-a">Não. O cliente recebe um link e acessa a proposta diretamente no navegador, sem precisar criar conta ou instalar nada. A página é profissional e tem a cara da sua empresa.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final" id="signup">
+  <div class="container">
+    <div class="section-tag fade-up" style="justify-content:center;margin-bottom:24px">
+      <span class="tag">Comece agora</span>
+    </div>
+    <h2 class="fade-up">Comece agora e veja sua primeira<br>proposta pronta em minutos</h2>
+    <p class="fade-up">Sem custo inicial. Sem cartão de crédito. Sem complicação.</p>
+    <a href="https://cafreitas.github.io/captor/" class="btn-primary fade-up" style="font-size:.95rem;padding:16px 36px">
+      Criar minha conta gratuita
+    </a>
+    <p class="cta-final-note fade-up">Experimente sem custo e veja a diferença em resultados.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">captor<span>.</span></div>
+    <div class="footer-links">
+      <a href="#">Termos de Uso</a>
+      <a href="#">Privacidade</a>
+      <a href="#">Contato</a>
+    </div>
+    <div class="footer-copy">© 2026 Captor. Todos os direitos reservados.</div>
+  </div>
+</footer>
+
+<script>
+// Nav scroll
+window.addEventListener('scroll', function(){
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 40);
+});
+
+// FAQ toggle
+function toggleFaq(btn){
+  var item = btn.parentElement;
+  var isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(function(i){ i.classList.remove('open'); });
+  if(!isOpen) item.classList.add('open');
+}
+
+// Intersection observer para fade-up
+var io = new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }
+  });
+}, {threshold:0.1, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.fade-up').forEach(function(el){ io.observe(el); });
+</script>
+</body>
+</html>

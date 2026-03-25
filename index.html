@@ -833,10 +833,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
             <input class="pix-copy-field" id="pixCopyField" readonly value="">
             <button class="pix-copy-btn" id="pixCopyBtn" onclick="pixCopyCode()">📋 Copiar</button>
           </div>
-          <button class="pix-check-btn" onclick="pixCheckNow()">Já paguei — verificar agora</button>
-          <div id="pixSimulateWrap" style="display:none;margin-top:8px">
-            <button class="pix-check-btn" onclick="pixSimulatePayment()" style="border-color:var(--gold);color:var(--gold)" id="pixSimulateBtn">🧪 Simular pagamento (dev mode)</button>
-          </div>
+          <button class="pix-check-btn" id="pixCheckBtn" onclick="pixCheckNow()">Já paguei — verificar agora</button>
           <div id="pixStatusMsg" style="display:none;margin-top:8px"></div>
         </div>
       </div>
@@ -2571,7 +2568,9 @@ async function pixShowQr() {
     document.getElementById('pixTimerWrap').style.display = 'block';
     document.getElementById('pixCopyField').value = data.brCode;
     if (data.devMode) {
-      document.getElementById('pixSimulateWrap').style.display = 'block';
+      document.getElementById('pixCheckBtn').textContent = 'Já paguei — verificar agora (SIMULADO)';
+      document.getElementById('pixCheckBtn').style.borderColor = 'var(--gold)';
+      document.getElementById('pixCheckBtn').style.color = 'var(--gold)';
     }
 
     pixStartTimer();
@@ -2615,6 +2614,16 @@ function pixStopPolling() {
 }
 
 async function pixCheckNow() {
+  if (pixState.devMode) {
+    var btn = document.getElementById('pixCheckBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Simulando pagamento...';
+    // Simula o pagamento na AbacatePay antes de checar
+    await sb.functions.invoke('abacatepay-simulate', {
+      body: { payment_id: pixState.paymentId }
+    });
+    btn.textContent = '⏳ Verificando...';
+  }
   await pixCheckStatus();
 }
 
@@ -2631,15 +2640,21 @@ async function pixCheckStatus() {
 
     if (data && data.status === 'PAID') {
       pixStopPolling();
-      // Atualiza créditos locais
       await loadCredits();
-      // Fecha flow e mostra toast
       pixCloseFlow();
       closeCreditsModal();
       pixShowToast('✅ ' + pixState.creditos + ' créditos adicionados!');
+    } else {
+      // Reabilita botão se não pagou ainda
+      var btn = document.getElementById('pixCheckBtn');
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = pixState.devMode ? 'Já paguei — verificar agora (SIMULADO)' : 'Já paguei — verificar agora';
+      }
     }
   } catch(e) {
-    // Silencioso — continua tentando
+    var btn = document.getElementById('pixCheckBtn');
+    if (btn) { btn.disabled = false; }
   }
 }
 

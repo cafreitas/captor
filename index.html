@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v4.4</title>
+<title>Captor — Pré-vendas eficiente e inteligente v4.5</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -439,7 +439,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
       <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
       <button class="lbtn" id="lBtn" onclick="doAuth()">Entrar</button>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v4.4</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v4.5</div>
     </div>
   </div>
 </div>
@@ -465,7 +465,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v4.4</div>
+      <div class="hver" id="hverEl">v4.5</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -634,7 +634,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v4.4</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v4.5</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -834,6 +834,9 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
             <button class="pix-copy-btn" id="pixCopyBtn" onclick="pixCopyCode()">📋 Copiar</button>
           </div>
           <button class="pix-check-btn" onclick="pixCheckNow()">Já paguei — verificar agora</button>
+          <div id="pixSimulateWrap" style="display:none;margin-top:8px">
+            <button class="pix-check-btn" onclick="pixSimulatePayment()" style="border-color:var(--gold);color:var(--gold)" id="pixSimulateBtn">🧪 Simular pagamento (dev mode)</button>
+          </div>
           <div id="pixStatusMsg" style="display:none;margin-top:8px"></div>
         </div>
       </div>
@@ -2560,12 +2563,16 @@ async function pixShowQr() {
     pixState.paymentId = data.payment_id;
     pixState.brCode    = data.brCode;
     pixState.expiresAt = new Date(data.expiresAt);
+    pixState.devMode   = data.devMode || false;
 
     document.getElementById('pixQrSpinner').style.display = 'none';
     document.getElementById('pixQrImg').src = data.brCodeBase64;
     document.getElementById('pixQrImg').style.display = 'block';
     document.getElementById('pixTimerWrap').style.display = 'block';
     document.getElementById('pixCopyField').value = data.brCode;
+    if (data.devMode) {
+      document.getElementById('pixSimulateWrap').style.display = 'block';
+    }
 
     pixStartTimer();
     pixStartPolling();
@@ -2646,6 +2653,29 @@ function pixCopyCode() {
   });
 }
 
+async function pixSimulatePayment() {
+  if (!pixState.paymentId) return;
+  var btn = document.getElementById('pixSimulateBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Simulando...';
+
+  var { data, error } = await sb.functions.invoke('abacatepay-simulate', {
+    body: { payment_id: pixState.paymentId }
+  });
+
+  if (error || (data && data.error)) {
+    btn.disabled = false;
+    btn.textContent = '🧪 Simular pagamento (dev mode)';
+    var msg = document.getElementById('pixStatusMsg');
+    msg.innerHTML = '<div style="font-size:.74rem;color:#f08080;text-align:center">Erro ao simular: ' + ((data && data.error) || 'tente novamente') + '</div>';
+    msg.style.display = 'block';
+    return;
+  }
+
+  // Aguarda o polling detectar
+  btn.textContent = '⏳ Aguardando confirmação...';
+}
+
 function pixShowToast(msg) {
   var toast = document.createElement('div');
   toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--lime);border-radius:var(--rl);padding:12px 22px;font-size:.84rem;font-weight:700;color:var(--lime);z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:fadein .3s ease';
@@ -2661,6 +2691,8 @@ function pixShowToast(msg) {
      ╠══════════════════════════════════════════════════════╣
      ║ v4.3 — Edge Fn simplificada (sem import supabase-js)   ║
      ║        Passa nome+email do frontend p/ AbacatePay     ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ v4.5 — Botão simular pagamento (dev mode)             ║
      ╠══════════════════════════════════════════════════════╣
      ║ v4.4 — Loading spinner no QR Code enquanto gera       ║
      ╠══════════════════════════════════════════════════════╣

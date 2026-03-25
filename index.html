@@ -1299,6 +1299,10 @@ async function doLogout(){
 document.addEventListener('DOMContentLoaded',function(){
   var lPass=document.getElementById('lPass');
   if(lPass)lPass.addEventListener('keydown',function(e){if(e.key==='Enter')doAuth();});
+  // Auto-seleciona aba "Criar conta" se vier da LP
+  if(new URLSearchParams(window.location.search).get('signup')==='1'){
+    switchAuthTab('signup');
+  }
 });
 
 // ── PERFIL DA EMPRESA ──

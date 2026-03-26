@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v4.9</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.0</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -452,8 +452,25 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
       <button type="submit" class="lbtn" id="lBtn">Entrar</button>
       </form>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v4.9</div>
+      <div id="lForgotWrap" style="text-align:center;margin-top:8px">
+        <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
+      </div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.0</div>
     </div>
+  </div>
+</div>
+
+<!-- MODAL REDEFINIR SENHA -->
+<div id="resetModal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);width:min(400px,100%);padding:28px">
+    <div style="font-size:.95rem;font-weight:700;color:var(--white);margin-bottom:4px">Redefinir senha</div>
+    <div style="font-size:.74rem;color:var(--muted);margin-bottom:20px">Digite sua nova senha abaixo.</div>
+    <label class="ll2">Nova senha</label>
+    <input class="li" type="password" id="resetPass" placeholder="••••••••" autocomplete="new-password" style="margin-bottom:10px">
+    <label class="ll2">Confirmar nova senha</label>
+    <input class="li" type="password" id="resetPassConfirm" placeholder="••••••••" autocomplete="new-password">
+    <div id="resetError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-top:10px"></div>
+    <button onclick="doResetPassword()" style="width:100%;margin-top:16px;padding:12px;background:var(--lime);color:#1a1a1a;font-family:var(--f);font-weight:700;font-size:.86rem;border:none;border-radius:var(--r);cursor:pointer" id="resetBtn">Salvar nova senha</button>
   </div>
 </div>
 
@@ -478,7 +495,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v4.9</div>
+      <div class="hver" id="hverEl">v5.0</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -659,7 +676,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v4.9</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.0</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -1152,6 +1169,7 @@ function switchAuthTab(mode){
   document.getElementById('lPassConfirmWrap').style.display=isLogin?'none':'block';
   document.getElementById('lPass').autocomplete=isLogin?'current-password':'new-password';
   document.getElementById('lPass').name=isLogin?'password':'new-password';
+  document.getElementById('lForgotWrap').style.display=isLogin?'block':'none';
   document.getElementById('lTermsWrap').style.display=isLogin?'none':'block';
   document.getElementById('lBtn').textContent=isLogin?'Entrar':'Criar conta';
   document.getElementById('lTitle').textContent=isLogin?'Acesso à plataforma':'Criar conta';
@@ -1394,9 +1412,22 @@ async function doLogout(){
 document.addEventListener('DOMContentLoaded',function(){
   var lPass=document.getElementById('lPass');
   if(lPass)lPass.addEventListener('keydown',function(e){if(e.key==='Enter')doAuth();});
+  var params = new URLSearchParams(window.location.search);
   // Auto-seleciona aba "Criar conta" se vier da LP
-  if(new URLSearchParams(window.location.search).get('signup')==='1'){
+  if(params.get('signup')==='1'){
     switchAuthTab('signup');
+  }
+  // Toast de email confirmado
+  if(params.get('confirmed')==='1'){
+    window.history.replaceState({}, '', window.location.pathname);
+    setTimeout(function(){
+      showLoginToast('✅ Email confirmado! Faça login para entrar.');
+    }, 400);
+  }
+  // Redefinição de senha — Supabase redireciona com tokens na URL
+  if(params.get('reset')==='1'){
+    window.history.replaceState({}, '', window.location.pathname);
+    openResetPassword();
   }
 });
 
@@ -2415,6 +2446,72 @@ function copyDashLink(url){
   navigator.clipboard.writeText(url).then(function(){ alert('Link copiado!'); });
 }
 
+// ── REDEFINIR SENHA ──
+function openResetPassword() {
+  document.getElementById('resetModal').style.display = 'flex';
+}
+
+async function doResetPassword() {
+  var pass = document.getElementById('resetPass').value;
+  var confirm = document.getElementById('resetPassConfirm').value;
+  var errEl = document.getElementById('resetError');
+  errEl.style.display = 'none';
+
+  if(pass.length < 6) { errEl.textContent = 'A senha deve ter pelo menos 6 caracteres.'; errEl.style.display='block'; return; }
+  if(pass !== confirm) { errEl.textContent = 'As senhas não coincidem.'; errEl.style.display='block'; return; }
+
+  var btn = document.getElementById('resetBtn');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+
+  var { error } = await sb.auth.updateUser({ password: pass });
+
+  btn.disabled = false; btn.textContent = 'Salvar nova senha';
+
+  if(error) {
+    errEl.textContent = 'Erro: ' + error.message;
+    errEl.style.display = 'block';
+  } else {
+    document.getElementById('resetModal').style.display = 'none';
+    showLoginToast('✅ Senha redefinida! Faça login com a nova senha.');
+    await sb.auth.signOut();
+  }
+}
+
+// ── ESQUECI MINHA SENHA + TOAST LOGIN ──
+function showLoginToast(msg) {
+  var toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e1e1e;border:1px solid var(--lime);border-radius:12px;padding:12px 22px;font-size:.84rem;font-weight:700;color:var(--lime);z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:fadein .3s ease;white-space:nowrap';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(function(){ toast.style.opacity='0'; toast.style.transition='opacity .4s'; setTimeout(function(){ toast.remove(); }, 400); }, 4000);
+}
+
+async function openForgotPassword() {
+  var email = document.getElementById('lEmail').value.trim();
+  if(!email) {
+    // Mostra um mini modal inline pedindo o email
+    var input = prompt('Digite seu email para receber o link de redefinição de senha:');
+    if(!input) return;
+    email = input.trim();
+  }
+  if(!email) return;
+
+  var btn = document.querySelector('[onclick="openForgotPassword()"]');
+  if(btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+
+  var { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://cafreitas.github.io/captor/?reset=1'
+  });
+
+  if(btn) { btn.disabled = false; btn.textContent = 'Esqueci minha senha'; }
+
+  if(error) {
+    showAuthError('Erro ao enviar email: ' + error.message);
+  } else {
+    showAuthSuccess('📬 Email enviado! Verifique sua caixa de entrada para redefinir a senha.');
+  }
+}
+
 // ── ONBOARDING ──
 function initOnboarding() {
   var key = 'captor_onboarding_shown';
@@ -2814,6 +2911,8 @@ function pixShowToast(msg) {
      ╠══════════════════════════════════════════════════════╣
      ║ v4.3 — Edge Fn simplificada (sem import supabase-js)   ║
      ║        Passa nome+email do frontend p/ AbacatePay     ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ v5.0 — Email confirmação cadastro + esqueci minha senha ║
      ╠══════════════════════════════════════════════════════╣
      ║ v4.9 — Fix autocomplete senha iOS (form + atributos)   ║
      ╠══════════════════════════════════════════════════════╣

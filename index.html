@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v4.8</title>
+<title>Captor — Pré-vendas eficiente e inteligente v4.9</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -433,13 +433,14 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         <button id="tabSignup" onclick="switchAuthTab('signup')" style="flex:1;padding:6px;border:none;border-radius:6px;background:transparent;color:var(--muted);font-family:var(--f);font-size:.76rem;font-weight:600;cursor:pointer">Criar conta</button>
       </div>
 
+      <form id="lForm" onsubmit="doAuth();return false;" autocomplete="on">
       <label class="ll2">Email</label>
-      <input class="li" type="email" id="lEmail" placeholder="nome@empresa.com.br">
+      <input class="li" type="email" id="lEmail" name="email" placeholder="nome@empresa.com.br" autocomplete="email">
       <label class="ll2">Senha</label>
-      <input class="li" type="password" id="lPass" placeholder="••••••••">
+      <input class="li" type="password" id="lPass" name="password" placeholder="••••••••" autocomplete="current-password">
       <div id="lPassConfirmWrap" style="display:none">
         <label class="ll2">Confirmar senha</label>
-        <input class="li" type="password" id="lPassConfirm" placeholder="••••••••">
+        <input class="li" type="password" id="lPassConfirm" name="new-password-confirm" placeholder="••••••••" autocomplete="new-password">
       </div>
       <div id="lTermsWrap" style="display:none;margin-bottom:12px">
         <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:.75rem;color:var(--muted);line-height:1.5">
@@ -449,8 +450,9 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       </div>
       <div id="lError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
       <div id="lSuccess" style="display:none;background:rgba(168,194,58,.1);border:1px solid rgba(168,194,58,.25);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:var(--lime);margin-bottom:10px"></div>
-      <button class="lbtn" id="lBtn" onclick="doAuth()">Entrar</button>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v4.8</div>
+      <button type="submit" class="lbtn" id="lBtn">Entrar</button>
+      </form>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v4.9</div>
     </div>
   </div>
 </div>
@@ -476,7 +478,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v4.8</div>
+      <div class="hver" id="hverEl">v4.9</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -657,7 +659,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v4.8</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v4.9</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -1148,6 +1150,8 @@ function switchAuthTab(mode){
   document.getElementById('tabSignup').style.background=isLogin?'transparent':'var(--lime)';
   document.getElementById('tabSignup').style.color=isLogin?'var(--muted)':'#1a1a1a';
   document.getElementById('lPassConfirmWrap').style.display=isLogin?'none':'block';
+  document.getElementById('lPass').autocomplete=isLogin?'current-password':'new-password';
+  document.getElementById('lPass').name=isLogin?'password':'new-password';
   document.getElementById('lTermsWrap').style.display=isLogin?'none':'block';
   document.getElementById('lBtn').textContent=isLogin?'Entrar':'Criar conta';
   document.getElementById('lTitle').textContent=isLogin?'Acesso à plataforma':'Criar conta';
@@ -2810,6 +2814,8 @@ function pixShowToast(msg) {
      ╠══════════════════════════════════════════════════════╣
      ║ v4.3 — Edge Fn simplificada (sem import supabase-js)   ║
      ║        Passa nome+email do frontend p/ AbacatePay     ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ v4.9 — Fix autocomplete senha iOS (form + atributos)   ║
      ╠══════════════════════════════════════════════════════╣
      ║ v4.8 — Onboarding: perfil fake João Gomes no 1º acesso ║
      ╠══════════════════════════════════════════════════════╣

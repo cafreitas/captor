@@ -2519,12 +2519,20 @@ function initOnboarding() {
   // Preenche campos com perfil fake do João Gomes
   document.getElementById('fNome').value = 'João Gomes';
   document.getElementById('fPat').value = 'R$ 45.000.000';
-  document.getElementById('fProf').value = 'Atleta Profissional';
+  document.getElementById('fProf').value = 'Artista';
   document.getElementById('fIdade').value = '27';
   document.getElementById('fPerfil').value = 'Arrojado';
   document.getElementById('fObj').value = 'Crescimento patrimonial acelerado';
   document.getElementById('fAss').value = 'Não possui assessoria';
   document.getElementById('fCtx').value = 'Cantor em ascensão com renda concentrada em shows e direitos autorais. Patrimônio recente, sem estrutura de investimentos. Preocupado em transformar o sucesso atual em segurança financeira de longo prazo.';
+  document.getElementById('fGaps').value = 'Não tem mais tempo para gerenciar seu patrimônio. Quer guardar 50% dos ganhos para uma aposentadoria tranquila.';
+  // Alocação atual: Pós Fixado 30%, Inflação 30%, Prefixado 20%, FII 20%
+  var onbAlloc = {0:30, 1:30, 2:20, 5:20};
+  for(var i=0;i<9;i++){
+    var el = document.getElementById('asl_'+i);
+    if(el){ el.value = onbAlloc[i]||0; el.disabled = false; }
+  }
+  updateSliders(-1);
   // Mostra banner
   document.getElementById('bannerOnboarding').style.display = 'flex';
   // Marca como exibido

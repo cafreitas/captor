@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.1</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.2</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -186,6 +186,26 @@ header{height:54px;display:flex;align-items:center;justify-content:space-between
 .ds-detalhes_solicitados{background:rgba(251,191,36,.12);color:#fbbf24}
 .ds-expirada{background:rgba(239,68,68,.1);color:#f87171}
 .dash-link{background:transparent;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--muted);font-size:.65rem;cursor:pointer;font-family:var(--f);transition:all .15s}
+.dash-link:hover{border-color:var(--lime);color:var(--lime)}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px;cursor:pointer;transition:border-color .18s}
+.kpi:hover{border-color:var(--lime)}
+.kpi.active{border-color:var(--lime);background:rgba(168,194,58,.06)}
+.dash-th{cursor:pointer;user-select:none;white-space:nowrap}
+.dash-th:hover{color:var(--lime)}
+.dash-sort{font-size:.6rem;margin-left:3px;color:var(--dim)}
+.dash-tr{cursor:pointer;transition:background .12s}
+.dash-tr:hover{background:rgba(255,255,255,.03)}
+.dash-cb{width:14px;height:14px;accent-color:var(--lime);cursor:pointer}
+.dash-archive-bar{display:none;align-items:center;gap:10px;padding:8px 14px;background:rgba(224,184,64,.08);border-bottom:1px solid rgba(224,184,64,.2)}
+.dash-archive-btn{padding:5px 14px;background:var(--gold);color:#1a1a1a;border:none;border-radius:6px;font-family:var(--f);font-size:.74rem;font-weight:700;cursor:pointer}
+.dash-archive-btn:hover{background:#f0c840}
+.dash-search{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;color:var(--text);font-family:var(--f);font-size:.74rem;outline:none;width:180px;transition:border-color .2s}
+.dash-search:focus{border-color:var(--lime)}
+.dash-page{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--border);font-size:.74rem;color:var(--muted);justify-content:space-between}
+.dash-page-btn{padding:4px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:var(--f);font-size:.74rem;cursor:pointer;transition:all .18s}
+.dash-page-btn:hover:not(:disabled){border-color:var(--lime);color:var(--lime)}
+.dash-page-btn:disabled{opacity:.35;cursor:not-allowed}
+.exp-soon{color:#f87171;font-weight:700}
 .dash-link:hover{border-color:var(--lime);color:var(--lime)}
 .dash-stars{color:#fbbf24;font-size:.75rem;letter-spacing:1px}
 .histtbl{width:100%;border-collapse:collapse}
@@ -455,7 +475,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.1</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.2</div>
     </div>
   </div>
 </div>
@@ -495,7 +515,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.1</div>
+      <div class="hver" id="hverEl">v5.2</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -638,15 +658,17 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     <div class="dht">Dashboard de Propostas</div>
     <div class="dhs" id="dashSubtitle">Carregando...</div>
     <div class="kpirow">
-      <div class="kpi"><div class="kpiv" id="kTotal">—</div><div class="kpil">Total enviadas</div></div>
-      <div class="kpi"><div class="kpiv" id="kAceitas">—</div><div class="kpil">Aceitas</div></div>
-      <div class="kpi"><div class="kpiv" id="kTaxa">—</div><div class="kpil">Taxa de conversão</div></div>
-      <div class="kpi"><div class="kpiv" id="kPendentes">—</div><div class="kpil">Aguardando resposta</div></div>
+      <div class="kpi" id="kpiTotal" onclick="dashKpiFilter('total')" title="Filtrar enviadas"><div class="kpiv" id="kTotal">—</div><div class="kpil">Total enviadas</div></div>
+      <div class="kpi" id="kpiAceitas" onclick="dashKpiFilter('aceita')" title="Filtrar aceitas"><div class="kpiv" id="kAceitas">—</div><div class="kpil">Aceitas</div></div>
+      <div class="kpi" id="kpiTaxa"><div class="kpiv" id="kTaxa">—</div><div class="kpil">Taxa de conversão</div></div>
+      <div class="kpi" id="kpiPendentes" onclick="dashKpiFilter('pendentes')" title="Filtrar aguardando"><div class="kpiv" id="kPendentes">—</div><div class="kpil">Aguardando resposta</div></div>
     </div>
     <div class="block" style="margin-bottom:16px">
-      <div class="blkhd" style="cursor:default"><div class="blkico">📋</div><div class="blktit">Propostas</div>
-        <div style="margin-left:auto;display:flex;gap:6px;margin-right:8px">
-          <select id="dashFilter" class="fsel" style="width:auto;padding:4px 24px 4px 8px;font-size:.72rem" onchange="renderDashTable()">
+      <div class="blkhd" style="cursor:default">
+        <div class="blkico">📋</div><div class="blktit">Propostas</div>
+        <div style="margin-left:auto;display:flex;gap:6px;margin-right:8px;align-items:center">
+          <input class="dash-search" id="dashSearch" placeholder="Buscar por nome..." oninput="dashResetPage();renderDashTable()">
+          <select id="dashFilter" class="fsel" style="width:auto;padding:4px 24px 4px 8px;font-size:.72rem" onchange="dashResetPage();renderDashTable()">
             <option value="">Todos os status</option>
             <option value="rascunho">Rascunho</option>
             <option value="enviada">Enviada</option>
@@ -655,28 +677,42 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
             <option value="aceita">Aceita</option>
             <option value="detalhes_solicitados">Dúvidas</option>
             <option value="expirada">Expirada</option>
+            <option value="arquivada">Arquivada</option>
           </select>
         </div>
+      </div>
+      <!-- Barra arquivar -->
+      <div class="dash-archive-bar" id="dashArchiveBar">
+        <span id="dashArchiveCount" style="font-size:.74rem;color:var(--gold);font-weight:600"></span>
+        <button class="dash-archive-btn" onclick="dashArchiveSelected()">📦 Arquivar selecionadas</button>
+        <button onclick="dashClearSelection()" style="background:transparent;border:none;color:var(--muted);font-size:.74rem;cursor:pointer;font-family:var(--f)">Cancelar</button>
       </div>
       <div class="blkbody open" style="padding:0">
         <table class="histtbl" id="dashTable">
           <thead><tr>
-            <th>Cliente</th>
-            <th>Patrimônio</th>
+            <th style="width:32px;padding:7px 8px"><input type="checkbox" class="dash-cb" id="dashSelectAll" onchange="dashToggleAll(this.checked)" title="Selecionar todos"></th>
+            <th class="dash-th" onclick="dashSort('cliente_nome')">Cliente <span class="dash-sort" id="dsort-cliente_nome"></span></th>
+            <th class="dash-th" onclick="dashSort('cliente_pat')">Patrimônio <span class="dash-sort" id="dsort-cliente_pat"></span></th>
             <th>Perfil</th>
-            <th>Status</th>
-            <th>Enviada</th>
-            <th>Resposta</th>
-            <th>⭐</th>
+            <th class="dash-th" onclick="dashSort('status')">Status <span class="dash-sort" id="dsort-status"></span></th>
+            <th class="dash-th" onclick="dashSort('created_at')">Enviada <span class="dash-sort" id="dsort-created_at"></span></th>
+            <th class="dash-th" onclick="dashSort('respondido_em')">Resposta <span class="dash-sort" id="dsort-respondido_em"></span></th>
+            <th class="dash-th" onclick="dashSort('expires_at')">Expira <span class="dash-sort" id="dsort-expires_at"></span></th>
+            <th class="dash-th" onclick="dashSort('feedback_rating')">⭐ <span class="dash-sort" id="dsort-feedback_rating"></span></th>
             <th></th>
           </tr></thead>
-          <tbody id="dashBody"><tr><td colspan="8" style="color:var(--dim);text-align:center;padding:24px 0">Carregando...</td></tr></tbody>
+          <tbody id="dashBody"><tr><td colspan="10" style="color:var(--dim);text-align:center;padding:24px 0">Carregando...</td></tr></tbody>
         </table>
+        <div class="dash-page" id="dashPagination" style="display:none">
+          <button class="dash-page-btn" id="dashPrevBtn" onclick="dashChangePage(-1)">← Anterior</button>
+          <span id="dashPageInfo" style="font-size:.74rem;color:var(--muted)"></span>
+          <button class="dash-page-btn" id="dashNextBtn" onclick="dashChangePage(1)">Próxima →</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.1</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.2</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -2394,6 +2430,11 @@ function renderLine(container,pat,perfil){
 
 // ── DASHBOARD ──
 var dashProposals = [];
+var dashSortCol = 'created_at';
+var dashSortAsc = false;
+var dashPage = 1;
+var dashPageSize = 20;
+var dashSelected = {};
 
 async function updateDash(){
   if(!supabaseUserId) return;
@@ -2402,9 +2443,8 @@ async function updateDash(){
   if(error){ document.getElementById('dashSubtitle').textContent = 'Erro ao carregar propostas.'; return; }
   dashProposals = data || [];
 
-  // KPIs
-  var total = dashProposals.filter(function(p){ return p.status !== 'rascunho'; }).length;
-  var aceitas = dashProposals.filter(function(p){ return p.status === 'aceita'; }).length;
+  var total    = dashProposals.filter(function(p){ return p.status !== 'rascunho' && p.status !== 'arquivada'; }).length;
+  var aceitas  = dashProposals.filter(function(p){ return p.status === 'aceita'; }).length;
   var pendentes = dashProposals.filter(function(p){ return p.status === 'enviada' || p.status === 'visualizada'; }).length;
   var taxa = total > 0 ? Math.round(aceitas/total*100) + '%' : '—';
 
@@ -2413,44 +2453,174 @@ async function updateDash(){
   document.getElementById('kTaxa').textContent = taxa;
   document.getElementById('kPendentes').textContent = pendentes || '—';
   document.getElementById('dashSubtitle').textContent = total + ' proposta' + (total !== 1 ? 's' : '') + ' · atualizado agora';
-
   renderDashTable();
 }
 
-function renderDashTable(){
+function dashKpiFilter(type) {
+  var filter = document.getElementById('dashFilter');
+  ['kpiTotal','kpiAceitas','kpiTaxa','kpiPendentes'].forEach(function(k){
+    document.getElementById(k).classList.remove('active');
+  });
+  if(type === 'total')      { filter.value = '';        document.getElementById('kpiTotal').classList.add('active'); }
+  else if(type === 'aceita'){ filter.value = 'aceita';  document.getElementById('kpiAceitas').classList.add('active'); }
+  else if(type === 'pendentes'){ filter.value = 'enviada'; document.getElementById('kpiPendentes').classList.add('active'); }
+  dashResetPage(); renderDashTable();
+}
+
+function dashSort(col) {
+  if(dashSortCol === col) dashSortAsc = !dashSortAsc;
+  else { dashSortCol = col; dashSortAsc = true; }
+  dashResetPage(); renderDashTable();
+}
+
+function dashResetPage() { dashPage = 1; dashSelected = {}; dashUpdateArchiveBar(); }
+
+function dashChangePage(dir) {
+  dashPage += dir; dashSelected = {}; dashUpdateArchiveBar(); renderDashTable();
+}
+
+function dashToggleAll(checked) {
+  dashGetPageRows().forEach(function(p){ if(checked) dashSelected[p.hash]=true; else delete dashSelected[p.hash]; });
+  dashUpdateArchiveBar(); renderDashTable();
+}
+
+function dashToggleRow(hash) {
+  if(dashSelected[hash]) delete dashSelected[hash]; else dashSelected[hash]=true;
+  dashUpdateArchiveBar();
+  var cb = document.getElementById('dcb-'+hash);
+  if(cb) cb.checked = !!dashSelected[hash];
+  var allCb = document.getElementById('dashSelectAll');
+  var selCount = Object.keys(dashSelected).length;
+  if(allCb) allCb.checked = selCount > 0 && selCount === dashGetPageRows().length;
+}
+
+function dashGetPageRows() {
+  var rows = dashGetFilteredSorted();
+  var start = (dashPage-1)*dashPageSize;
+  return rows.slice(start, start+dashPageSize);
+}
+
+function dashUpdateArchiveBar() {
+  var count = Object.keys(dashSelected).length;
+  var bar = document.getElementById('dashArchiveBar');
+  bar.style.display = count > 0 ? 'flex' : 'none';
+  document.getElementById('dashArchiveCount').textContent = count + ' proposta' + (count !== 1 ? 's' : '') + ' selecionada' + (count !== 1 ? 's' : '');
+}
+
+function dashClearSelection() { dashSelected = {}; dashUpdateArchiveBar(); renderDashTable(); }
+
+async function dashArchiveSelected() {
+  var hashes = Object.keys(dashSelected);
+  if(!hashes.length) return;
+  var btn = document.querySelector('.dash-archive-btn');
+  btn.disabled = true; btn.textContent = 'Arquivando...';
+  for(var i=0; i<hashes.length; i++) {
+    await sb.from('proposals').update({status:'arquivada'}).eq('hash', hashes[i]);
+  }
+  dashSelected = {}; dashUpdateArchiveBar();
+  await updateDash();
+  btn.disabled = false; btn.textContent = '📦 Arquivar selecionadas';
+}
+
+function dashGetFilteredSorted() {
   var filter = document.getElementById('dashFilter').value;
-  var rows = dashProposals.filter(function(p){ return !filter || p.status === filter; });
+  var searchEl = document.getElementById('dashSearch');
+  var search = searchEl ? searchEl.value.trim().toLowerCase() : '';
+  var now = new Date();
+  var rows = dashProposals.filter(function(p){
+    var status = (new Date(p.expires_at) < now && p.status === 'enviada') ? 'expirada' : p.status;
+    if(filter && filter !== status) return false;
+    if(search && !(p.cliente_nome||'').toLowerCase().includes(search)) return false;
+    return true;
+  });
+  var col = dashSortCol;
+  rows.sort(function(a,b){
+    var va = a[col], vb = b[col];
+    if(col === 'cliente_pat' || col === 'feedback_rating'){ va = Number(va)||0; vb = Number(vb)||0; }
+    else if(col === 'created_at' || col === 'respondido_em' || col === 'expires_at'){ va = va?new Date(va).getTime():0; vb = vb?new Date(vb).getTime():0; }
+    else { va=(va||'').toString().toLowerCase(); vb=(vb||'').toString().toLowerCase(); }
+    if(va<vb) return dashSortAsc?-1:1;
+    if(va>vb) return dashSortAsc?1:-1;
+    return 0;
+  });
+  return rows;
+}
+
+function renderDashTable(){
+  var rows = dashGetFilteredSorted();
+  var totalRows = rows.length;
+  var totalPages = Math.max(1, Math.ceil(totalRows/dashPageSize));
+  if(dashPage > totalPages) dashPage = totalPages;
+  var start = (dashPage-1)*dashPageSize;
+  var pageRows = rows.slice(start, start+dashPageSize);
   var tb = document.getElementById('dashBody');
   var patFmt = function(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(v); };
   var dateFmt = function(d){ return d ? new Date(d).toLocaleDateString('pt-BR') : '—'; };
-  var statusLabels = {rascunho:'Rascunho',enviada:'Enviada',visualizada:'Visualizada',aprovado_sdr:'Aprovada SDR',aceita:'Aceita',detalhes_solicitados:'Dúvidas',expirada:'Expirada'};
+  var statusLabels = {rascunho:'Rascunho',enviada:'Enviada',visualizada:'Visualizada',aprovado_sdr:'Aprovada SDR',aceita:'Aceita',detalhes_solicitados:'Dúvidas',expirada:'Expirada',arquivada:'Arquivada'};
+  var now = new Date();
 
-  if(!rows.length){
-    tb.innerHTML = '<tr><td colspan="8" style="color:var(--dim);text-align:center;padding:24px 0">'+(filter?'Nenhuma proposta com este status.':'Nenhuma proposta enviada ainda.')+'</td></tr>';
+  ['cliente_nome','cliente_pat','status','created_at','respondido_em','expires_at','feedback_rating'].forEach(function(c){
+    var el = document.getElementById('dsort-'+c);
+    if(el) el.textContent = dashSortCol===c?(dashSortAsc?'▲':'▼'):'';
+  });
+
+  if(!pageRows.length){
+    tb.innerHTML = '<tr><td colspan="10" style="color:var(--dim);text-align:center;padding:24px 0">Nenhuma proposta encontrada.</td></tr>';
+    document.getElementById('dashPagination').style.display = 'none';
+    var allCb = document.getElementById('dashSelectAll');
+    if(allCb) allCb.checked = false;
     return;
   }
 
   var baseUrl = (window.location.origin + window.location.pathname.replace(/index\.html$/, '').replace(/\/$/, ''));
-  tb.innerHTML = rows.map(function(p){
-    var stars = p.feedback_rating ? '★'.repeat(p.feedback_rating) + '☆'.repeat(5-p.feedback_rating) : '—';
-    var propUrl = baseUrl + '/proposta.html#' + p.hash;
-    var isExpired = new Date(p.expires_at) < new Date();
+  tb.innerHTML = pageRows.map(function(p){
+    var isExpired = new Date(p.expires_at) < now;
     var status = isExpired && p.status === 'enviada' ? 'expirada' : p.status;
-    return '<tr>'
-      +'<td style="font-weight:600">'+p.cliente_nome+'</td>'
+    var stars = p.feedback_rating ? '★'.repeat(p.feedback_rating)+'☆'.repeat(5-p.feedback_rating) : '—';
+    var propUrl = baseUrl + '/proposta.html#' + p.hash;
+    var checked = dashSelected[p.hash] ? 'checked' : '';
+    var expStr = '—';
+    if(p.expires_at && status !== 'aceita' && status !== 'arquivada'){
+      var expDate = new Date(p.expires_at);
+      var daysLeft = Math.ceil((expDate-now)/86400000);
+      expStr = expDate.toLocaleDateString('pt-BR');
+      if(daysLeft<=3 && daysLeft>=0) expStr = '<span class="exp-soon">'+expStr+'</span>';
+      else if(daysLeft<0) expStr = '<span style="color:var(--dim)">'+expStr+'</span>';
+    }
+    return '<tr class="dash-tr" onclick="dashRowClick(event,''+p.hash+'',''+propUrl+'')">'
+      +'<td style="padding:9px 8px" onclick="event.stopPropagation()"><input type="checkbox" class="dash-cb" id="dcb-'+p.hash+'" '+checked+' onchange="dashToggleRow(''+p.hash+'')"></td>'
+      +'<td style="font-weight:600">'+escHtml(p.cliente_nome||'')+'</td>'
       +'<td style="color:var(--muted)">'+patFmt(p.cliente_pat)+'</td>'
-      +'<td><span class="badge bmuted">'+p.cliente_perfil+'</span></td>'
+      +'<td><span class="badge bmuted">'+escHtml(p.cliente_perfil||'')+'</span></td>'
       +'<td><span class="dash-status ds-'+status+'">'+(statusLabels[status]||status)+'</span></td>'
       +'<td style="color:var(--muted)">'+dateFmt(p.created_at)+'</td>'
       +'<td style="color:var(--muted)">'+dateFmt(p.respondido_em)+'</td>'
+      +'<td>'+expStr+'</td>'
       +'<td><span class="dash-stars" title="'+(p.feedback_texto||'')+'">'+stars+'</span></td>'
-      +'<td><button class="dash-link" onclick="copyDashLink(\''+propUrl+'\')">🔗</button></td>'
+      +'<td onclick="event.stopPropagation()" style="white-space:nowrap">'
+        +'<button class="dash-link" title="Copiar link" onclick="copyDashLink(''+propUrl+'')">🔗</button> '
+        +'<button class="dash-link" title="Abrir proposta" onclick="window.open(''+propUrl+'','_blank')">👁</button>'
+      +'</td>'
       +'</tr>';
   }).join('');
+
+  var pag = document.getElementById('dashPagination');
+  pag.style.display = totalPages > 1 ? 'flex' : 'none';
+  document.getElementById('dashPageInfo').textContent = 'Página '+dashPage+' de '+totalPages+' ('+totalRows+' proposta'+(totalRows!==1?'s':'')+')';
+  document.getElementById('dashPrevBtn').disabled = dashPage <= 1;
+  document.getElementById('dashNextBtn').disabled = dashPage >= totalPages;
+
+  var allCb = document.getElementById('dashSelectAll');
+  if(allCb) allCb.checked = pageRows.length > 0 && pageRows.every(function(p){ return dashSelected[p.hash]; });
+}
+
+function dashRowClick(e, hash, url) {
+  if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+  window.open(url, '_blank');
 }
 
 function copyDashLink(url){
-  navigator.clipboard.writeText(url).then(function(){ alert('Link copiado!'); });
+  navigator.clipboard.writeText(url).then(function(){ pixShowToast('🔗 Link copiado!'); });
 }
 
 // ── REDEFINIR SENHA ──
@@ -2926,6 +3096,9 @@ function pixShowToast(msg) {
      ╠══════════════════════════════════════════════════════╣
      ║ v4.3 — Edge Fn simplificada (sem import supabase-js)   ║
      ║        Passa nome+email do frontend p/ AbacatePay     ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ v5.2 — Dashboard: busca, sort, seleção, arquivar,       ║
+     ║        paginação, KPIs clicáveis, coluna expira, abrir  ║
      ╠══════════════════════════════════════════════════════╣
      ║ v5.1 — Fix URL proposta com query params + guard .map() ║
      ╠══════════════════════════════════════════════════════╣

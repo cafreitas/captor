@@ -2587,8 +2587,8 @@ function renderDashTable(){
       if(daysLeft<=3 && daysLeft>=0) expStr = '<span class="exp-soon">'+expStr+'</span>';
       else if(daysLeft<0) expStr = '<span style="color:var(--dim)">'+expStr+'</span>';
     }
-    return '<tr class="dash-tr" onclick="dashRowClick(event,''+p.hash+'',''+propUrl+'')">'
-      +'<td style="padding:9px 8px" onclick="event.stopPropagation()"><input type="checkbox" class="dash-cb" id="dcb-'+p.hash+'" '+checked+' onchange="dashToggleRow(''+p.hash+'')"></td>'
+    return '<tr class="dash-tr" onclick="dashRowClick(event,\''+p.hash+'\',\''+propUrl+'\')">'
+      +'<td style="padding:9px 8px" onclick="event.stopPropagation()"><input type="checkbox" class="dash-cb" id="dcb-'+p.hash+'" '+checked+' onchange="dashToggleRow(\''+p.hash+'\')"></td>'
       +'<td style="font-weight:600">'+escHtml(p.cliente_nome||'')+'</td>'
       +'<td style="color:var(--muted)">'+patFmt(p.cliente_pat)+'</td>'
       +'<td><span class="badge bmuted">'+escHtml(p.cliente_perfil||'')+'</span></td>'

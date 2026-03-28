@@ -2598,8 +2598,8 @@ function renderDashTable(){
       +'<td>'+expStr+'</td>'
       +'<td><span class="dash-stars" title="'+(p.feedback_texto||'')+'">'+stars+'</span></td>'
       +'<td onclick="event.stopPropagation()" style="white-space:nowrap">'
-        +'<button class="dash-link" title="Copiar link" onclick="copyDashLink(''+propUrl+'')">🔗</button> '
-        +'<button class="dash-link" title="Abrir proposta" onclick="window.open(''+propUrl+'','_blank')">👁</button>'
+        +'<button class="dash-link" title="Copiar link" onclick="copyDashLink(\''+propUrl+'\')">🔗</button> '
+        +'<button class="dash-link" title="Abrir proposta" onclick="window.open(\''+propUrl+'\',\'_blank\')">👁</button>'
       +'</td>'
       +'</tr>';
   }).join('');

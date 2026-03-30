@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.2</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.2.2</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -475,7 +475,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.2</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.2.2</div>
     </div>
   </div>
 </div>
@@ -2137,6 +2137,12 @@ function renderOutput(nome,patFmt,data,meta){
   b4.body.innerHTML = buildProposalBlock(data, meta, patFmt);
   area.appendChild(b4.el);
 
+  // Renderiza donut inicial da alocação editável
+  if(data.alocacao&&data.alocacao.labels){
+    var donutEl = document.getElementById('pi_aloc_donut');
+    if(donutEl) renderDonut(donutEl, data.alocacao);
+  }
+
   // Botões de publicação (abaixo do bloco, sem barra separada)
   var pubRow = document.createElement('div');
   pubRow.className = 'proposal-bar fadein';
@@ -2200,6 +2206,32 @@ function buildProposalBlock(data, meta, patFmt){
     html += '</div>';
   }
 
+  // Sliders de alocação editáveis
+  if(data.alocacao&&data.alocacao.labels&&data.alocacao.data){
+    html += '<div class="prop-inline-section" style="margin-top:14px">'
+      +'<div class="prop-inline-label">📊 Edite a alocação sugerida</div>'
+      +'<div style="display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start">'
+      +'<div id="pi_aloc_sliders">';
+    data.alocacao.labels.forEach(function(lbl,i){
+      var val = data.alocacao.data[i]||0;
+      html += '<div class="aslider-row">'
+        +'<span class="aslider-label" title="'+lbl+'">'+lbl+'</span>'
+        +'<div class="aslider-wrap">'
+        +'<input type="range" class="aslider" id="pi_aloc_'+i+'" min="0" max="100" value="'+val+'" step="1" oninput="updateAllocSliders('+i+')">'
+        +'</div>'
+        +'<span class="aslider-val" id="pi_alocv_'+i+'">'+val+'%</span>'
+        +'</div>';
+    });
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">'
+      +'<span style="font-size:.7rem;color:var(--muted);flex:1">Total</span>'
+      +'<span id="pi_aloc_total" style="font-size:.78rem;font-weight:700;color:var(--lime)">100%</span>'
+      +'</div>'
+      +'</div>'
+      +'<div id="pi_aloc_donut" style="width:130px;flex-shrink:0"></div>'
+      +'</div>'
+      +'</div>';
+  }
+
   // Botão aprovar + link para revisar na proposta
   html += '<div class="prop-inline-approve">'
     +'<span class="prop-inline-approve-hint" id="approveHint"></span>'
@@ -2210,6 +2242,38 @@ function buildProposalBlock(data, meta, patFmt){
     +'</div>';
 
   return html;
+}
+
+function updateAllocSliders(changedIdx){
+  var data = window._lastOutput;
+  if(!data||!data.alocacao) return;
+  var n = data.alocacao.labels.length;
+  var vals = data.alocacao.labels.map(function(_,i){
+    return parseInt(document.getElementById('pi_aloc_'+i).value)||0;
+  });
+  var total = vals.reduce(function(a,b){return a+b;},0);
+  var remaining = 100 - total;
+
+  // Trava sliders zerados quando total = 100
+  for(var i=0;i<n;i++){
+    var sl = document.getElementById('pi_aloc_'+i);
+    var vl = document.getElementById('pi_alocv_'+i);
+    if(sl) sl.disabled = (remaining===0 && vals[i]===0);
+    if(vl) vl.textContent = vals[i]+'%';
+  }
+
+  // Atualiza total com cor
+  var totalEl = document.getElementById('pi_aloc_total');
+  if(totalEl){
+    totalEl.textContent = total+'%';
+    totalEl.style.color = total===100 ? 'var(--lime)' : '#f08080';
+  }
+
+  // Atualiza donut preview
+  var donutEl = document.getElementById('pi_aloc_donut');
+  if(donutEl && total > 0){
+    renderDonut(donutEl, {labels: data.alocacao.labels, data: vals});
+  }
 }
 
 function escHtml(s){
@@ -2233,6 +2297,14 @@ async function saveDraftAndPreview(){
     if(t)s.titulo=t.value.trim();
     if(c)s.conteudo=c.value.trim();
   });
+
+  // Aplicar edições da alocação
+  if(data.alocacao&&data.alocacao.labels){
+    var newData = data.alocacao.labels.map(function(_,i){
+      return parseInt(document.getElementById('pi_aloc_'+i).value)||0;
+    });
+    data.alocacao.data = newData;
+  }
 
   // Salvar rascunho no Supabase com status 'rascunho'
   var hash = proposalDraftHash || generateHash();
@@ -3096,6 +3168,10 @@ function pixShowToast(msg) {
      ╠══════════════════════════════════════════════════════╣
      ║ v4.3 — Edge Fn simplificada (sem import supabase-js)   ║
      ║        Passa nome+email do frontend p/ AbacatePay     ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ v5.2.2 — Sliders de alocação editáveis na proposta      ║
+     ║          Donut preview em tempo real ao editar          ║
+     ║          alocacao_sugerida e analise_ia sincronizados   ║
      ╠══════════════════════════════════════════════════════╣
      ║ v5.2 — Dashboard: busca, sort, seleção, arquivar,       ║
      ║        paginação, KPIs clicáveis, coluna expira, abrir  ║

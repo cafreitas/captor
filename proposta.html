@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Proposta de Investimento</title>
+<title>Proposta de Investimento — Captor v5.2.3</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -225,7 +225,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-sm
     <div class="prop-section">
       <div class="prop-section-header">
         <div class="prop-section-icon">👤</div>
-        <div><div class="prop-section-title">Seu Perfil</div><div class="prop-section-sub">Dados utilizados para personalizar esta proposta</div></div>
+        <div><div class="prop-section-title">Perfil e Objetivos do cliente</div><div class="prop-section-sub">Dados utilizados para personalizar esta proposta</div></div>
       </div>
       <div class="prop-section-body">
         <div class="profile-grid" id="profileGrid"></div>
@@ -354,7 +354,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-sm
 
   <footer class="prop-legal">
     <div class="prop-legal-inner">
-      <p>Proposta gerada pela plataforma <strong>Captor</strong> · <span id="legalCompany"></span></p>
+      <p>Proposta gerada pela plataforma <strong>Captor</strong> v5.2.3 · <span id="legalCompany"></span></p>
       <p>Elaborada em <span id="legalDate"></span> · Válida por 30 dias</p>
     </div>
   </footer>
@@ -523,11 +523,17 @@ function renderDonut(container,alloc,bc){
   var total=alloc.data.reduce(function(a,b){return a+b;},0);
   if(!total){container.innerHTML='<p style="color:var(--muted);font-size:.8rem;text-align:center;padding:20px">Sem dados.</p>';return;}
   var cx=110,cy=100,r=72,ri=46,angle=-Math.PI/2,slices='',legend='';
-  var visible=alloc.labels.map(function(_,i){return alloc.data[i]>0;});
+  var nonZero=alloc.data.filter(function(v){return v>0;}).length;
   alloc.data.forEach(function(val,i){
     if(!val)return;
-    var a=(val/total)*2*Math.PI,x1=cx+r*Math.cos(angle),y1=cy+r*Math.sin(angle),x2=cx+r*Math.cos(angle+a),y2=cy+r*Math.sin(angle+a),xi1=cx+ri*Math.cos(angle),yi1=cy+ri*Math.sin(angle),xi2=cx+ri*Math.cos(angle+a),yi2=cy+ri*Math.sin(angle+a),lg=a>Math.PI?1:0;
-    slices+='<path d="M'+xi1+' '+yi1+' L'+x1+' '+y1+' A'+r+' '+r+' 0 '+lg+' 1 '+x2+' '+y2+' L'+xi2+' '+yi2+' A'+ri+' '+ri+' 0 '+lg+' 0 '+xi1+' '+yi1+' Z" fill="'+colors[i]+'"/>';
+    var a=(val/total)*2*Math.PI;
+    if(nonZero===1){
+      slices+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+colors[i]+'"/>'
+             +'<circle cx="'+cx+'" cy="'+cy+'" r="'+ri+'" fill="white"/>';
+    } else {
+      var x1=cx+r*Math.cos(angle),y1=cy+r*Math.sin(angle),x2=cx+r*Math.cos(angle+a),y2=cy+r*Math.sin(angle+a),xi1=cx+ri*Math.cos(angle),yi1=cy+ri*Math.sin(angle),xi2=cx+ri*Math.cos(angle+a),yi2=cy+ri*Math.sin(angle+a),lg=a>Math.PI?1:0;
+      slices+='<path d="M'+xi1+' '+yi1+' L'+x1+' '+y1+' A'+r+' '+r+' 0 '+lg+' 1 '+x2+' '+y2+' L'+xi2+' '+yi2+' A'+ri+' '+ri+' 0 '+lg+' 0 '+xi1+' '+yi1+' Z" fill="'+colors[i]+'"/>';
+    }
     angle+=a;
   });
   var li=0;
@@ -606,5 +612,13 @@ async function sdrApprove(){
 }
 function shareProposal(){var url=window.location.href;if(navigator.share)navigator.share({title:'Minha Proposta de Investimento',url:url});else navigator.clipboard.writeText(url).then(function(){alert('Link copiado!');});}
 </script>
+<!-- ╔══════════════════════════════════════════════════════╗
+     ║                    CHANGELOG                         ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ v5.2.3 — Fix donut 100%: anel completo p/ slice único║
+     ║          Versão no <title> e footer legal            ║
+     ║          "Seu Perfil" → "Perfil e Objetivos do       ║
+     ║          cliente"                                     ║
+     ╚══════════════════════════════════════════════════════╝ -->
 </body>
 </html>

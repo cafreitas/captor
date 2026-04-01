@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Proposta de Investimento — Captor v5.2.4</title>
+<title>Proposta de Investimento — Captor v5.2.5</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -353,7 +353,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-sm
 
   <footer class="prop-legal">
     <div class="prop-legal-inner">
-      <p>Proposta gerada pela plataforma <strong>Captor</strong> v5.2.4 · <span id="legalCompany"></span></p>
+      <p>Proposta gerada pela plataforma <strong>Captor</strong> v5.2.5 · <span id="legalCompany"></span></p>
       <p>Elaborada em <span id="legalDate"></span> · Válida por 30 dias</p>
     </div>
   </footer>
@@ -548,7 +548,7 @@ function renderLine(container,pat,perfil,bc){
   var rates={Conservador:.10,Moderado:.13,Arrojado:.16,Agressivo:.19};
   var r=rates[perfil]||.13,rm=Math.pow(1+r,1/12)-1;
   var comV=[];for(var i=0;i<=10;i++)comV.push(Math.round(pat*Math.pow(1+r,i)));
-  var W=340,H=160,pL=58,pB=22,pT=12,pR=12,maxV=Math.max.apply(null,comV),minV=comV[0];
+  var W=340,H=170,pL=58,pB=22,pT=28,pR=12,maxV=Math.max.apply(null,comV),minV=comV[0];
   function px(i){return pL+(i/10)*(W-pL-pR);}
   function py(v){return pT+(H-pT-pB)*(1-(v-minV)/(maxV-minV));}
   var path1='M'+comV.map(function(v,i){return px(i)+' '+py(v);}).join(' L');
@@ -558,8 +558,8 @@ function renderLine(container,pat,perfil,bc){
   var yl='';[0,.5,1].forEach(function(f){var v=Math.round(minV+f*(maxV-minV)),y=py(v),l=new Intl.NumberFormat('pt-BR',{notation:'compact',maximumFractionDigits:1}).format(v);yl+='<text x="'+(pL-5)+'" y="'+(y+4)+'" text-anchor="end" fill="#9ca3af" font-size="9" font-family="system-ui">'+l+'</text><line x1="'+pL+'" y1="'+y+'" x2="'+(W-pR)+'" y2="'+y+'" stroke="#e8eaed" stroke-width="1"/>';});
   var xl='';[0,2,4,6,8,10].forEach(function(i){xl+='<text x="'+px(i)+'" y="'+(H-pB+14)+'" text-anchor="middle" fill="#9ca3af" font-size="9" font-family="system-ui">'+(i===0?'Hoje':'Ano '+i)+'</text>';});
   var lx=px(10),ly=py(comV[10]),ll=new Intl.NumberFormat('pt-BR',{notation:'compact',maximumFractionDigits:1}).format(comV[10]);
-  var labelX=lx-7,labelAnchor='end';
-  container.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><path d="'+area1+'" fill="rgba('+ar+','+ag+','+ab+',.08)"/><path d="'+path1+'" fill="none" stroke="'+ac+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="'+lx+'" cy="'+ly+'" r="4" fill="'+ac+'"/><text x="'+labelX+'" y="'+(ly-8)+'" text-anchor="'+labelAnchor+'" fill="'+ac+'" font-size="10" font-weight="bold" font-family="system-ui">'+ll+'</text>'+yl+xl+'</svg><div style="margin-top:10px;font-size:.74rem;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap"><span>📈 Taxa anual: <strong style="color:var(--text)">'+((r*100).toFixed(0))+'%</strong></span><span>📅 Mensal: <strong style="color:var(--text)">+'+(rm*100).toFixed(2).replace('.',',')+'%</strong></span></div><p style="margin-top:6px;font-size:.68rem;color:var(--dim)">⚠ Projeção estimada com base no perfil '+perfil+'. Rentabilidade passada não garante resultados futuros.</p>';
+  var labelX=lx,labelY=Math.max(ly-10,pT-2),labelAnchor='end';
+  container.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><path d="'+area1+'" fill="rgba('+ar+','+ag+','+ab+',.08)"/><path d="'+path1+'" fill="none" stroke="'+ac+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="'+lx+'" cy="'+ly+'" r="4" fill="'+ac+'"/><text x="'+labelX+'" y="'+labelY+'" text-anchor="'+labelAnchor+'" fill="'+ac+'" font-size="10" font-weight="bold" font-family="system-ui">'+ll+'</text>'+yl+xl+'</svg><div style="margin-top:10px;font-size:.74rem;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap"><span>📈 Taxa anual: <strong style="color:var(--text)">'+((r*100).toFixed(0))+'%</strong></span><span>📅 Mensal: <strong style="color:var(--text)">+'+(rm*100).toFixed(2).replace('.',',')+'%</strong></span></div><p style="margin-top:6px;font-size:.68rem;color:var(--dim)">⚠ Projeção estimada com base no perfil '+perfil+'. Rentabilidade passada não garante resultados futuros.</p>';
 }
 function toggleComment(id){document.getElementById(id).classList.toggle('open');}
 async function sendComment(section,btn){
@@ -614,6 +614,8 @@ function shareProposal(){var url=window.location.href;if(navigator.share)navigat
 </script>
 <!-- ╔══════════════════════════════════════════════════════╗
      ║                    CHANGELOG                         ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ v5.2.5 — Fix gráfico projeção: pT=28 evita corte label  ║
      ╠══════════════════════════════════════════════════════╣
      ║ v5.2.4 — Fix label cortado no gráfico de projeção      ║
      ║          Removido badge "Modo SDR"                      ║

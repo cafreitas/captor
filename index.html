@@ -1880,7 +1880,7 @@ function updateEmpresaStep(){
   document.getElementById('modalSubtitle').textContent=STEP_SUBTITLES[empresaStep]||'';
   // mostrar step da firma só para gestores
   var empresaStepEl=document.getElementById('modalStepEmpresa');
-  if(firmaStepEl)firmaStepEl.style.display=currentUserIsManager?'':'none';
+  if(empresaStepEl)empresaStepEl.style.display=currentUserIsManager?'':'none';
 }
 
 function empresaGoToStep(n){

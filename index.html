@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.4.0</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.4.1</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -468,10 +468,10 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         <label class="ll2">Confirmar senha</label>
         <input class="li" type="password" id="lPassConfirm" name="new-password-confirm" placeholder="••••••••" autocomplete="new-password">
       </div>
-      <div id="lFirmaWrap" style="display:none">
-        <label class="ll2">Nome da firma</label>
-        <input class="li" type="text" id="lFirmaNome" placeholder="Ex: BTG Assessoria SP" oninput="checkFirmaSlug()" autocomplete="off">
-        <div id="lFirmaStatus" style="font-size:.72rem;margin-top:4px;min-height:16px"></div>
+      <div id="lEmpresaWrap" style="display:none">
+        <label class="ll2">Nome da empresa</label>
+        <input class="li" type="text" id="lEmpresaNome" placeholder="Ex: BTG Assessoria SP" oninput="checkEmpresaSlug()" autocomplete="off">
+        <div id="lEmpresaStatus" style="font-size:.72rem;margin-top:4px;min-height:16px"></div>
       </div>
       <div id="lTermsWrap" style="display:none;margin-bottom:12px">
         <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:.75rem;color:var(--muted);line-height:1.5">
@@ -486,7 +486,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.4.0</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.4.1</div>
     </div>
   </div>
 </div>
@@ -526,7 +526,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.4.0</div>
+      <div class="hver" id="hverEl">v5.4.1</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -752,9 +752,9 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
           <div class="step-dot" id="sdot3">3</div>
           <div class="step-label" id="slbl3">Alocação</div>
         </div>
-        <div class="modal-step" id="modalStepFirma" style="display:none">
+        <div class="modal-step" id="modalStepEmpresa" style="display:none">
           <div class="step-dot" id="sdot4">4</div>
-          <div class="step-label" id="slbl4">Minha Firma</div>
+          <div class="step-label" id="slbl4">Minha Empresa</div>
         </div>
       </div>
 
@@ -815,11 +815,11 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         <div style="margin-top:10px;font-size:.82rem;font-weight:500;color:var(--white);background:var(--bg3);border-radius:5px;padding:7px 10px;border-left:2px solid var(--lime)">💡 Dica: as faixas são usadas como referência pela IA ao sugerir carteiras. Use o formato "mín-máx" (ex: 60-75).</div>
       </div>
 
-      <!-- Step 4: Minha Firma (visível só para gestores) -->
+      <!-- Step 4: Minha Empresa (visível só para gestores) -->
       <div class="modal-body" id="mStep4" style="display:none">
         <div style="background:var(--lime-dim);border:1px solid rgba(168,194,58,.35);border-radius:var(--r);padding:12px 14px;margin-bottom:16px">
-          <div style="font-size:.78rem;font-weight:700;color:var(--lime);margin-bottom:2px">🏢 Minha Firma</div>
-          <div style="font-size:.78rem;color:var(--muted);line-height:1.5">Gerencie os assessores da sua firma e compartilhe o link de convite.</div>
+          <div style="font-size:.78rem;font-weight:700;color:var(--lime);margin-bottom:2px">🏢 Minha Empresa</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.5">Gerencie os assessores da sua empresa e compartilhe o link de convite.</div>
         </div>
 
         <!-- Gerar link de convite -->
@@ -834,7 +834,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         </div>
 
         <!-- Lista de membros -->
-        <div style="font-size:.8rem;font-weight:700;color:var(--white);margin-bottom:8px">Assessores da firma</div>
+        <div style="font-size:.8rem;font-weight:700;color:var(--white);margin-bottom:8px">Assessores da empresa</div>
         <div id="firmMembersList" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto">
           <div style="font-size:.78rem;color:var(--dim);padding:12px;background:var(--bg3);border-radius:var(--r);text-align:center">Carregando...</div>
         </div>
@@ -1261,11 +1261,11 @@ function switchAuthTab(mode){
   document.getElementById('lPass').name=isLogin?'password':'new-password';
   document.getElementById('lForgotWrap').style.display=isLogin?'block':'none';
   document.getElementById('lTermsWrap').style.display=isLogin?'none':'block';
-  document.getElementById('lFirmaWrap').style.display=isManager?'block':'none';
-  document.getElementById('lFirmaStatus').textContent='';
+  document.getElementById('lEmpresaWrap').style.display=isManager?'block':'none';
+  document.getElementById('lEmpresaStatus').textContent='';
   document.getElementById('lBtn').textContent=isLogin?'Entrar':isManager?'Criar Conta Empresarial':'Criar conta';
   document.getElementById('lTitle').textContent=isLogin?'Acesso à plataforma':isManager?'Conta Empresarial':'Criar conta';
-  document.getElementById('lSub').textContent=isLogin?'Entre com seu email para acessar a plataforma':isManager?'Crie sua conta de gestor e cadastre sua firma':'Preencha seus dados para começar';
+  document.getElementById('lSub').textContent=isLogin?'Entre com seu email para acessar a plataforma':isManager?'Crie sua conta de gestor e cadastre sua empresa':'Preencha seus dados para começar';
   document.getElementById('lError').style.display='none';
   document.getElementById('lSuccess').style.display='none';
 }
@@ -1464,28 +1464,16 @@ async function doAuth(){
       if(pass.length<6){showAuthError('A senha deve ter pelo menos 6 caracteres.');return;}
       if(!document.getElementById('lTermsCheck').checked){showAuthError('Você precisa aceitar os Termos de Uso e a Política de Privacidade.');return;}
       if(authMode==='manager'){
-        var firmaNome=document.getElementById('lFirmaNome').value.trim();
-        if(!firmaNome){showAuthError('Informe o nome da firma.');return;}
-        var slug=firmaToSlug(firmaNome);
+        var empresaNome=document.getElementById('lEmpresaNome').value.trim();
+        if(!empresaNome){showAuthError('Informe o nome da empresa.');return;}
+        var slug=empresaToSlug(empresaNome);
         var {data:existing}=await sb.from('firms').select('id').eq('slug',slug).maybeSingle();
-        if(existing){showAuthError('Já existe uma firma com esse nome. Tente outro.');return;}
+        if(existing){showAuthError('Já existe uma empresa com esse nome. Tente outro.');return;}
+        // guardar nome para criar empresa após a sessão estar ativa
+        localStorage.setItem('captor_pending_empresa',empresaNome);
       }
       var {data,error}=await sb.auth.signUp({email,password:pass});
       if(error)throw error;
-      // criar firma se modo manager
-      if(authMode==='manager'&&data.user){
-        var firmaNome2=document.getElementById('lFirmaNome').value.trim();
-        var slug2=firmaToSlug(firmaNome2);
-        var {data:firmData,error:firmErr}=await sb.from('firms').insert({
-          name:firmaNome2, slug:slug2, owner_user_id:data.user.id
-        }).select().maybeSingle();
-        if(!firmErr&&firmData){
-          await sb.from('firm_members').insert({
-            firm_id:firmData.id, user_id:data.user.id,
-            role:'manager', credit_limit_monthly:0, joined_at:new Date().toISOString()
-          });
-        }
-      }
       // aceitar convite pendente se havia
       if(pendingInviteToken&&data.session){
         await sb.rpc('accept_invite',{p_token:pendingInviteToken});
@@ -1564,7 +1552,7 @@ document.addEventListener('DOMContentLoaded',function(){
       var banner=document.getElementById('inviteBanner');
       var bannerText=document.getElementById('inviteBannerText');
       if(data&&data.firms){
-        bannerText.textContent='Você foi convidado para a firma '+data.firms.name+'. Faça login ou crie sua conta para aceitar.';
+        bannerText.textContent='Você foi convidado para a empresa '+data.firms.name+'. Faça login ou crie sua conta para aceitar.';
       } else {
         bannerText.textContent='Convite detectado. Faça login ou crie sua conta para aceitar.';
       }
@@ -1869,7 +1857,7 @@ var STEP_SUBTITLES={
   1:'Revise os dados da empresa',
   2:'Confirme os produtos e serviços',
   3:'Defina as faixas de alocação por perfil',
-  4:'Gerencie sua firma e assessores'
+  4:'Gerencie sua empresa e assessores'
 };
 
 function updateEmpresaStep(){
@@ -1891,7 +1879,7 @@ function updateEmpresaStep(){
   document.getElementById('mBtnNext').textContent=empresaStep===maxStep?'Fechar':'Próximo →';
   document.getElementById('modalSubtitle').textContent=STEP_SUBTITLES[empresaStep]||'';
   // mostrar step da firma só para gestores
-  var firmaStepEl=document.getElementById('modalStepFirma');
+  var empresaStepEl=document.getElementById('modalStepEmpresa');
   if(firmaStepEl)firmaStepEl.style.display=currentUserIsManager?'':'none';
 }
 
@@ -3569,11 +3557,11 @@ function pixShowToast(msg) {
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.4.0 — Captor Teams: Signup + Convite             ║
+     ║ v5.4.1 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
-     ║        Criação de firma + slug com validação         ║
+     ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║
-     ║        Step 4 "Minha Firma" no modal Configuração    ║
+     ║        Step 4 "Minha Empresa" no modal Configuração    ║
      ║        Geração e cópia de link de convite            ║
      ║        Lista de membros com limite de créditos       ║
      ║        Listagem e revogação de convites pendentes    ║
@@ -3584,28 +3572,28 @@ function pixShowToast(msg) {
 // ── CAPTOR TEAMS ──────────────────────────────────────────────────────────────
 var currentUserIsManager = false;
 var currentFirmId = null;
-var firmaSlugCheckTimer = null;
+var empresaSlugCheckTimer = null;
 
-function firmaToSlug(name){
+function empresaToSlug(name){
   return name.toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-z0-9]+/g,'-')
     .replace(/^-|-$/g,'');
 }
 
-async function checkFirmaSlug(){
-  var nome=document.getElementById('lFirmaNome').value.trim();
-  var statusEl=document.getElementById('lFirmaStatus');
+async function checkEmpresaSlug(){
+  var nome=document.getElementById('lEmpresaNome').value.trim();
+  var statusEl=document.getElementById('lEmpresaStatus');
   if(!nome){statusEl.textContent='';return;}
-  clearTimeout(firmaSlugCheckTimer);
+  clearTimeout(empresaSlugCheckTimer);
   statusEl.style.color='var(--dim)';
   statusEl.textContent='Verificando...';
-  firmaSlugCheckTimer=setTimeout(async function(){
-    var slug=firmaToSlug(nome);
+  empresaSlugCheckTimer=setTimeout(async function(){
+    var slug=empresaToSlug(nome);
     var {data}=await sb.from('firms').select('id').eq('slug',slug).maybeSingle();
     if(data){
       statusEl.style.color='#f08080';
-      statusEl.textContent='✗ Já existe uma firma com esse nome.';
+      statusEl.textContent='✗ Já existe uma empresa com esse nome.';
     } else {
       statusEl.style.color='var(--lime)';
       statusEl.textContent='✓ Nome disponível.';
@@ -3615,14 +3603,38 @@ async function checkFirmaSlug(){
 
 async function loadFirmRole(){
   if(!supabaseUserId)return;
-  // checar se é gestor (owner de alguma firma)
+  // criar empresa pendente (signup PJ que precisou confirmar email)
+  var pendingEmpresa=localStorage.getItem('captor_pending_empresa');
+  if(pendingEmpresa){
+    localStorage.removeItem('captor_pending_empresa');
+    var slugP=empresaToSlug(pendingEmpresa);
+    var {data:existingP}=await sb.from('firms').select('id').eq('slug',slugP).maybeSingle();
+    if(!existingP){
+      var {data:newFirm}=await sb.from('firms').insert({
+        name:pendingEmpresa, slug:slugP, owner_user_id:supabaseUserId
+      }).select().maybeSingle();
+      if(newFirm){
+        await sb.from('firm_members').insert({
+          firm_id:newFirm.id, user_id:supabaseUserId,
+          role:'manager', credit_limit_monthly:0, joined_at:new Date().toISOString()
+        });
+      }
+    }
+  }
+  // checar se é gestor (owner de alguma empresa)
   var {data:firm}=await sb.from('firms').select('id,name').eq('owner_user_id',supabaseUserId).maybeSingle();
   if(firm){
     currentUserIsManager=true;
     currentFirmId=firm.id;
+    // abrir modal de configuração automaticamente na primeira vez
+    var seenConfig=localStorage.getItem('captor_mgr_cfg_'+supabaseUserId);
+    if(!seenConfig){
+      localStorage.setItem('captor_mgr_cfg_'+supabaseUserId,'1');
+      setTimeout(function(){openEmpresaModal();},800);
+    }
   } else {
-    // checar se é membro de firma
-    var {data:member}=await sb.from('firm_members').select('firm_id,role').eq('user_id',supabaseUserId).eq('role','advisor').maybeSingle();
+    // checar se é membro de empresa
+    var {data:member}=await sb.from('firm_members').select('firm_id,role').eq('user_id',supabaseUserId).maybeSingle();
     if(member){currentFirmId=member.firm_id;}
   }
 }
@@ -3723,11 +3735,11 @@ async function revokeInvite(inviteId){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║ CAPTOR — CHANGELOG                                   ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.4.0 — Captor Teams: Signup + Convite             ║
+     ║ v5.4.1 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
-     ║        Criação de firma + slug com validação         ║
+     ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║
-     ║        Step 4 "Minha Firma" no modal Configuração    ║
+     ║        Step 4 "Minha Empresa" no modal Configuração    ║
      ║        Geração e cópia de link de convite            ║
      ║        Lista de membros com limite de créditos       ║
      ║        Listagem e revogação de convites pendentes    ║

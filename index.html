@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.5.2</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.5.0</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -486,7 +486,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.5.2</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.5.0</div>
     </div>
   </div>
 </div>
@@ -526,7 +526,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.5.2</div>
+      <div class="hver" id="hverEl">v5.5.0</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -793,7 +793,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.5.2</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.5.0</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -1613,7 +1613,6 @@ document.addEventListener('DOMContentLoaded',function(){
     pendingInviteToken=inviteToken;
     window.history.replaceState({}, '', window.location.pathname);
     (async function(){
-      // Buscar nome da firma pelo token para exibir no banner
       var {data}=await sb.from('invites')
         .select('firm_id, firms(name)')
         .eq('token',inviteToken)
@@ -1622,9 +1621,28 @@ document.addEventListener('DOMContentLoaded',function(){
       var banner=document.getElementById('inviteBanner');
       var bannerText=document.getElementById('inviteBannerText');
       if(data&&data.firms){
-        bannerText.textContent='Você foi convidado para a empresa '+data.firms.name+'. Faça login ou crie sua conta para aceitar.';
+        var empresaNomeConvite=data.firms.name;
+        bannerText.textContent='Você foi convidado para a empresa '+empresaNomeConvite+'. Faça login ou crie sua conta para aceitar.';
+        // Forçar aba "Criar conta" e ocultar tab Conta Empresarial
+        switchAuthTab('signup');
+        document.getElementById('tabManager').style.display='none';
+        // Mostrar nome da empresa como readonly no campo (reaproveitando lEmpresaWrap)
+        var wrap=document.getElementById('lEmpresaWrap');
+        var input=document.getElementById('lEmpresaNome');
+        input.value=empresaNomeConvite;
+        input.readOnly=true;
+        input.style.color='var(--muted)';
+        input.style.background='var(--bg2)';
+        input.removeAttribute('oninput');
+        document.getElementById('lEmpresaStatus').textContent='';
+        wrap.style.display='block';
+        // Trocar label
+        var label=wrap.querySelector('label');
+        if(label)label.textContent='Empresa que convidou você';
       } else {
         bannerText.textContent='Convite detectado. Faça login ou crie sua conta para aceitar.';
+        switchAuthTab('signup');
+        document.getElementById('tabManager').style.display='none';
       }
       banner.style.display='flex';
     })();
@@ -1956,6 +1974,7 @@ function updateEmpresaStep(){
 function empresaGoToStep(n){
   empresaStep=n;
   updateEmpresaStep();
+  if(n===4)loadFirmTab();
 }
 
 function empresaStepBack(){
@@ -2016,7 +2035,13 @@ async function empresaStepNext(){
   if(selectedBrandColors.length)applyBrandColorsToCharts(selectedBrandColors);
   document.getElementById('bannerPerfil').style.display='none';
   btn.disabled=false;btn.textContent='Salvar ✓';
-  closeEmpresaModal();
+  if(currentUserIsManager){
+    empresaStep=4;
+    updateEmpresaStep();
+    loadFirmTab();
+  } else {
+    closeEmpresaModal();
+  }
   } // end if empresaStep===3
 }
 
@@ -3622,7 +3647,7 @@ function pixShowToast(msg) {
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.5.2 — Captor Teams: Signup + Convite             ║
+     ║ v5.5.0 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║
@@ -3725,7 +3750,10 @@ async function loadTeamView(){
 async function loadTeamMembers(){
   var listEl=document.getElementById('teamMembersList');
   if(!listEl)return;
-  var {data,error}=await sb.rpc('get_firm_members_with_email',{p_firm_id:currentFirmId});
+  var {data,error}=await sb.from('firm_members')
+    .select('user_id,role,credit_limit_monthly,joined_at')
+    .eq('firm_id',currentFirmId)
+    .not('joined_at','is',null);
   if(error||!data||!data.length){
     listEl.innerHTML='<div style="padding:16px;text-align:center;color:var(--dim);font-size:.78rem">Nenhum assessor vinculado ainda.</div>';
     document.getElementById('teamTotalAssessores').textContent='0';
@@ -3750,18 +3778,16 @@ async function loadTeamMembers(){
   (logs||[]).forEach(function(l){totalMes+=Math.abs(l.consumo);});
   document.getElementById('teamCreditosMes').textContent=totalMes.toFixed(1)+' cr';
   listEl.innerHTML=data.map(function(m){
-    var isSelf=m.user_id===supabaseUserId;
-    var emailLabel=m.email||m.user_id.slice(0,12)+'...';
-    var nomeLabel=emailLabel.split('@')[0];
+    var label=m.user_id===supabaseUserId?'(você)':'';
+    var nome=m.user_id.slice(0,8)+'...';
     var nProps=propCount[m.user_id]||0;
     var isGestor=m.role==='manager';
     return '<div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:0;padding:8px 12px;border-bottom:1px solid var(--border2)">'
       +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<div style="width:28px;height:28px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:'+(isGestor?'var(--gold)':'var(--lime)')+'">'+nomeLabel.charAt(0).toUpperCase()+'</div>'
-      +'<div>'
-      +'<div style="font-size:.78rem;color:var(--text);font-weight:600">'+nomeLabel+(isSelf?' <span style="font-size:.68rem;color:var(--dim);font-weight:400">(você)</span>':'')+'</div>'
-      +'<div style="font-size:.68rem;color:var(--dim)">'+emailLabel+'&nbsp;·&nbsp;'+(isGestor?'Gestor':'Assessor')+'</div>'
-      +'</div></div>'
+      +'<div style="width:28px;height:28px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:'+(isGestor?'var(--gold)':'var(--lime)')+'">'+m.role.charAt(0).toUpperCase()+'</div>'
+      +'<div><div style="font-size:.78rem;color:var(--text);font-weight:600">'+nome+' '+label+'</div>'
+      +'<div style="font-size:.68rem;color:var(--dim)">'+(isGestor?'Gestor':'Assessor')+'</div></div>'
+      +'</div>'
       +'<div style="width:110px;text-align:center;font-size:.78rem;color:var(--muted)">'+nProps+' proposta'+(nProps!==1?'s':'')+'</div>'
       +'<div style="width:130px;display:flex;align-items:center;justify-content:center;gap:5px">'
       +(isGestor?'<span style="font-size:.72rem;color:var(--dim)">Gestor</span>'
@@ -3835,7 +3861,7 @@ async function updateMemberLimit(userId,val){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║ CAPTOR — CHANGELOG                                   ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.5.2 — Captor Teams: Signup + Convite             ║
+     ║ v5.5.0 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║

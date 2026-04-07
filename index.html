@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.3.2</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.4.0</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -428,6 +428,11 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 
 <!-- LOGIN -->
 <div id="login">
+  <!-- Banner de convite detectado na URL -->
+  <div id="inviteBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:300;background:rgba(168,194,58,.12);border-bottom:1px solid rgba(168,194,58,.35);padding:10px 20px;align-items:center;justify-content:center;gap:10px">
+    <span style="font-size:.82rem;color:var(--lime);font-weight:700">🏢</span>
+    <span id="inviteBannerText" style="font-size:.82rem;color:var(--text)"></span>
+  </div>
   <div class="lw">
     <div class="ll">
       <div>
@@ -451,6 +456,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div style="display:flex;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:3px;margin-bottom:18px">
         <button id="tabLogin" onclick="switchAuthTab('login')" style="flex:1;padding:6px;border:none;border-radius:6px;background:var(--lime);color:#1a1a1a;font-family:var(--f);font-size:.76rem;font-weight:700;cursor:pointer">Entrar</button>
         <button id="tabSignup" onclick="switchAuthTab('signup')" style="flex:1;padding:6px;border:none;border-radius:6px;background:transparent;color:var(--muted);font-family:var(--f);font-size:.76rem;font-weight:600;cursor:pointer">Criar conta</button>
+        <button id="tabManager" onclick="switchAuthTab('manager')" style="flex:1;padding:6px;border:none;border-radius:6px;background:transparent;color:var(--muted);font-family:var(--f);font-size:.73rem;font-weight:600;cursor:pointer">Conta Empresarial</button>
       </div>
 
       <form id="lForm" onsubmit="doAuth();return false;" autocomplete="on">
@@ -461,6 +467,11 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lPassConfirmWrap" style="display:none">
         <label class="ll2">Confirmar senha</label>
         <input class="li" type="password" id="lPassConfirm" name="new-password-confirm" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <div id="lFirmaWrap" style="display:none">
+        <label class="ll2">Nome da firma</label>
+        <input class="li" type="text" id="lFirmaNome" placeholder="Ex: BTG Assessoria SP" oninput="checkFirmaSlug()" autocomplete="off">
+        <div id="lFirmaStatus" style="font-size:.72rem;margin-top:4px;min-height:16px"></div>
       </div>
       <div id="lTermsWrap" style="display:none;margin-bottom:12px">
         <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:.75rem;color:var(--muted);line-height:1.5">
@@ -475,7 +486,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.3.2</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.4.0</div>
     </div>
   </div>
 </div>
@@ -515,7 +526,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.3.2</div>
+      <div class="hver" id="hverEl">v5.4.0</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -724,7 +735,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         </div>
         <button class="modal-close" onclick="closeEmpresaModal()">✕</button>
       </div>
-      <div class="modal-steps">
+      <div class="modal-steps" id="modalStepsNav">
         <div class="modal-step">
           <div class="step-dot active" id="sdot0">◎</div>
           <div class="step-label active" id="slbl0">Apresentação</div>
@@ -740,6 +751,10 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         <div class="modal-step">
           <div class="step-dot" id="sdot3">3</div>
           <div class="step-label" id="slbl3">Alocação</div>
+        </div>
+        <div class="modal-step" id="modalStepFirma" style="display:none">
+          <div class="step-dot" id="sdot4">4</div>
+          <div class="step-label" id="slbl4">Minha Firma</div>
         </div>
       </div>
 
@@ -798,6 +813,39 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         </div>
         <div id="allocTableWrap"></div>
         <div style="margin-top:10px;font-size:.82rem;font-weight:500;color:var(--white);background:var(--bg3);border-radius:5px;padding:7px 10px;border-left:2px solid var(--lime)">💡 Dica: as faixas são usadas como referência pela IA ao sugerir carteiras. Use o formato "mín-máx" (ex: 60-75).</div>
+      </div>
+
+      <!-- Step 4: Minha Firma (visível só para gestores) -->
+      <div class="modal-body" id="mStep4" style="display:none">
+        <div style="background:var(--lime-dim);border:1px solid rgba(168,194,58,.35);border-radius:var(--r);padding:12px 14px;margin-bottom:16px">
+          <div style="font-size:.78rem;font-weight:700;color:var(--lime);margin-bottom:2px">🏢 Minha Firma</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.5">Gerencie os assessores da sua firma e compartilhe o link de convite.</div>
+        </div>
+
+        <!-- Gerar link de convite -->
+        <div style="margin-bottom:18px">
+          <div style="font-size:.8rem;font-weight:700;color:var(--white);margin-bottom:8px">Link de convite para assessores</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input class="fi" id="inviteLinkField" readonly placeholder="Clique em Gerar para criar um link" style="flex:1;font-size:.75rem;color:var(--muted);cursor:pointer" onclick="this.select()">
+            <button onclick="generateInviteLink()" style="padding:8px 14px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap" id="btnGenInvite">Gerar link</button>
+            <button onclick="copyInviteLink()" id="btnCopyInvite" style="display:none;padding:8px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--r);font-family:var(--f);font-size:.78rem;cursor:pointer;white-space:nowrap">Copiar</button>
+          </div>
+          <div style="font-size:.7rem;color:var(--dim);margin-top:5px">O link expira em 7 dias. Gere um novo a qualquer momento.</div>
+        </div>
+
+        <!-- Lista de membros -->
+        <div style="font-size:.8rem;font-weight:700;color:var(--white);margin-bottom:8px">Assessores da firma</div>
+        <div id="firmMembersList" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto">
+          <div style="font-size:.78rem;color:var(--dim);padding:12px;background:var(--bg3);border-radius:var(--r);text-align:center">Carregando...</div>
+        </div>
+
+        <!-- Convites pendentes -->
+        <div style="margin-top:14px">
+          <div style="font-size:.8rem;font-weight:700;color:var(--white);margin-bottom:8px">Convites pendentes</div>
+          <div id="firmInvitesList" style="display:flex;flex-direction:column;gap:6px;max-height:120px;overflow-y:auto">
+            <div style="font-size:.78rem;color:var(--dim);padding:12px;background:var(--bg3);border-radius:var(--r);text-align:center">Nenhum convite pendente</div>
+          </div>
+        </div>
       </div>
 
       <div class="modal-footer">
@@ -1198,18 +1246,26 @@ var authMode='login';
 function switchAuthTab(mode){
   authMode=mode;
   var isLogin=mode==='login';
+  var isManager=mode==='manager';
+  var isSignup=mode==='signup';
+  // tabs
   document.getElementById('tabLogin').style.background=isLogin?'var(--lime)':'transparent';
   document.getElementById('tabLogin').style.color=isLogin?'#1a1a1a':'var(--muted)';
-  document.getElementById('tabSignup').style.background=isLogin?'transparent':'var(--lime)';
-  document.getElementById('tabSignup').style.color=isLogin?'var(--muted)':'#1a1a1a';
+  document.getElementById('tabSignup').style.background=isSignup?'var(--lime)':'transparent';
+  document.getElementById('tabSignup').style.color=isSignup?'#1a1a1a':'var(--muted)';
+  document.getElementById('tabManager').style.background=isManager?'var(--lime)':'transparent';
+  document.getElementById('tabManager').style.color=isManager?'#1a1a1a':'var(--muted)';
+  // campos
   document.getElementById('lPassConfirmWrap').style.display=isLogin?'none':'block';
   document.getElementById('lPass').autocomplete=isLogin?'current-password':'new-password';
   document.getElementById('lPass').name=isLogin?'password':'new-password';
   document.getElementById('lForgotWrap').style.display=isLogin?'block':'none';
   document.getElementById('lTermsWrap').style.display=isLogin?'none':'block';
-  document.getElementById('lBtn').textContent=isLogin?'Entrar':'Criar conta';
-  document.getElementById('lTitle').textContent=isLogin?'Acesso à plataforma':'Criar conta';
-  document.getElementById('lSub').textContent=isLogin?'Entre com seu email para acessar a plataforma':'Preencha seus dados para começar';
+  document.getElementById('lFirmaWrap').style.display=isManager?'block':'none';
+  document.getElementById('lFirmaStatus').textContent='';
+  document.getElementById('lBtn').textContent=isLogin?'Entrar':isManager?'Criar Conta Empresarial':'Criar conta';
+  document.getElementById('lTitle').textContent=isLogin?'Acesso à plataforma':isManager?'Conta Empresarial':'Criar conta';
+  document.getElementById('lSub').textContent=isLogin?'Entre com seu email para acessar a plataforma':isManager?'Crie sua conta de gestor e cadastre sua firma':'Preencha seus dados para começar';
   document.getElementById('lError').style.display='none';
   document.getElementById('lSuccess').style.display='none';
 }
@@ -1240,6 +1296,7 @@ function enterApp(session){
   updateDash();
   loadEmpresaData();
   initOnboarding();
+  loadFirmRole();
 }
 
 // ── CRÉDITOS ──
@@ -1395,14 +1452,45 @@ async function doAuth(){
     if(authMode==='login'){
       var {data,error}=await sb.auth.signInWithPassword({email,password:pass});
       if(error)throw error;
+      // se havia convite pendente, aceitar após login
+      if(pendingInviteToken){
+        await sb.rpc('accept_invite',{p_token:pendingInviteToken});
+        pendingInviteToken=null;
+      }
       enterApp(data.session);
-    } else {
-      var confirm=document.getElementById('lPassConfirm').value;
-      if(pass!==confirm){showAuthError('As senhas não coincidem.');return;}
+    } else if(authMode==='signup'||authMode==='manager'){
+      var confirmPass=document.getElementById('lPassConfirm').value;
+      if(pass!==confirmPass){showAuthError('As senhas não coincidem.');return;}
       if(pass.length<6){showAuthError('A senha deve ter pelo menos 6 caracteres.');return;}
       if(!document.getElementById('lTermsCheck').checked){showAuthError('Você precisa aceitar os Termos de Uso e a Política de Privacidade.');return;}
+      if(authMode==='manager'){
+        var firmaNome=document.getElementById('lFirmaNome').value.trim();
+        if(!firmaNome){showAuthError('Informe o nome da firma.');return;}
+        var slug=firmaToSlug(firmaNome);
+        var {data:existing}=await sb.from('firms').select('id').eq('slug',slug).maybeSingle();
+        if(existing){showAuthError('Já existe uma firma com esse nome. Tente outro.');return;}
+      }
       var {data,error}=await sb.auth.signUp({email,password:pass});
       if(error)throw error;
+      // criar firma se modo manager
+      if(authMode==='manager'&&data.user){
+        var firmaNome2=document.getElementById('lFirmaNome').value.trim();
+        var slug2=firmaToSlug(firmaNome2);
+        var {data:firmData,error:firmErr}=await sb.from('firms').insert({
+          name:firmaNome2, slug:slug2, owner_user_id:data.user.id
+        }).select().maybeSingle();
+        if(!firmErr&&firmData){
+          await sb.from('firm_members').insert({
+            firm_id:firmData.id, user_id:data.user.id,
+            role:'manager', credit_limit_monthly:0, joined_at:new Date().toISOString()
+          });
+        }
+      }
+      // aceitar convite pendente se havia
+      if(pendingInviteToken&&data.session){
+        await sb.rpc('accept_invite',{p_token:pendingInviteToken});
+        pendingInviteToken=null;
+      }
       if(data.session){
         enterApp(data.session);
       } else {
@@ -1417,7 +1505,7 @@ async function doAuth(){
     showAuthError(msg);
   }finally{
     document.getElementById('lBtn').disabled=false;
-    document.getElementById('lBtn').textContent=authMode==='login'?'Entrar':'Criar conta';
+    document.getElementById('lBtn').textContent=authMode==='login'?'Entrar':authMode==='manager'?'Criar Conta Empresarial':'Criar conta';
   }
 }
 
@@ -1444,25 +1532,44 @@ async function doLogout(){
   if(data.session)enterApp(data.session);
 })();
 
+var pendingInviteToken=null;
+
 document.addEventListener('DOMContentLoaded',function(){
   var lPass=document.getElementById('lPass');
   if(lPass)lPass.addEventListener('keydown',function(e){if(e.key==='Enter')doAuth();});
   var params = new URLSearchParams(window.location.search);
-  // Auto-seleciona aba "Criar conta" se vier da LP
   if(params.get('signup')==='1'){
     switchAuthTab('signup');
   }
-  // Toast de email confirmado
   if(params.get('confirmed')==='1'){
     window.history.replaceState({}, '', window.location.pathname);
-    setTimeout(function(){
-      showLoginToast('✅ Email confirmado! Faça login para entrar.');
-    }, 400);
+    setTimeout(function(){showLoginToast('✅ Email confirmado! Faça login para entrar.');}, 400);
   }
-  // Redefinição de senha — Supabase redireciona com tokens na URL
   if(params.get('reset')==='1'){
     window.history.replaceState({}, '', window.location.pathname);
     openResetPassword();
+  }
+  // Detectar convite na URL
+  var inviteToken=params.get('invite');
+  if(inviteToken){
+    pendingInviteToken=inviteToken;
+    window.history.replaceState({}, '', window.location.pathname);
+    (async function(){
+      // Buscar nome da firma pelo token para exibir no banner
+      var {data}=await sb.from('invites')
+        .select('firm_id, firms(name)')
+        .eq('token',inviteToken)
+        .is('used_at',null)
+        .maybeSingle();
+      var banner=document.getElementById('inviteBanner');
+      var bannerText=document.getElementById('inviteBannerText');
+      if(data&&data.firms){
+        bannerText.textContent='Você foi convidado para a firma '+data.firms.name+'. Faça login ou crie sua conta para aceitar.';
+      } else {
+        bannerText.textContent='Convite detectado. Faça login ou crie sua conta para aceitar.';
+      }
+      banner.style.display='flex';
+    })();
   }
 });
 
@@ -1761,11 +1868,13 @@ var STEP_SUBTITLES={
   0:'Importe sua apresentação para preencher automaticamente',
   1:'Revise os dados da empresa',
   2:'Confirme os produtos e serviços',
-  3:'Defina as faixas de alocação por perfil'
+  3:'Defina as faixas de alocação por perfil',
+  4:'Gerencie sua firma e assessores'
 };
 
 function updateEmpresaStep(){
-  var steps=[0,1,2,3];
+  var maxStep=currentUserIsManager?4:3;
+  var steps=[0,1,2,3,4];
   steps.forEach(function(n){
     var stepEl=document.getElementById('mStep'+n);
     if(stepEl)stepEl.style.display=n===empresaStep?'block':'none';
@@ -1779,13 +1888,17 @@ function updateEmpresaStep(){
   });
   document.getElementById('mBtnBack').style.display=empresaStep>0?'block':'none';
   document.getElementById('mBtnNext').style.display=empresaStep===0?'none':'block';
-  document.getElementById('mBtnNext').textContent=empresaStep===3?'Salvar ✓':'Próximo →';
+  document.getElementById('mBtnNext').textContent=empresaStep===maxStep?'Fechar':'Próximo →';
   document.getElementById('modalSubtitle').textContent=STEP_SUBTITLES[empresaStep]||'';
+  // mostrar step da firma só para gestores
+  var firmaStepEl=document.getElementById('modalStepFirma');
+  if(firmaStepEl)firmaStepEl.style.display=currentUserIsManager?'':'none';
 }
 
 function empresaGoToStep(n){
   empresaStep=n;
   updateEmpresaStep();
+  if(n===4)loadFirmTab();
 }
 
 function empresaStepBack(){
@@ -1793,15 +1906,21 @@ function empresaStepBack(){
 }
 
 async function empresaStepNext(){
+  var maxStep=currentUserIsManager?4:3;
+  if(empresaStep===maxStep){
+    closeEmpresaModal();
+    return;
+  }
   if(empresaStep<3){
     empresaStep++;
     updateEmpresaStep();
     if(empresaStep===3)buildAllocTable();
     return;
   }
-  // Salvar no Supabase
-  var btn=document.getElementById('mBtnNext');
-  btn.disabled=true;btn.textContent='Salvando...';
+  if(empresaStep===3){
+    // Salvar alocação e avançar para step 4 se gestor, senão fechar
+    var btn=document.getElementById('mBtnNext');
+    btn.disabled=true;btn.textContent='Salvando...';
 
   var regras={};
   ALLOC_PERFIS.forEach(function(p){
@@ -1839,8 +1958,15 @@ async function empresaStepNext(){
   empresaData=payload;
   if(selectedBrandColors.length)applyBrandColorsToCharts(selectedBrandColors);
   document.getElementById('bannerPerfil').style.display='none';
-  closeEmpresaModal();
   btn.disabled=false;btn.textContent='Salvar ✓';
+  if(currentUserIsManager){
+    empresaStep=4;
+    updateEmpresaStep();
+    loadFirmTab();
+  } else {
+    closeEmpresaModal();
+  }
+  } // end if empresaStep===3
 }
 
 function buildEmpresaPrompt(){
@@ -3443,24 +3569,169 @@ function pixShowToast(msg) {
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ BACKLOG — PRÉ-LANÇAMENTO                             ║
-     ║                                                      ║
-     ║  MARKETING                                           ║
-     ║  · Landing page (fora do app)                        ║
-     ║  · Tag Google Analytics / GA4                        ║
-     ║  · Tag na proposta.html também (visitas do cliente)  ║
-     ║                                                      ║
-     ║  UX / QUALIDADE                                      ║
-     ║  · Teste em mobile (proposta.html e index.html)      ║
-     ║  · Página 404 amigável para links inválidos          ║
-     ║  · Onboarding: orientação no primeiro acesso         ║
-     ║  · Email de notificação quando cliente responde      ║
-     ║                                                      ║
-     ║  PÓS-LANÇAMENTO                                      ║
-     ║  · Integração de pagamento AbacatePay ✅ (v4.0)      ║
-     ║  · Stripe / Mercado Pago (pós-lançamento)            ║
-     ║  · Insights: análise de padrões de conversão         ║
-     ║  · Múltiplos SDRs por empresa                        ║
+     ║ v5.4.0 — Captor Teams: Signup + Convite             ║
+     ║        Aba "Conta Empresarial" no login              ║
+     ║        Criação de firma + slug com validação         ║
+     ║        Banner de convite na URL (?invite=TOKEN)      ║
+     ║        Step 4 "Minha Firma" no modal Configuração    ║
+     ║        Geração e cópia de link de convite            ║
+     ║        Lista de membros com limite de créditos       ║
+     ║        Listagem e revogação de convites pendentes    ║
+     ║        RPC accept_invite chamada pós login/signup    ║
+     ╚══════════════════════════════════════════════════════╝ -->
+
+<script>
+// ── CAPTOR TEAMS ──────────────────────────────────────────────────────────────
+var currentUserIsManager = false;
+var currentFirmId = null;
+var firmaSlugCheckTimer = null;
+
+function firmaToSlug(name){
+  return name.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/^-|-$/g,'');
+}
+
+async function checkFirmaSlug(){
+  var nome=document.getElementById('lFirmaNome').value.trim();
+  var statusEl=document.getElementById('lFirmaStatus');
+  if(!nome){statusEl.textContent='';return;}
+  clearTimeout(firmaSlugCheckTimer);
+  statusEl.style.color='var(--dim)';
+  statusEl.textContent='Verificando...';
+  firmaSlugCheckTimer=setTimeout(async function(){
+    var slug=firmaToSlug(nome);
+    var {data}=await sb.from('firms').select('id').eq('slug',slug).maybeSingle();
+    if(data){
+      statusEl.style.color='#f08080';
+      statusEl.textContent='✗ Já existe uma firma com esse nome.';
+    } else {
+      statusEl.style.color='var(--lime)';
+      statusEl.textContent='✓ Nome disponível.';
+    }
+  }, 500);
+}
+
+async function loadFirmRole(){
+  if(!supabaseUserId)return;
+  // checar se é gestor (owner de alguma firma)
+  var {data:firm}=await sb.from('firms').select('id,name').eq('owner_user_id',supabaseUserId).maybeSingle();
+  if(firm){
+    currentUserIsManager=true;
+    currentFirmId=firm.id;
+  } else {
+    // checar se é membro de firma
+    var {data:member}=await sb.from('firm_members').select('firm_id,role').eq('user_id',supabaseUserId).eq('role','advisor').maybeSingle();
+    if(member){currentFirmId=member.firm_id;}
+  }
+}
+
+async function loadFirmTab(){
+  if(!currentUserIsManager||!currentFirmId)return;
+  await loadFirmMembers();
+  await loadFirmInvites();
+}
+
+async function loadFirmMembers(){
+  var listEl=document.getElementById('firmMembersList');
+  if(!listEl)return;
+  var {data,error}=await sb.from('firm_members')
+    .select('user_id, role, credit_limit_monthly, joined_at')
+    .eq('firm_id',currentFirmId)
+    .not('joined_at','is',null);
+  if(error||!data||!data.length){
+    listEl.innerHTML='<div style="font-size:.78rem;color:var(--dim);padding:12px;background:var(--bg3);border-radius:var(--r);text-align:center">Nenhum assessor vinculado ainda.</div>';
+    return;
+  }
+  listEl.innerHTML=data.map(function(m){
+    return '<div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px">'
+      +'<div style="width:30px;height:30px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--lime);flex-shrink:0">'+m.role.charAt(0).toUpperCase()+'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:.78rem;color:var(--text);font-weight:600">'+(m.role==='manager'?'Gestor':'Assessor')+'</div>'
+      +'<div style="font-size:.7rem;color:var(--dim)">ID: '+m.user_id.slice(0,8)+'...</div>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'
+      +'<span style="font-size:.7rem;color:var(--muted)">Limite/mês:</span>'
+      +'<input type="number" min="0" step="1" value="'+m.credit_limit_monthly+'" onchange="updateMemberLimit(\''+m.user_id+'\',this.value)" style="width:60px;padding:4px 6px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--f);font-size:.75rem;text-align:center">'
+      +'<span style="font-size:.7rem;color:var(--dim)">cr</span>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+async function updateMemberLimit(userId, val){
+  var limit=parseInt(val)||0;
+  await sb.from('firm_members').update({credit_limit_monthly:limit}).eq('firm_id',currentFirmId).eq('user_id',userId);
+}
+
+async function loadFirmInvites(){
+  var listEl=document.getElementById('firmInvitesList');
+  if(!listEl)return;
+  var {data,error}=await sb.from('invites')
+    .select('id, token, expires_at, created_at')
+    .eq('firm_id',currentFirmId)
+    .is('used_at',null)
+    .order('created_at',{ascending:false});
+  if(error||!data||!data.length){
+    listEl.innerHTML='<div style="font-size:.78rem;color:var(--dim);padding:12px;background:var(--bg3);border-radius:var(--r);text-align:center">Nenhum convite pendente.</div>';
+    return;
+  }
+  listEl.innerHTML=data.map(function(inv){
+    var exp=new Date(inv.expires_at);
+    var now=new Date();
+    var diffH=Math.round((exp-now)/3600000);
+    var expLabel=diffH>24?Math.round(diffH/24)+'d':diffH+'h';
+    return '<div style="display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px">'
+      +'<div style="flex:1;font-size:.72rem;color:var(--muted);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+inv.token.slice(0,16)+'...</div>'
+      +'<div style="font-size:.7rem;color:var(--dim);white-space:nowrap">expira em '+expLabel+'</div>'
+      +'<button onclick="revokeInvite(\''+inv.id+'\')" style="padding:3px 8px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--dim);font-size:.7rem;cursor:pointer;font-family:var(--f)">Revogar</button>'
+      +'</div>';
+  }).join('');
+}
+
+async function generateInviteLink(){
+  if(!currentFirmId)return;
+  var btn=document.getElementById('btnGenInvite');
+  btn.disabled=true;btn.textContent='Gerando...';
+  var {data,error}=await sb.from('invites').insert({firm_id:currentFirmId,role:'advisor'}).select().maybeSingle();
+  btn.disabled=false;btn.textContent='Gerar link';
+  if(error||!data){alert('Erro ao gerar convite: '+(error&&error.message||'tente novamente'));return;}
+  var link=window.location.origin+window.location.pathname+'?invite='+data.token;
+  document.getElementById('inviteLinkField').value=link;
+  document.getElementById('btnCopyInvite').style.display='inline-block';
+  loadFirmInvites();
+}
+
+function copyInviteLink(){
+  var field=document.getElementById('inviteLinkField');
+  field.select();
+  document.execCommand('copy');
+  var btn=document.getElementById('btnCopyInvite');
+  btn.textContent='Copiado ✓';
+  setTimeout(function(){btn.textContent='Copiar';},2000);
+}
+
+async function revokeInvite(inviteId){
+  if(!confirm('Revogar este convite?'))return;
+  await sb.from('invites').update({used_at:new Date().toISOString()}).eq('id',inviteId);
+  loadFirmInvites();
+}
+// ── FIM CAPTOR TEAMS ──────────────────────────────────────────────────────────
+</script>
+
+<!-- ╔══════════════════════════════════════════════════════╗
+     ║ CAPTOR — CHANGELOG                                   ║
+     ╠══════════════════════════════════════════════════════╣
+     ║ v5.4.0 — Captor Teams: Signup + Convite             ║
+     ║        Aba "Conta Empresarial" no login              ║
+     ║        Criação de firma + slug com validação         ║
+     ║        Banner de convite na URL (?invite=TOKEN)      ║
+     ║        Step 4 "Minha Firma" no modal Configuração    ║
+     ║        Geração e cópia de link de convite            ║
+     ║        Lista de membros com limite de créditos       ║
+     ║        Listagem e revogação de convites pendentes    ║
+     ║        RPC accept_invite chamada pós login/signup    ║
      ╚══════════════════════════════════════════════════════╝ -->
 </body>
 </html>

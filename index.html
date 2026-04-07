@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.5.3</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.5.0</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -486,7 +486,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.5.3</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.5.0</div>
     </div>
   </div>
 </div>
@@ -526,7 +526,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.5.3</div>
+      <div class="hver" id="hverEl">v5.5.0</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -793,7 +793,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.5.3</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.5.0</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -1352,7 +1352,7 @@ function showAuthSuccess(msg){
   document.getElementById('lError').style.display='none';
 }
 
-function enterApp(session){
+async function enterApp(session){
   var email=session.user.email;
   supabaseUserId=session.user.id;
   user=email.split('@')[0].replace(/\./g,' ');
@@ -1364,9 +1364,9 @@ function enterApp(session){
   initSliders();
   loadCredits();
   updateDash();
-  loadEmpresaData();
+  await loadFirmRole();      // primeiro: popula currentFirmId
+  await loadEmpresaData();   // depois: usa currentFirmId para fallback
   initOnboarding();
-  loadFirmRole();
 }
 
 // ── CRÉDITOS ──
@@ -1613,6 +1613,7 @@ document.addEventListener('DOMContentLoaded',function(){
     pendingInviteToken=inviteToken;
     window.history.replaceState({}, '', window.location.pathname);
     (async function(){
+      // Buscar nome da firma pelo token para exibir no banner
       var {data}=await sb.from('invites')
         .select('firm_id, firms(name)')
         .eq('token',inviteToken)
@@ -1621,28 +1622,9 @@ document.addEventListener('DOMContentLoaded',function(){
       var banner=document.getElementById('inviteBanner');
       var bannerText=document.getElementById('inviteBannerText');
       if(data&&data.firms){
-        var empresaNomeConvite=data.firms.name;
-        bannerText.textContent='Você foi convidado para a empresa '+empresaNomeConvite+'. Faça login ou crie sua conta para aceitar.';
-        // Forçar aba "Criar conta" e ocultar tab Conta Empresarial
-        switchAuthTab('signup');
-        document.getElementById('tabManager').style.display='none';
-        // Mostrar nome da empresa como readonly no campo (reaproveitando lEmpresaWrap)
-        var wrap=document.getElementById('lEmpresaWrap');
-        var input=document.getElementById('lEmpresaNome');
-        input.value=empresaNomeConvite;
-        input.readOnly=true;
-        input.style.color='var(--muted)';
-        input.style.background='var(--bg2)';
-        input.removeAttribute('oninput');
-        document.getElementById('lEmpresaStatus').textContent='';
-        wrap.style.display='block';
-        // Trocar label
-        var label=wrap.querySelector('label');
-        if(label)label.textContent='Empresa que convidou você';
+        bannerText.textContent='Você foi convidado para a empresa '+data.firms.name+'. Faça login ou crie sua conta para aceitar.';
       } else {
         bannerText.textContent='Convite detectado. Faça login ou crie sua conta para aceitar.';
-        switchAuthTab('signup');
-        document.getElementById('tabManager').style.display='none';
       }
       banner.style.display='flex';
     })();
@@ -1866,6 +1848,7 @@ function toggleBrandColor(hex){
 
 async function loadEmpresaData(){
   if(!supabaseUserId)return;
+  // 1. Tentar perfil próprio
   var {data}=await sb.from('company_profiles').select('*').eq('user_id',supabaseUserId).maybeSingle();
   if(data){
     empresaData=data;
@@ -1874,9 +1857,26 @@ async function loadEmpresaData(){
       selectedBrandColors=data.brand_colors;
       applyBrandColorsToCharts(data.brand_colors);
     }
-  } else {
-    document.getElementById('bannerPerfil').style.display='flex';
+    return;
   }
+  // 2. Sem perfil próprio — buscar perfil da empresa (se for membro)
+  if(currentFirmId){
+    var {data:firm}=await sb.from('firms').select('owner_user_id').eq('id',currentFirmId).maybeSingle();
+    if(firm){
+      var {data:firmProfile}=await sb.from('company_profiles').select('*').eq('user_id',firm.owner_user_id).maybeSingle();
+      if(firmProfile){
+        empresaData=firmProfile;
+        document.getElementById('bannerPerfil').style.display='none';
+        if(firmProfile.brand_colors&&firmProfile.brand_colors.length){
+          selectedBrandColors=firmProfile.brand_colors;
+          applyBrandColorsToCharts(firmProfile.brand_colors);
+        }
+        return;
+      }
+    }
+  }
+  // 3. Sem perfil em lugar nenhum — mostrar banner
+  document.getElementById('bannerPerfil').style.display='flex';
 }
 
 function applyBrandColorsToCharts(colors){
@@ -3647,7 +3647,7 @@ function pixShowToast(msg) {
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.5.3 — Captor Teams: Signup + Convite             ║
+     ║ v5.5.0 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║
@@ -3861,7 +3861,7 @@ async function updateMemberLimit(userId,val){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║ CAPTOR — CHANGELOG                                   ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.5.3 — Captor Teams: Signup + Convite             ║
+     ║ v5.5.0 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║

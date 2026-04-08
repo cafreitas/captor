@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Proposta de Investimento — Captor v5.3.0</title>
+<title>Proposta de Investimento — Captor v5.3.1</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -332,7 +332,7 @@ body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-sm
 
   <footer class="prop-legal">
     <div class="prop-legal-inner">
-      <p>Proposta gerada pela plataforma <strong>Captor</strong> v5.3.0 · <span id="legalCompany"></span></p>
+      <p>Proposta gerada pela plataforma <strong>Captor</strong> v5.3.1 · <span id="legalCompany"></span></p>
       <p>Elaborada em <span id="legalDate"></span> · Válida por 30 dias</p>
     </div>
   </footer>
@@ -437,8 +437,6 @@ function render(){
   document.getElementById('profileGrid').innerHTML=[{l:'Patrimônio estimado',v:patFmt,hi:true},{l:'Perfil de risco',v:p.cliente_perfil,hi:true},{l:'Objetivo',v:p.cliente_obj},{l:'Profissão',v:p.cliente_prof},{l:'Idade',v:p.cliente_idade+' anos'},{l:'Assessoria atual',v:p.cliente_ass||'Não informado'}].map(function(d){return '<div class="profile-card'+(d.hi?' hi':'')+'"><div class="profile-card-label">'+d.l+'</div><div class="profile-card-value">'+d.v+'</div></div>';}).join('');
   var hasAtual=p.alocacao_atual&&Object.values(p.alocacao_atual).some(function(v){return v>0;});
   if(hasAtual){
-    document.getElementById('sectionAtual').style.display='block';
-    renderDonut(document.getElementById('chartAtual'),{labels:Object.keys(p.alocacao_atual),data:Object.values(p.alocacao_atual)},emp.brand_colors);
     document.getElementById('allocSub').textContent='Como recomendamos reorganizar seus investimentos';
   }
   if(p.alocacao_sugerida){
@@ -458,9 +456,6 @@ function render(){
     }).join('');
   }
   renderLine(document.getElementById('chartProjecao'),p.cliente_pat,p.cliente_perfil,emp.brand_colors);
-  var defaultSteps=[{t:'Abertura de conta',d:'Caso ainda não tenha conta na plataforma, o processo é 100% digital e leva cerca de 10 minutos.'},{t:'Diagnóstico completo da carteira',d:'Seu assessor faz um mapeamento detalhado da sua situação atual antes de qualquer movimentação.'},{t:'Execução gradual da estratégia',d:'As realocações são feitas de forma planejada, respeitando prazos e custos de saída de posições existentes.'},{t:'Acompanhamento contínuo',d:'Relatórios periódicos e revisões regulares para garantir que a estratégia siga alinhada com seus objetivos.'}];
-  var steps=ia.roteiro&&ia.roteiro.length?ia.roteiro.slice(0,5).map(function(r){return{t:r.titulo.replace(/Abertura e rapport/gi,'Abertura'),d:r.descricao};}):defaultSteps;
-  document.getElementById('implSteps').innerHTML=steps.map(function(s,i){return '<div class="impl-step"><div class="impl-num">'+(i+1)+'</div><div class="impl-content"><strong>'+s.t+'</strong><p>'+s.d+'</p></div></div>';}).join('');
   document.getElementById('contactCard').innerHTML='<div class="contact-avatar">'+nomeEmp.charAt(0).toUpperCase()+'</div><div><div class="contact-name">'+nomeEmp+'</div>'+(cred?'<div class="contact-role">Assessoria de Investimentos</div><div class="contact-company">'+cred+'</div>':'')+'</div>';
   document.getElementById('legalCompany').textContent=nomeEmp+(cred?' · '+cred:'');
   document.getElementById('legalDate').textContent=new Date(p.created_at).toLocaleDateString('pt-BR');
@@ -594,7 +589,7 @@ function shareProposal(){var url=window.location.href;if(navigator.share)navigat
 <!-- ╔══════════════════════════════════════════════════════╗
      ║                    CHANGELOG                         ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.3.0 — Fix gráfico projeção: pT=28 evita corte label  ║
+     ║ v5.3.1 — Fix gráfico projeção: pT=28 evita corte label  ║
      ╠══════════════════════════════════════════════════════╣
      ║ v5.2.4 — Fix label cortado no gráfico de projeção      ║
      ║          Removido badge "Modo SDR"                      ║

@@ -4168,7 +4168,8 @@ async function generateR1(){
   document.getElementById('emptyState').style.display='none';
   document.getElementById('outArea').style.display='none';
   document.getElementById('loadingState').style.display='flex';
-  document.getElementById('ldlabel').textContent='Gerando roteiro R1...';
+  var ldlabelEl=document.querySelector('.ldlabel');
+  if(ldlabelEl)ldlabelEl.textContent='Gerando roteiro R1...';
   document.getElementById('btnGenR1').disabled=true;
 
   var empresaCtx=buildEmpresaPrompt()||'';

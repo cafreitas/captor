@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.5.8</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.7.0</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -186,6 +186,15 @@ header{height:54px;display:flex;align-items:center;justify-content:space-between
 .ds-aceita{background:rgba(34,197,94,.12);color:#4ade80}
 .ds-detalhes_solicitados{background:rgba(251,191,36,.12);color:#fbbf24}
 .ds-expirada{background:rgba(239,68,68,.1);color:#f87171}
+.ps-prospect_criado{background:rgba(255,255,255,.06);color:var(--dim)}
+.ps-r1_iniciada{background:rgba(59,130,246,.12);color:#60a5fa}
+.ps-r1_concluida{background:rgba(168,194,58,.15);color:var(--lime)}
+.ps-resumo_enviado{background:rgba(168,194,58,.2);color:var(--lime2)}
+.ps-r1_aprovada{background:rgba(34,197,94,.12);color:#4ade80}
+.ps-r2_iniciada{background:rgba(168,194,58,.25);color:var(--lime2)}
+.ps-negocio_fechado{background:rgba(34,197,94,.2);color:#4ade80}
+.ps-perdido_user{background:rgba(239,68,68,.1);color:#f87171}
+.ps-perdido_auto{background:rgba(239,68,68,.07);color:#f87171}
 .dash-link{background:transparent;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--muted);font-size:.65rem;cursor:pointer;font-family:var(--f);transition:all .15s}
 .dash-link:hover{border-color:var(--lime);color:var(--lime)}
 .kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px;cursor:pointer;transition:border-color .18s}
@@ -487,7 +496,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.5.8</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.0</div>
     </div>
   </div>
 </div>
@@ -527,11 +536,12 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.5.8</div>
+      <div class="hver" id="hverEl">v5.7.0</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
         <button class="ntab active" onclick="showTab('gen',this)">Gerador</button>
+        <button class="ntab" onclick="showTab('prospects',this)">Prospects</button>
         <button class="ntab" onclick="showTab('dash',this)">Dashboard</button>
         <button class="ntab" id="tabEquipe" onclick="showTab('team',this)" style="display:none">Equipe</button>
       </div>
@@ -575,6 +585,19 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
   <div class="main" id="genView">
     <aside class="sb">
       <div class="sbt">Perfil do Prospect</div>
+
+      <!-- Seletor de prospect existente -->
+      <div class="fg" style="margin-bottom:12px">
+        <label class="fl">Prospect</label>
+        <div style="display:flex;gap:6px">
+          <select class="fsel" id="fProspectSel" onchange="onProspectSelect()" style="flex:1">
+            <option value="">— Novo prospect —</option>
+          </select>
+          <button type="button" onclick="clearProspectForm()" title="Novo prospect" style="padding:0 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--muted);cursor:pointer;font-size:.8rem;flex-shrink:0">✕</button>
+        </div>
+        <div id="fProspectStatus" style="font-size:.7rem;margin-top:4px;min-height:14px"></div>
+      </div>
+
       <div class="sbs">Preencha os dados para gerar o roteiro &nbsp;·&nbsp; <button type="button" onclick="fillExample()" style="background:none;border:none;color:var(--lime);font-size:.7rem;font-weight:700;cursor:pointer;padding:0;font-family:var(--f);text-decoration:underline">usar exemplo</button></div>
 
       <div class="fg"><label class="fl">Nome</label><input class="fi" id="fNome" placeholder="Ex: Ricardo Almeida" oninput="clearFieldError(this)"></div>
@@ -612,6 +635,16 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         </select>
       </div>
       <div class="fg">
+        <label class="fl">Horizonte de investimento</label>
+        <select class="fsel" id="fHorizonte">
+          <option value="">Selecione...</option>
+          <option>Até 2 anos</option>
+          <option>3 a 5 anos</option>
+          <option>5 a 10 anos</option>
+          <option>Mais de 10 anos</option>
+        </select>
+      </div>
+      <div class="fg">
         <label class="fl">Assessoria atual</label>
         <div class="ac-wrap" id="acAssWrap">
           <input class="fi" id="fAss" placeholder="Digite ou selecione..." autocomplete="off" oninput="acAssFilter()" onfocus="acAssFilter()" onblur="setTimeout(acAssHide,180)" onkeydown="acAssKey(event)">
@@ -640,10 +673,27 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         <button type="button" onclick="resetSliders()" style="margin-top:8px;background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f)">↺ Limpar</button>
       </div>
       <div class="fdiv"></div>
-      <button class="genbtn" id="btnGen" onclick="generate()">
-        <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg>
-        Preparar reunião
-      </button>
+
+      <!-- BOTÕES R1 / R2 -->
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="genbtn" id="btnGenR1" onclick="generateR1()" style="background:var(--bg3);border:1px solid var(--lime);color:var(--lime)">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 2a5 5 0 1 0 0 10A5 5 0 0 0 7 2zm0 1.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zm0 1.5a.75.75 0 0 0-.75.75v2c0 .2.08.38.22.52l1.25 1.25a.75.75 0 1 0 1.06-1.06L7.75 7.69V5.75A.75.75 0 0 0 7 5z" fill="currentColor"/></svg>
+          Gerar Roteiro R1
+        </button>
+        <button class="genbtn" id="btnGen" onclick="generate()">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg>
+          Gerar Proposta R2
+        </button>
+      </div>
+
+      <!-- BOTÃO CONFIRMAR R1 (aparece após roteiro R1 gerado) -->
+      <div id="confirmR1Wrap" style="display:none;margin-top:8px">
+        <button onclick="confirmR1()" style="width:100%;padding:10px;background:rgba(168,194,58,.15);border:1px solid var(--lime);border-radius:var(--r);color:var(--lime);font-family:var(--f);font-size:.8rem;font-weight:700;cursor:pointer">
+          ✓ Confirmar R1 concluída
+        </button>
+        <div style="font-size:.68rem;color:var(--dim);margin-top:4px;text-align:center">Registra o fim da reunião de diagnóstico</div>
+      </div>
+
     </aside>
 
     <main class="content" id="contentArea">
@@ -664,6 +714,104 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       </div>
       <div id="outArea" style="display:none"></div>
     </main>
+  </div>
+
+  <!-- PROSPECTS -->
+  <div id="prospectview" style="display:none;padding:24px 26px">
+    <div class="dht">Prospects</div>
+    <div class="dhs" id="prospectSubtitle">Carregando...</div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+      <input class="fi" id="prospectSearch" placeholder="Buscar por nome..." oninput="filterProspects()" style="max-width:260px;margin-bottom:0">
+      <select class="fsel" id="prospectStatusFilter" onchange="filterProspects()" style="max-width:200px;margin-bottom:0">
+        <option value="">Todos os status</option>
+        <option value="prospect_criado">Criado</option>
+        <option value="r1_iniciada">R1 Iniciada</option>
+        <option value="r1_concluida">R1 Concluída</option>
+        <option value="resumo_enviado">Resumo Enviado</option>
+        <option value="r1_aprovada">R1 Aprovada</option>
+        <option value="r2_iniciada">R2 Iniciada</option>
+        <option value="negocio_fechado">Negócio Fechado</option>
+        <option value="perdido_user">Perdido</option>
+        <option value="perdido_auto">Perdido (auto)</option>
+      </select>
+      <button onclick="openNewProspectModal()" style="margin-left:auto;padding:7px 16px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer">+ Novo prospect</button>
+    </div>
+    <div class="block">
+      <div class="blkhd" style="cursor:default">
+        <div class="blkico">👥</div>
+        <div class="blktit">Lista de Prospects</div>
+      </div>
+      <div id="prospectTableWrap" style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:.78rem">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border)">
+              <th style="padding:8px 12px;text-align:left;color:var(--dim);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em">Nome</th>
+              <th style="padding:8px 12px;text-align:left;color:var(--dim);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em">Perfil</th>
+              <th style="padding:8px 12px;text-align:left;color:var(--dim);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em">Patrimônio</th>
+              <th style="padding:8px 12px;text-align:left;color:var(--dim);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em">Status</th>
+              <th style="padding:8px 12px;text-align:left;color:var(--dim);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em">Criado em</th>
+              <th style="padding:8px 12px;text-align:left;color:var(--dim);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="prospectTableBody">
+            <tr><td colspan="6" style="padding:24px;text-align:center;color:var(--dim)">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL NOVO PROSPECT -->
+  <div id="prospectModal" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)closeProspectModal()">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);width:min(520px,100%);max-height:90vh;overflow-y:auto">
+      <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:.95rem;font-weight:700;color:var(--white)" id="prospectModalTitle">Novo Prospect</div>
+        <button onclick="closeProspectModal()" style="background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:1.1rem">✕</button>
+      </div>
+      <div style="padding:20px 22px;display:flex;flex-direction:column;gap:10px">
+        <div class="fg"><label class="fl">Nome *</label><input class="fi" id="pmNome" placeholder="Ex: Ricardo Almeida"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label class="fl">Email</label><input class="fi" id="pmEmail" placeholder="email@exemplo.com" type="email"></div>
+          <div class="fg"><label class="fl">Telefone</label><input class="fi" id="pmTelefone" placeholder="(11) 99999-9999"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label class="fl">Profissão</label><input class="fi" id="pmProf" placeholder="Ex: Empresário"></div>
+          <div class="fg"><label class="fl">Idade</label><input class="fi" id="pmIdade" type="number" placeholder="Ex: 45" min="18" max="90"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label class="fl">Patrimônio estimado</label><input class="fi" id="pmPat" placeholder="R$ 0" oninput="maskPmPat(this)"></div>
+          <div class="fg"><label class="fl">Perfil de risco</label>
+            <select class="fsel" id="pmPerfil">
+              <option value="">Selecione...</option>
+              <option>Conservador</option><option>Moderado</option><option>Arrojado</option><option>Agressivo</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg"><label class="fl">Objetivo principal</label>
+          <select class="fsel" id="pmObj">
+            <option value="">Selecione...</option>
+            <option>Aposentadoria / Independência financeira</option>
+            <option>Sucessão patrimonial / família</option>
+            <option>Compra de imóvel / bem</option>
+            <option>Crescimento patrimonial acelerado</option>
+            <option>Proteção e preservação</option>
+            <option>Renda passiva</option>
+            <option>Investimentos internacionais / Offshore</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Horizonte de investimento</label>
+          <select class="fsel" id="pmHorizonte">
+            <option value="">Selecione...</option>
+            <option>Até 2 anos</option>
+            <option>3 a 5 anos</option>
+            <option>5 a 10 anos</option>
+            <option>Mais de 10 anos</option>
+          </select>
+        </div>
+        <div id="pmError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080"></div>
+        <button onclick="saveProspect()" id="pmSaveBtn" style="width:100%;padding:11px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-weight:700;font-size:.86rem;cursor:pointer">Salvar prospect</button>
+      </div>
+    </div>
   </div>
 
   <!-- DASHBOARD -->
@@ -794,7 +942,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.5.8</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.0</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -1367,6 +1515,7 @@ async function enterApp(session){
   updateDash();
   await loadFirmRole();      // primeiro: popula currentFirmId
   await loadEmpresaData();   // depois: usa currentFirmId para fallback
+  loadProspectsSelector();   // popula dropdown de prospects na sidebar
   initOnboarding();
 }
 
@@ -2080,10 +2229,16 @@ function showTab(tab,btn){
   document.querySelectorAll('.ntab').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');
   document.getElementById('genView').style.display=tab==='gen'?'grid':'none';
+  document.getElementById('prospectview').style.display=tab==='prospects'?'block':'none';
   document.getElementById('dashview').style.display=tab==='dash'?'block':'none';
   document.getElementById('teamview').style.display=tab==='team'?'block':'none';
   if(tab==='dash'){updateDash();}
   if(tab==='team'){loadTeamView();}
+  if(tab==='prospects'){loadProspects();}
+  if(tab==='gen'){
+    var outArea=document.getElementById('outArea');
+    if(!outArea||!outArea.innerHTML.trim())expandSidebar();
+  }
 }
 
 // ── GENERATE ──
@@ -3704,7 +3859,7 @@ function pixShowToast(msg) {
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.5.8 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.0 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║
@@ -3912,13 +4067,425 @@ async function updateMemberLimit(userId,val){
   await sb.from('firm_members').update({credit_limit_monthly:limit}).eq('firm_id',currentFirmId).eq('user_id',userId);
 }
 
+// ── PROSPECTS ─────────────────────────────────────────────────────────────────
+var allProspects = [];
+var currentProspectId = null;
+var r1Generated = false;
+
+var prospectStatusLabels = {
+  prospect_criado:  'Criado',
+  r1_iniciada:      'R1 Iniciada',
+  r1_concluida:     'R1 Concluída',
+  resumo_enviado:   'Resumo Enviado',
+  r1_aprovada:      'R1 Aprovada',
+  r2_iniciada:      'R2 Iniciada',
+  negocio_fechado:  'Negócio Fechado',
+  perdido_user:     'Perdido',
+  perdido_auto:     'Perdido (auto)'
+};
+
+async function loadProspectsSelector(){
+  if(!supabaseUserId)return;
+  var {data}=await sb.from('prospects')
+    .select('id,nome,status,perfil_risco,patrimonio_estimado,objetivo,profissao,idade,horizonte,email,telefone')
+    .eq('assessor_id',supabaseUserId)
+    .not('status','in','(perdido_user,perdido_auto)')
+    .order('created_at',{ascending:false});
+  allProspects=data||[];
+  var sel=document.getElementById('fProspectSel');
+  if(!sel)return;
+  sel.innerHTML='<option value="">— Novo prospect —</option>';
+  allProspects.forEach(function(p){
+    var opt=document.createElement('option');
+    opt.value=p.id;
+    opt.textContent=p.nome+(p.status?' · '+prospectStatusLabels[p.status]:'');
+    sel.appendChild(opt);
+  });
+}
+
+function onProspectSelect(){
+  var id=document.getElementById('fProspectSel').value;
+  if(!id){clearProspectForm();return;}
+  var p=allProspects.find(function(x){return x.id===id;});
+  if(!p)return;
+  currentProspectId=id;
+  // Preencher sidebar
+  document.getElementById('fNome').value=p.nome||'';
+  if(p.patrimonio_estimado){
+    var fmt=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(p.patrimonio_estimado);
+    document.getElementById('fPat').value=fmt;
+  }
+  document.getElementById('fProf').value=p.profissao||'';
+  document.getElementById('fIdade').value=p.idade||'';
+  document.getElementById('fPerfil').value=p.perfil_risco||'';
+  document.getElementById('fObj').value=p.objetivo||'';
+  document.getElementById('fHorizonte').value=p.horizonte||'';
+  // Status badge
+  var st=document.getElementById('fProspectStatus');
+  if(st&&p.status){
+    st.innerHTML='<span class="ds ps-'+p.status+'" style="font-size:.68rem;padding:2px 8px;border-radius:20px">'+prospectStatusLabels[p.status]+'</span>';
+  }
+}
+
+function clearProspectForm(){
+  currentProspectId=null;
+  r1Generated=false;
+  document.getElementById('fProspectSel').value='';
+  document.getElementById('fNome').value='';
+  document.getElementById('fPat').value='';
+  document.getElementById('fProf').value='';
+  document.getElementById('fIdade').value='';
+  document.getElementById('fPerfil').value='';
+  document.getElementById('fObj').value='';
+  document.getElementById('fHorizonte').value='';
+  document.getElementById('fAss').value='';
+  document.getElementById('fGaps').value='';
+  document.getElementById('fCtx').value='';
+  document.getElementById('fProspectStatus').innerHTML='';
+  document.getElementById('confirmR1Wrap').style.display='none';
+  resetSliders();
+}
+
+// ── GERAR ROTEIRO R1 ──────────────────────────────────────────────────────────
+async function generateR1(){
+  var nome=document.getElementById('fNome').value.trim();
+  var pat=getRawPat();
+  var prof=document.getElementById('fProf').value;
+  var idade=document.getElementById('fIdade').value;
+  var perfil=document.getElementById('fPerfil').value;
+  var obj=document.getElementById('fObj').value;
+  var horizonte=document.getElementById('fHorizonte').value;
+  if(!nome||!pat||!prof||!idade||!perfil||!obj){
+    alert('Preencha Nome, Patrimônio, Profissão, Idade, Perfil e Objetivo antes de gerar o Roteiro R1.');
+    return;
+  }
+  var patFmt=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(parseInt(String(pat).replace(/\D/g,'')));
+
+  // Salvar/atualizar prospect antes de gerar
+  await upsertProspect('r1_iniciada');
+
+  collapseSidebar();
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('outArea').style.display='none';
+  document.getElementById('loadingState').style.display='flex';
+  document.getElementById('ldlabel').textContent='Gerando roteiro R1...';
+  document.getElementById('btnGenR1').disabled=true;
+
+  var empresaCtx=buildEmpresaPrompt()||'';
+  var prompt='Você é um especialista em vendas consultivas de investimentos.\n\n'
+    +empresaCtx+'\n'
+    +'PROSPECT:\n'
+    +'Nome: '+nome+' | Profissão: '+prof+' | Idade: '+idade+' anos | Patrimônio estimado: '+patFmt
+    +(perfil?' | Perfil declarado: '+perfil:'')+' | Objetivo: '+obj
+    +(horizonte?' | Horizonte: '+horizonte:'')+'\n\n'
+    +'Gere um roteiro estruturado para a REUNIÃO DE DIAGNÓSTICO (R1) com este prospect. '
+    +'O objetivo da R1 é ouvir e entender — não vender. O assessor deve falar menos de 30% do tempo.\n\n'
+    +'Responda SOMENTE em JSON válido, sem texto fora do JSON:\n'
+    +'{"abertura":{"objetivo":"...","dica":"..."},'
+    +'"perguntas":[{"categoria":"...","pergunta":"...","motivo":"...","followup":"..."}],'
+    +'"sinais_alerta":["..."],'
+    +'"encerramento":{"objetivo":"...","proximo_passo":"..."}}\n\n'
+    +'Gere 6 a 8 perguntas em categorias como: Situação atual, Objetivos, Experiência com investimentos, '
+    +'Tolerância a risco, Preocupações / objeções, Horizonte e liquidez. '
+    +'As perguntas devem ser abertas, naturais e adaptadas ao perfil deste prospect específico.';
+
+  try{
+    var resp=await fetch(PROXY_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:prompt}]})
+    });
+    var rd=await resp.json();
+    var txt=(rd.content&&rd.content[0]&&rd.content[0].text)||'';
+    var clean=txt.replace(/```json|```/g,'').trim();
+    var r1data=JSON.parse(clean);
+    renderR1Output(nome,patFmt,r1data);
+    r1Generated=true;
+    document.getElementById('confirmR1Wrap').style.display='block';
+    // Salvar roteiro no prospect
+    if(currentProspectId){
+      await sb.from('prospects').update({roteiro_r1:r1data}).eq('id',currentProspectId);
+    }
+  }catch(e){
+    document.getElementById('loadingState').style.display='none';
+    document.getElementById('emptyState').style.display='flex';
+    alert('Erro ao gerar Roteiro R1: '+e.message);
+  }finally{
+    document.getElementById('btnGenR1').disabled=false;
+    document.getElementById('loadingState').style.display='none';
+  }
+}
+
+function renderR1Output(nome,patFmt,data){
+  var area=document.getElementById('outArea');
+  area.innerHTML='';
+  collapseSidebar();
+
+  var hdr=document.createElement('div');
+  hdr.className='outhead fadein';
+  hdr.innerHTML='<div>'
+    +'<div class="outtag" style="background:rgba(59,130,246,.2);color:#60a5fa">Roteiro R1 — Diagnóstico</div>'
+    +'<div class="outname" onclick="toggleSidebar()" title="Editar perfil do prospect">'+nome+'</div>'
+    +'<div class="outmeta">'+patFmt+'</div>'
+    +'</div>';
+  area.appendChild(hdr);
+
+  // Abertura
+  if(data.abertura){
+    var b0=mkBlock('🎯','Abertura da Reunião',true);
+    b0.body.innerHTML='<div style="margin-bottom:8px"><span style="font-size:.72rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Objetivo</span>'
+      +'<p style="margin:4px 0 0;font-size:.83rem;color:var(--text)">'+data.abertura.objetivo+'</p></div>'
+      +'<div><span style="font-size:.72rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Dica</span>'
+      +'<p style="margin:4px 0 0;font-size:.83rem;color:var(--muted)">'+data.abertura.dica+'</p></div>';
+    area.appendChild(b0.el);
+  }
+
+  // Perguntas
+  if(data.perguntas&&data.perguntas.length){
+    var b1=mkBlock('❓','Perguntas de Diagnóstico',true);
+    b1.body.innerHTML=data.perguntas.map(function(q,i){
+      return '<div class="rotitem"><div class="rotnum">'+(i+1)+'</div><div class="rotcont">'
+        +'<div style="font-size:.65rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">'+q.categoria+'</div>'
+        +'<strong style="font-size:.85rem">'+q.pergunta+'</strong>'
+        +(q.motivo?'<p style="margin:4px 0 2px;font-size:.77rem;color:var(--muted)">💡 '+q.motivo+'</p>':'')
+        +(q.followup?'<p style="margin:2px 0 0;font-size:.75rem;color:var(--dim)">↳ '+q.followup+'</p>':'')
+        +'</div></div>';
+    }).join('');
+    area.appendChild(b1.el);
+  }
+
+  // Sinais de alerta
+  if(data.sinais_alerta&&data.sinais_alerta.length){
+    var b2=mkBlock('⚠','Sinais de Alerta',false);
+    b2.body.innerHTML='<div style="display:flex;flex-direction:column;gap:6px">'
+      +data.sinais_alerta.map(function(s){
+        return '<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:var(--r);padding:8px 12px;font-size:.81rem;color:var(--muted)">⚠ '+s+'</div>';
+      }).join('')+'</div>';
+    area.appendChild(b2.el);
+  }
+
+  // Encerramento
+  if(data.encerramento){
+    var b3=mkBlock('🏁','Encerramento',false);
+    b3.body.innerHTML='<div style="margin-bottom:8px"><span style="font-size:.72rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Objetivo</span>'
+      +'<p style="margin:4px 0 0;font-size:.83rem;color:var(--text)">'+data.encerramento.objetivo+'</p></div>'
+      +'<div><span style="font-size:.72rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Próximo Passo</span>'
+      +'<p style="margin:4px 0 0;font-size:.83rem;color:var(--muted)">'+data.encerramento.proximo_passo+'</p></div>';
+    area.appendChild(b3.el);
+  }
+
+  area.style.display='block';
+  expandSidebar();
+}
+
+// ── CONFIRMAR R1 ──────────────────────────────────────────────────────────────
+async function confirmR1(){
+  if(!currentProspectId){
+    alert('Salve o prospect antes de confirmar a R1.');
+    return;
+  }
+  var btn=document.querySelector('#confirmR1Wrap button');
+  btn.disabled=true;btn.textContent='Salvando...';
+  var {error}=await sb.from('prospects').update({
+    status:'r1_concluida',
+    r1_mode:'depois'
+  }).eq('id',currentProspectId);
+  btn.disabled=false;
+  if(error){
+    btn.textContent='✓ Confirmar R1 concluída';
+    alert('Erro ao confirmar R1: '+error.message);
+    return;
+  }
+  btn.textContent='✅ R1 confirmada';
+  btn.style.background='rgba(34,197,94,.12)';
+  btn.style.borderColor='#4ade80';
+  btn.style.color='#4ade80';
+  btn.onclick=null;
+  // Atualizar status no dropdown
+  var opt=document.querySelector('#fProspectSel option[value="'+currentProspectId+'"]');
+  if(opt)opt.textContent=opt.textContent.replace(/·.*$/,'· R1 Concluída');
+  var st=document.getElementById('fProspectStatus');
+  if(st)st.innerHTML='<span class="ds ps-r1_concluida" style="font-size:.68rem;padding:2px 8px;border-radius:20px">R1 Concluída</span>';
+  // Atualizar lista local
+  var p=allProspects.find(function(x){return x.id===currentProspectId;});
+  if(p)p.status='r1_concluida';
+}
+
+// ── UPSERT PROSPECT ───────────────────────────────────────────────────────────
+async function upsertProspect(newStatus){
+  if(!supabaseUserId)return;
+  var nome=document.getElementById('fNome').value.trim();
+  if(!nome)return;
+  var pat=getRawPat();
+  var payload={
+    assessor_id:supabaseUserId,
+    firm_id:currentFirmId||null,
+    nome:nome,
+    profissao:document.getElementById('fProf').value||null,
+    idade:parseInt(document.getElementById('fIdade').value)||null,
+    patrimonio_estimado:pat?parseInt(String(pat).replace(/\D/g,''))||null:null,
+    perfil_risco:document.getElementById('fPerfil').value||null,
+    objetivo:document.getElementById('fObj').value||null,
+    horizonte:document.getElementById('fHorizonte').value||null,
+    updated_at:new Date().toISOString()
+  };
+  if(currentProspectId){
+    if(newStatus)payload.status=newStatus;
+    await sb.from('prospects').update(payload).eq('id',currentProspectId);
+  } else {
+    payload.status=newStatus||'prospect_criado';
+    var {data,error}=await sb.from('prospects').insert(payload).select().maybeSingle();
+    if(!error&&data){
+      currentProspectId=data.id;
+      allProspects.unshift(data);
+      // Adicionar ao dropdown
+      var sel=document.getElementById('fProspectSel');
+      var opt=document.createElement('option');
+      opt.value=data.id;
+      opt.textContent=data.nome+' · '+(prospectStatusLabels[data.status]||data.status);
+      sel.insertBefore(opt,sel.options[1]);
+      sel.value=data.id;
+    }
+  }
+}
+
+// ── LISTA DE PROSPECTS ────────────────────────────────────────────────────────
+async function loadProspects(){
+  var sub=document.getElementById('prospectSubtitle');
+  if(sub)sub.textContent='Carregando...';
+  var {data,error}=await sb.from('prospects')
+    .select('id,nome,perfil_risco,patrimonio_estimado,status,created_at,objetivo')
+    .eq('assessor_id',supabaseUserId)
+    .order('created_at',{ascending:false});
+  if(error){if(sub)sub.textContent='Erro ao carregar.';return;}
+  var rows=data||[];
+  if(sub)sub.textContent=rows.length+' prospect'+(rows.length!==1?'s':'');
+  renderProspectTable(rows);
+}
+
+function renderProspectTable(rows){
+  var tbody=document.getElementById('prospectTableBody');
+  if(!tbody)return;
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--dim)">Nenhum prospect cadastrado ainda.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=rows.map(function(p){
+    var patFmt=p.patrimonio_estimado
+      ?new Intl.NumberFormat('pt-BR',{notation:'compact',maximumFractionDigits:1}).format(p.patrimonio_estimado)
+      :'—';
+    var dt=new Date(p.created_at).toLocaleDateString('pt-BR');
+    var st=prospectStatusLabels[p.status]||p.status;
+    return '<tr style="border-bottom:1px solid var(--border2)">'
+      +'<td style="padding:9px 12px;color:var(--text);font-weight:600">'+p.nome+'</td>'
+      +'<td style="padding:9px 12px;color:var(--muted)">'+( p.perfil_risco||'—')+'</td>'
+      +'<td style="padding:9px 12px;color:var(--muted)">'+patFmt+'</td>'
+      +'<td style="padding:9px 12px"><span class="ds ps-'+p.status+'" style="font-size:.68rem;padding:2px 8px;border-radius:20px;white-space:nowrap">'+st+'</span></td>'
+      +'<td style="padding:9px 12px;color:var(--dim)">'+dt+'</td>'
+      +'<td style="padding:9px 12px;display:flex;gap:6px">'
+      +'<button onclick="loadProspectIntoSidebar(\''+p.id+'\')" class="dash-link">Abrir R1/R2</button>'
+      +(p.status!=='perdido_user'&&p.status!=='perdido_auto'&&p.status!=='negocio_fechado'
+        ?'<button onclick="markPerdidoUser(\''+p.id+'\')" class="dash-link" style="color:#f87171;border-color:rgba(239,68,68,.3)">Perdido</button>':''
+      )
+      +'</td></tr>';
+  }).join('');
+}
+
+function filterProspects(){
+  var q=(document.getElementById('prospectSearch').value||'').toLowerCase();
+  var st=document.getElementById('prospectStatusFilter').value;
+  var filtered=allProspects.filter(function(p){
+    var matchQ=!q||p.nome.toLowerCase().includes(q);
+    var matchS=!st||p.status===st;
+    return matchQ&&matchS;
+  });
+  renderProspectTable(filtered);
+}
+
+function loadProspectIntoSidebar(id){
+  // Navegar para tab Gerador e carregar prospect
+  var genBtn=document.querySelector('.ntab[onclick*="gen"]');
+  if(genBtn)showTab('gen',genBtn);
+  document.getElementById('fProspectSel').value=id;
+  onProspectSelect();
+  expandSidebar();
+}
+
+async function markPerdidoUser(id){
+  if(!confirm('Marcar este prospect como perdido?'))return;
+  await sb.from('prospects').update({status:'perdido_user'}).eq('id',id);
+  var p=allProspects.find(function(x){return x.id===id;});
+  if(p)p.status='perdido_user';
+  loadProspects();
+}
+
+// ── MODAL NOVO PROSPECT ───────────────────────────────────────────────────────
+function openNewProspectModal(){
+  document.getElementById('pmNome').value='';
+  document.getElementById('pmEmail').value='';
+  document.getElementById('pmTelefone').value='';
+  document.getElementById('pmProf').value='';
+  document.getElementById('pmIdade').value='';
+  document.getElementById('pmPat').value='';
+  document.getElementById('pmPerfil').value='';
+  document.getElementById('pmObj').value='';
+  document.getElementById('pmHorizonte').value='';
+  document.getElementById('pmError').style.display='none';
+  document.getElementById('prospectModal').style.display='flex';
+}
+
+function closeProspectModal(){
+  document.getElementById('prospectModal').style.display='none';
+}
+
+function maskPmPat(el){
+  var v=el.value.replace(/\D/g,'');
+  if(!v){el.value='';return;}
+  el.value=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(parseInt(v));
+}
+
+async function saveProspect(){
+  var nome=document.getElementById('pmNome').value.trim();
+  if(!nome){
+    var e=document.getElementById('pmError');
+    e.textContent='Nome é obrigatório.';e.style.display='block';return;
+  }
+  var btn=document.getElementById('pmSaveBtn');
+  btn.disabled=true;btn.textContent='Salvando...';
+  var patRaw=document.getElementById('pmPat').value.replace(/\D/g,'');
+  var payload={
+    assessor_id:supabaseUserId,
+    firm_id:currentFirmId||null,
+    nome:nome,
+    email:document.getElementById('pmEmail').value.trim()||null,
+    telefone:document.getElementById('pmTelefone').value.trim()||null,
+    profissao:document.getElementById('pmProf').value.trim()||null,
+    idade:parseInt(document.getElementById('pmIdade').value)||null,
+    patrimonio_estimado:patRaw?parseInt(patRaw):null,
+    perfil_risco:document.getElementById('pmPerfil').value||null,
+    objetivo:document.getElementById('pmObj').value||null,
+    horizonte:document.getElementById('pmHorizonte').value||null,
+    status:'prospect_criado'
+  };
+  var {data,error}=await sb.from('prospects').insert(payload).select().maybeSingle();
+  btn.disabled=false;btn.textContent='Salvar prospect';
+  if(error){
+    var e=document.getElementById('pmError');
+    e.textContent='Erro ao salvar: '+error.message;e.style.display='block';return;
+  }
+  allProspects.unshift(data);
+  closeProspectModal();
+  loadProspects();
+  loadProspectsSelector();
+}
+
 // ── FIM CAPTOR TEAMS ──────────────────────────────────────────────────────────
 </script>
 
 <!-- ╔══════════════════════════════════════════════════════╗
      ║ CAPTOR — CHANGELOG                                   ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.5.8 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.0 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║

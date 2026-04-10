@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.7.2</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.7.3</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -496,7 +496,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.2</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.3</div>
     </div>
   </div>
 </div>
@@ -536,7 +536,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.7.2</div>
+      <div class="hver" id="hverEl">v5.7.3</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -942,7 +942,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.2</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.3</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -2321,11 +2321,20 @@ async function generate(){
   var empresaPrompt=buildEmpresaPrompt();
   var nomeEmpresa=(empresaData&&empresaData.empresa_nome)?empresaData.empresa_nome:'Captor Investimentos';
   var allocRuleStr=buildAllocPrompt(perfil);
+  // Buscar anotações R1 do prospect atual
+  var r1NotesCtx='';
+  if(currentProspectId){
+    var prospectAtual=allProspects.find(function(x){return x.id===currentProspectId;});
+    if(prospectAtual&&prospectAtual.r1_notes){
+      r1NotesCtx=buildR1NotesContext(prospectAtual.r1_notes);
+    }
+  }
 
   var prompt=(empresaPrompt
     ? 'Você é assessor sênior da '+nomeEmpresa+'. '+empresaPrompt
     : 'Você é assessor sênior da Captor Investimentos (XP credenciada, +R$12bi custódia, +15mil clientes, Nº1 NPS 2024). Portfólio completo: investimentos, renda variável, crédito, câmbio, seguros, wealth planning, offshore, Captor Family Office, M&A.'
   )+'\n\n'
+    +r1NotesCtx
     +'Gere roteiro consultivo COMPLETO para:\n'
     +'Nome: '+nome+' | Patrimônio: '+patFmt+' | Profissão: '+prof+' | Idade: '+idade+' anos | Perfil: '+perfil+' | Objetivo: '+obj+' | Assessoria atual: '+(ass||'não informado')+' | Contexto: '+(ctx||'nenhum')+'\n'
     +'Problemas CONFIRMADOS na gestão atual: '+(gaps||'nenhum informado')+'\n'
@@ -3862,7 +3871,7 @@ function pixShowToast(msg) {
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.2 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.3 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║
@@ -4279,8 +4288,231 @@ function renderR1Output(nome,patFmt,data){
     area.appendChild(b3.el);
   }
 
+  // Bloco de Anotações da R1
+  var bAnot=mkBlock('📝','Anotações da R1',true);
+  var perguntasParaAnot=data.perguntas||[];
+  bAnot.body.innerHTML=buildAnotacoesR1HTML(perguntasParaAnot);
+  area.appendChild(bAnot.el);
+  // Auto-save ao digitar
+  setTimeout(function(){
+    bAnot.body.querySelectorAll('input,textarea,select').forEach(function(el){
+      el.addEventListener('change',debounceAutoSaveR1);
+      el.addEventListener('input',debounceAutoSaveR1);
+    });
+    // Abas
+    bAnot.body.querySelectorAll('.r1tab-btn').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var tab=btn.dataset.tab;
+        bAnot.body.querySelectorAll('.r1tab-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===tab);});
+        bAnot.body.querySelectorAll('.r1tab-panel').forEach(function(p){p.style.display=p.dataset.panel===tab?'block':'none';});
+      });
+    });
+  },100);
+
   area.style.display='block';
   expandSidebar();
+}
+
+// ── ANOTAÇÕES R1 ─────────────────────────────────────────────────────────────
+function buildAnotacoesR1HTML(perguntas){
+  var tabBtnStyle='padding:5px 14px;border:none;border-radius:6px;font-family:var(--f);font-size:.74rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;color:var(--muted)';
+  var tabBtnActiveStyle='background:var(--lime);color:#1a1a1a';
+
+  // Aba Durante
+  var duranteHTML='<div data-panel="durante" class="r1tab-panel" style="padding:14px 0">'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">'
+    // Perfil confirmado
+    +'<div><div style="font-size:.72rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Perfil confirmado</div>'
+    +['Conservador','Moderado','Arrojado','Agressivo'].map(function(p){
+      return '<label style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:.8rem;color:var(--muted);cursor:pointer">'
+        +'<input type="radio" name="r1_perfil_confirmado" value="'+p+'" style="accent-color:var(--lime)"> '+p+'</label>';
+    }).join('')+'</div>'
+    // Objeções
+    +'<div><div style="font-size:.72rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Objeções levantadas</div>'
+    +['Liquidez','Taxas','Risco','Timing','Já tem assessor','Outros'].map(function(o){
+      return '<label style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:.8rem;color:var(--muted);cursor:pointer">'
+        +'<input type="checkbox" name="r1_objecao" value="'+o+'" style="accent-color:var(--lime)"> '+o+'</label>';
+    }).join('')+'</div></div>'
+    // Produtos que já possui
+    +'<div style="margin-bottom:14px"><div style="font-size:.72rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Produtos que já possui</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:6px">'
+    +['CDB/RDB','Tesouro Direto','Ações','FIIs','Fundos','Previdência','Câmbio/Offshore','Outros'].map(function(p){
+      return '<label style="display:flex;align-items:center;gap:4px;font-size:.78rem;color:var(--muted);cursor:pointer;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:3px 10px">'
+        +'<input type="checkbox" name="r1_produto" value="'+p+'" style="accent-color:var(--lime)"> '+p+'</label>';
+    }).join('')+'</div></div>'
+    // Patrimônio confirmado + observações
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +'<div class="fg" style="margin-bottom:0"><label class="fl">Patrimônio confirmado</label>'
+    +'<input class="fi" id="r1_pat_confirmado" placeholder="R$ 0" oninput="maskR1Pat(this)"></div>'
+    +'<div class="fg" style="margin-bottom:0"><label class="fl">Nível de sofisticação</label>'
+    +'<select class="fsel" id="r1_sofisticacao"><option value="">Selecione...</option>'
+    +'<option>Iniciante</option><option>Intermediário</option><option>Avançado</option><option>Especialista</option>'
+    +'</select></div></div>'
+    +'<div class="fg" style="margin-top:10px"><label class="fl">Observações rápidas</label>'
+    +'<textarea class="fta" id="r1_obs_rapidas" placeholder="Ex: muito preocupado com liquidez, mencionou divórcio recente..." style="min-height:54px"></textarea></div>'
+    +'</div>';
+
+  // Aba Depois
+  var depoisHTML='<div data-panel="depois" class="r1tab-panel" style="padding:14px 0;display:none">'
+    +(perguntas.length
+      ? perguntas.map(function(q,i){
+          return '<div class="fg"><label class="fl" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">'
+            +'<strong style="color:var(--text)">'+q.pergunta+'</strong></label>'
+            +'<textarea class="fta" id="r1_resp_'+i+'" placeholder="O que o cliente respondeu..." style="min-height:48px"></textarea></div>';
+        }).join('')
+      : ''
+    )
+    +'<div class="fg"><label class="fl">Objeções identificadas</label>'
+    +'<textarea class="fta" id="r1_objecoes_texto" placeholder="Ex: preocupado com liquidez, acha que taxa é alta..."></textarea></div>'
+    +'<div class="fg"><label class="fl">Observações gerais</label>'
+    +'<textarea class="fta" id="r1_obs_gerais" placeholder="Impressões, contexto, próximos passos acordados..."></textarea></div>'
+    +'</div>';
+
+  // Aba Transcrição
+  var transcricaoHTML='<div data-panel="transcricao" class="r1tab-panel" style="padding:14px 0;display:none">'
+    +'<div class="fg"><label class="fl">Cole a transcrição da reunião</label>'
+    +'<textarea class="fta" id="r1_transcricao" placeholder="Cole aqui o texto da transcrição (Fireflies, Otter, Zoom, etc.)..." style="min-height:120px"></textarea></div>'
+    +'<button onclick="extractFromTranscricao()" id="btnExtractTranscricao" style="width:100%;padding:9px;background:var(--bg3);border:1px solid var(--lime);border-radius:var(--r);color:var(--lime);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer">'
+    +'✨ Extrair anotações com IA</button>'
+    +'<div id="extractTranscricaoStatus" style="font-size:.72rem;color:var(--dim);margin-top:6px;min-height:16px"></div>'
+    +'</div>';
+
+  return '<div style="border-bottom:1px solid var(--border);margin-bottom:12px;display:flex;gap:4px;background:var(--bg3);border-radius:var(--r);padding:3px;width:fit-content">'
+    +'<button class="r1tab-btn active" data-tab="durante" style="'+tabBtnStyle+';'+tabBtnActiveStyle+'">Durante</button>'
+    +'<button class="r1tab-btn" data-tab="depois" style="'+tabBtnStyle+'">Depois</button>'
+    +'<button class="r1tab-btn" data-tab="transcricao" style="'+tabBtnStyle+'">Transcrição</button>'
+    +'</div>'
+    +duranteHTML+depoisHTML+transcricaoHTML
+    +'<div id="r1AutoSaveStatus" style="font-size:.68rem;color:var(--dim);margin-top:8px;min-height:14px;text-align:right"></div>';
+}
+
+function maskR1Pat(el){
+  var v=el.value.replace(/\D/g,'');
+  if(!v){el.value='';return;}
+  el.value=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(parseInt(v));
+}
+
+var r1AutoSaveTimer=null;
+function debounceAutoSaveR1(){
+  clearTimeout(r1AutoSaveTimer);
+  var st=document.getElementById('r1AutoSaveStatus');
+  if(st)st.textContent='Digitando...';
+  r1AutoSaveTimer=setTimeout(autoSaveR1Notes,2000);
+}
+
+async function autoSaveR1Notes(){
+  if(!currentProspectId)return;
+  var notes=collectR1Notes();
+  var st=document.getElementById('r1AutoSaveStatus');
+  await sb.from('prospects').update({r1_notes:notes}).eq('id',currentProspectId);
+  if(st)st.textContent='✓ Salvo automaticamente';
+  setTimeout(function(){if(st)st.textContent='';},3000);
+}
+
+function collectR1Notes(){
+  var notes={};
+  // Durante
+  var perfilEl=document.querySelector('input[name="r1_perfil_confirmado"]:checked');
+  if(perfilEl)notes.perfil_confirmado=perfilEl.value;
+  var objecoes=[];
+  document.querySelectorAll('input[name="r1_objecao"]:checked').forEach(function(el){objecoes.push(el.value);});
+  if(objecoes.length)notes.objecoes=objecoes;
+  var produtos=[];
+  document.querySelectorAll('input[name="r1_produto"]:checked').forEach(function(el){produtos.push(el.value);});
+  if(produtos.length)notes.produtos_atuais=produtos;
+  var patEl=document.getElementById('r1_pat_confirmado');
+  if(patEl&&patEl.value)notes.patrimonio_confirmado=patEl.value;
+  var sofEl=document.getElementById('r1_sofisticacao');
+  if(sofEl&&sofEl.value)notes.sofisticacao=sofEl.value;
+  var obsRapEl=document.getElementById('r1_obs_rapidas');
+  if(obsRapEl&&obsRapEl.value.trim())notes.obs_rapidas=obsRapEl.value.trim();
+  // Depois
+  var respostas=[];
+  document.querySelectorAll('[id^="r1_resp_"]').forEach(function(el){
+    if(el.value.trim())respostas.push({idx:el.id.replace('r1_resp_',''),resposta:el.value.trim()});
+  });
+  if(respostas.length)notes.respostas_perguntas=respostas;
+  var objtexto=document.getElementById('r1_objecoes_texto');
+  if(objtexto&&objtexto.value.trim())notes.objecoes_texto=objtexto.value.trim();
+  var obsGerais=document.getElementById('r1_obs_gerais');
+  if(obsGerais&&obsGerais.value.trim())notes.obs_gerais=obsGerais.value.trim();
+  // Transcrição
+  var transcEl=document.getElementById('r1_transcricao');
+  if(transcEl&&transcEl.value.trim())notes.transcricao=transcEl.value.trim();
+  return notes;
+}
+
+async function extractFromTranscricao(){
+  var transcEl=document.getElementById('r1_transcricao');
+  if(!transcEl||!transcEl.value.trim()){alert('Cole a transcrição antes de extrair.');return;}
+  var btn=document.getElementById('btnExtractTranscricao');
+  var st=document.getElementById('extractTranscricaoStatus');
+  btn.disabled=true;btn.textContent='Extraindo...';
+  if(st)st.textContent='Analisando transcrição...';
+  var nome=document.getElementById('fNome').value.trim()||'cliente';
+  var prompt='Analise esta transcrição de reunião de diagnóstico financeiro com '+nome+' e extraia as seguintes informações em JSON:\n\n'
+    +'{"perfil_confirmado":"Conservador|Moderado|Arrojado|Agressivo ou null","produtos_atuais":["lista de produtos mencionados"],'
+    +'"objecoes":["lista de objeções levantadas"],"patrimonio_confirmado":"valor mencionado ou null",'
+    +'"sofisticacao":"Iniciante|Intermediário|Avançado|Especialista","obs_gerais":"resumo do que foi discutido em 2-4 frases"}\n\n'
+    +'TRANSCRIÇÃO:\n'+transcEl.value.trim();
+  try{
+    var resp=await fetch(PROXY_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})
+    });
+    var rd=await resp.json();
+    var txt=(rd.content&&rd.content[0]&&rd.content[0].text)||'';
+    var clean=txt.replace(/```json|```/g,'').trim();
+    var extracted=JSON.parse(clean);
+    // Preencher campos Durante
+    if(extracted.perfil_confirmado){
+      var radio=document.querySelector('input[name="r1_perfil_confirmado"][value="'+extracted.perfil_confirmado+'"]');
+      if(radio)radio.checked=true;
+    }
+    if(extracted.produtos_atuais){
+      extracted.produtos_atuais.forEach(function(p){
+        document.querySelectorAll('input[name="r1_produto"]').forEach(function(el){
+          if(el.value.toLowerCase().includes(p.toLowerCase())||p.toLowerCase().includes(el.value.toLowerCase()))el.checked=true;
+        });
+      });
+    }
+    if(extracted.objecoes){
+      extracted.objecoes.forEach(function(o){
+        document.querySelectorAll('input[name="r1_objecao"]').forEach(function(el){
+          if(el.value.toLowerCase().includes(o.toLowerCase())||o.toLowerCase().includes(el.value.toLowerCase()))el.checked=true;
+        });
+      });
+    }
+    if(extracted.patrimonio_confirmado){var patEl=document.getElementById('r1_pat_confirmado');if(patEl)patEl.value=extracted.patrimonio_confirmado;}
+    if(extracted.sofisticacao){var sofEl=document.getElementById('r1_sofisticacao');if(sofEl)sofEl.value=extracted.sofisticacao;}
+    if(extracted.obs_gerais){var obsEl=document.getElementById('r1_obs_gerais');if(obsEl)obsEl.value=extracted.obs_gerais;}
+    if(st)st.textContent='✓ Campos preenchidos com base na transcrição. Revise antes de confirmar.';
+    st.style.color='var(--lime)';
+    autoSaveR1Notes();
+  }catch(e){
+    if(st){st.textContent='Erro ao extrair: '+e.message;st.style.color='#f08080';}
+  }finally{
+    btn.disabled=false;btn.textContent='✨ Extrair anotações com IA';
+  }
+}
+
+function buildR1NotesContext(notes){
+  if(!notes||!Object.keys(notes).length)return '';
+  var txt='ANOTAÇÕES DA REUNIÃO R1:\n';
+  if(notes.perfil_confirmado)txt+='Perfil confirmado na reunião: '+notes.perfil_confirmado+'\n';
+  if(notes.patrimonio_confirmado)txt+='Patrimônio confirmado: '+notes.patrimonio_confirmado+'\n';
+  if(notes.sofisticacao)txt+='Nível de sofisticação: '+notes.sofisticacao+'\n';
+  if(notes.produtos_atuais&&notes.produtos_atuais.length)txt+='Produtos que já possui: '+notes.produtos_atuais.join(', ')+'\n';
+  if(notes.objecoes&&notes.objecoes.length)txt+='Objeções levantadas: '+notes.objecoes.join(', ')+'\n';
+  if(notes.objecoes_texto)txt+='Detalhe das objeções: '+notes.objecoes_texto+'\n';
+  if(notes.obs_rapidas)txt+='Observações: '+notes.obs_rapidas+'\n';
+  if(notes.obs_gerais)txt+='Resumo da reunião: '+notes.obs_gerais+'\n';
+  if(notes.respostas_perguntas&&notes.respostas_perguntas.length){
+    txt+='Respostas do cliente:\n';
+    notes.respostas_perguntas.forEach(function(r){txt+='  - '+r.resposta+'\n';});
+  }
+  return txt+'\n';
 }
 
 // ── CONFIRMAR R1 ──────────────────────────────────────────────────────────────
@@ -4291,9 +4523,13 @@ async function confirmR1(){
   }
   var btn=document.querySelector('#confirmR1Wrap button');
   btn.disabled=true;btn.textContent='Salvando...';
+  var activeTab=document.querySelector('.r1tab-btn.active');
+  var mode=activeTab?activeTab.dataset.tab:'depois';
+  var notes=collectR1Notes();
   var {error}=await sb.from('prospects').update({
     status:'r1_concluida',
-    r1_mode:'depois'
+    r1_mode:mode,
+    r1_notes:notes
   }).eq('id',currentProspectId);
   btn.disabled=false;
   if(error){
@@ -4306,14 +4542,12 @@ async function confirmR1(){
   btn.style.borderColor='#4ade80';
   btn.style.color='#4ade80';
   btn.onclick=null;
-  // Atualizar status no dropdown
   var opt=document.querySelector('#fProspectSel option[value="'+currentProspectId+'"]');
   if(opt)opt.textContent=opt.textContent.replace(/·.*$/,'· R1 Concluída');
   var st=document.getElementById('fProspectStatus');
   if(st)st.innerHTML='<span class="ds ps-r1_concluida" style="font-size:.68rem;padding:2px 8px;border-radius:20px">R1 Concluída</span>';
-  // Atualizar lista local
   var p=allProspects.find(function(x){return x.id===currentProspectId;});
-  if(p)p.status='r1_concluida';
+  if(p){p.status='r1_concluida';p.r1_notes=notes;}
 }
 
 // ── UPSERT PROSPECT ───────────────────────────────────────────────────────────
@@ -4490,7 +4724,7 @@ async function saveProspect(){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║ CAPTOR — CHANGELOG                                   ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.2 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.3 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║

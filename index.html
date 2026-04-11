@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.7.14</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.7.15</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -514,7 +514,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.14</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.15</div>
     </div>
   </div>
 </div>
@@ -554,7 +554,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.7.14</div>
+      <div class="hver" id="hverEl">v5.7.15</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -606,7 +606,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 
       <!-- Seletor de prospect existente -->
       <div class="fg" style="margin-bottom:12px">
-        <label class="fl">Prospect</label>
+        <label class="fl" for="fProspectSel">Prospect</label>
         <div style="display:flex;gap:6px">
           <select class="fsel" id="fProspectSel" onchange="onProspectSelect()" style="flex:1">
             <option value="">— Novo prospect —</option>
@@ -618,30 +618,30 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 
       <div class="sbs">Preencha os dados para gerar o roteiro &nbsp;·&nbsp; <button type="button" onclick="fillExample()" style="background:none;border:none;color:var(--lime);font-size:.7rem;font-weight:700;cursor:pointer;padding:0;font-family:var(--f);text-decoration:underline">usar exemplo</button></div>
 
-      <div class="fg"><label class="fl">Nome</label><input class="fi" id="fNome" placeholder="Ex: Ricardo Almeida" oninput="clearFieldError(this)" onfocus="clearFieldError(this)"></div>
+      <div class="fg"><label class="fl" for="fNome">Nome</label><input class="fi" id="fNome" placeholder="Ex: Ricardo Almeida" oninput="clearFieldError(this);onFieldChange()" onfocus="clearFieldError(this)"></div>
       <div class="fg">
-        <label class="fl">Patrimônio estimado</label>
-        <input class="fi" id="fPat" type="text" placeholder="R$ 0" oninput="maskPat(this);clearFieldError(this)" onfocus="clearFieldError(this)" autocomplete="off">
+        <label class="fl" for="fPat">Patrimônio estimado</label>
+        <input class="fi" id="fPat" type="text" placeholder="R$ 0" oninput="maskPat(this);clearFieldError(this);onFieldChange()" onfocus="clearFieldError(this)" autocomplete="off">
         <div class="fhint">Imóveis + investimentos + reservas</div>
       </div>
       <div class="fg">
-        <label class="fl">Profissão</label>
+        <label class="fl" for="fProf">Profissão</label>
         <div class="ac-wrap" id="acWrap">
           <input class="fi" id="fProf" placeholder="Digite para buscar..." autocomplete="off" oninput="acFilter()" onfocus="acFilter()" onblur="setTimeout(acHide,180)" onkeydown="acKey(event)">
           <div class="ac-drop" id="acDrop"></div>
         </div>
       </div>
-      <div class="fg"><label class="fl">Idade</label><input class="fi" id="fIdade" type="number" placeholder="Ex: 45" min="18" max="90" oninput="clearFieldError(this)" onfocus="clearFieldError(this)"></div>
+      <div class="fg"><label class="fl" for="fIdade">Idade</label><input class="fi" id="fIdade" type="number" placeholder="Ex: 45" min="18" max="90" oninput="clearFieldError(this);onFieldChange()" onfocus="clearFieldError(this)"></div>
       <div class="fg">
-        <label class="fl">Perfil de risco</label>
-        <select class="fsel" id="fPerfil" onchange="clearFieldError(this)" onfocus="clearFieldError(this)">
+        <label class="fl" for="fPerfil">Perfil de risco</label>
+        <select class="fsel" id="fPerfil" onchange="clearFieldError(this);onFieldChange()" onfocus="clearFieldError(this)">
           <option value="">Selecione...</option>
           <option>Conservador</option><option>Moderado</option><option>Arrojado</option><option>Agressivo</option>
         </select>
       </div>
       <div class="fg">
-        <label class="fl">Objetivo principal</label>
-        <select class="fsel" id="fObj" onchange="clearFieldError(this)" onfocus="clearFieldError(this)">
+        <label class="fl" for="fObj">Objetivo principal</label>
+        <select class="fsel" id="fObj" onchange="clearFieldError(this);onFieldChange()" onfocus="clearFieldError(this)">
           <option value="">Selecione...</option>
           <option>Aposentadoria / Independência financeira</option>
           <option>Sucessão patrimonial / família</option>
@@ -653,7 +653,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         </select>
       </div>
       <div class="fg">
-        <label class="fl">Horizonte de investimento</label>
+        <label class="fl" for="fHorizonte">Horizonte de investimento</label>
         <select class="fsel" id="fHorizonte">
           <option value="">Selecione...</option>
           <option>Até 2 anos</option>
@@ -663,7 +663,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         </select>
       </div>
       <div class="fg">
-        <label class="fl">Assessoria atual</label>
+        <label class="fl" for="fAss">Assessoria atual</label>
         <div class="ac-wrap" id="acAssWrap">
           <input class="fi" id="fAss" placeholder="Digite ou selecione..." autocomplete="off" oninput="acAssFilter()" onfocus="acAssFilter()" onblur="setTimeout(acAssHide,180)" onkeydown="acAssKey(event)">
           <div class="ac-drop" id="acAssDrop"></div>
@@ -675,7 +675,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         <div class="fhint">Só preencha o que o cliente já confirmou ou você observou — a IA não vai inventar gaps sem evidência</div>
       </div>
       <div class="fg">
-        <label class="fl">Contexto / observações</label>
+        <label class="fl" for="fCtx">Contexto / observações</label>
         <textarea class="fta" id="fCtx" placeholder="Ex: veio por indicação, tem empresa, preocupado com câmbio..."></textarea>
       </div>
 
@@ -971,7 +971,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.14</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.15</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -1074,9 +1074,9 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         <div style="margin-bottom:18px">
           <div style="font-size:.8rem;font-weight:700;color:var(--white);margin-bottom:8px">Link de convite para assessores</div>
           <div style="display:flex;gap:8px;align-items:center">
-            <input class="fi" id="inviteLinkField" readonly placeholder="Clique em Gerar para criar um link" style="flex:1;font-size:.75rem;color:var(--muted);cursor:pointer" onclick="this.select()">
-            <button onclick="generateInviteLink()" style="padding:8px 14px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap" id="btnGenInvite">Gerar link</button>
-            <button onclick="copyInviteLink()" id="btnCopyInvite" style="display:none;padding:8px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--r);font-family:var(--f);font-size:.78rem;cursor:pointer;white-space:nowrap">Copiar</button>
+            <input class="fi" id="modalInviteLinkField" readonly placeholder="Clique em Gerar para criar um link" style="flex:1;font-size:.75rem;color:var(--muted);cursor:pointer" onclick="this.select()">
+            <button onclick="generateInviteLink('modal')" style="padding:8px 14px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap" id="modalBtnGenInvite">Gerar link</button>
+            <button onclick="copyInviteLink('modal')" id="modalBtnCopyInvite" style="display:none;padding:8px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--r);font-family:var(--f);font-size:.78rem;cursor:pointer;white-space:nowrap">Copiar</button>
           </div>
           <div style="font-size:.7rem;color:var(--dim);margin-top:5px">O link expira em 7 dias. Gere um novo a qualquer momento.</div>
         </div>
@@ -1324,6 +1324,7 @@ function acFilter(){
 function acSelect(val){
   document.getElementById('fProf').value = val;
   acHide();
+  onFieldChange();
 }
 
 function acHide(){
@@ -3428,6 +3429,7 @@ function fillExample() {
     }
     updateSliders(-1);
   }
+  onFieldChange();
 }
 
 async function updateProposal() {
@@ -4000,7 +4002,7 @@ function pixShowToast(msg) {
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.14 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.15 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║
@@ -4174,27 +4176,34 @@ async function loadTeamInvites(){
   }).join('');
 }
 
-async function generateInviteLink(){
+async function generateInviteLink(ctx){
   if(!currentFirmId)return;
-  var btn=document.getElementById('btnGenInvite');
+  var isModal=ctx==='modal';
+  var btnId=isModal?'modalBtnGenInvite':'btnGenInvite';
+  var fieldId=isModal?'modalInviteLinkField':'inviteLinkField';
+  var btn=document.getElementById(btnId);
   btn.disabled=true;btn.textContent='Gerando...';
   var {data,error}=await sb.from('invites').insert({firm_id:currentFirmId,role:'advisor'}).select().maybeSingle();
-  btn.disabled=false;btn.textContent='+ Gerar link';
+  btn.disabled=false;btn.textContent=isModal?'Gerar link':'+ Gerar link';
   if(error||!data){showToast('Erro ao gerar convite.','error');return;}
   var link=window.location.origin+window.location.pathname+'?invite='+data.token;
-  var field=document.getElementById('inviteLinkField');
-  field.value=link;
-  document.getElementById('teamInviteLink').style.display='block';
-  loadTeamInvites();
+  var field=document.getElementById(fieldId);
+  if(field)field.value=link;
+  if(!isModal){
+    document.getElementById('teamInviteLink').style.display='block';
+    loadTeamInvites();
+  } else {
+    var copyBtn=document.getElementById('modalBtnCopyInvite');
+    if(copyBtn)copyBtn.style.display='inline-block';
+  }
 }
 
-function copyInviteLink(){
-  var field=document.getElementById('inviteLinkField');
-  field.select();
-  document.execCommand('copy');
-  var btn=document.getElementById('btnCopyInvite');
-  btn.textContent='Copiado ✓';
-  setTimeout(function(){btn.textContent='Copiar';},2000);
+function copyInviteLink(ctx){
+  var isModal=ctx==='modal';
+  var field=document.getElementById(isModal?'modalInviteLinkField':'inviteLinkField');
+  var btn=document.getElementById(isModal?'modalBtnCopyInvite':'btnCopyInvite');
+  if(field){field.select();document.execCommand('copy');}
+  if(btn){btn.textContent='Copiado ✓';setTimeout(function(){btn.textContent='Copiar';},2000);}
 }
 
 async function revokeInvite(inviteId){
@@ -4248,6 +4257,16 @@ async function loadProspectsSelector(){
 var R2_ALLOWED_STATUSES=['r1_concluida','resumo_enviado','r1_aprovada','r2_iniciada','negocio_fechado'];
 var TERMINAL_STATUSES=['perdido_user','perdido_auto','negocio_fechado'];
 
+function requiredFieldsFilled(){
+  var nome=document.getElementById('fNome').value.trim();
+  var pat=getRawPat();
+  var prof=document.getElementById('fProf').value.trim();
+  var idade=document.getElementById('fIdade').value;
+  var perfil=document.getElementById('fPerfil').value;
+  var obj=document.getElementById('fObj').value;
+  return !!(nome&&pat&&prof&&idade&&perfil&&obj);
+}
+
 function updateAllButtonStates(status){
   var btnR1=document.getElementById('btnGenR1');
   var btnR2=document.getElementById('btnGen');
@@ -4267,10 +4286,12 @@ function updateAllButtonStates(status){
     if(tip)tip.style.display='none';
   }
 
-  // Sem prospect selecionado — tudo bloqueado
+  var filled=requiredFieldsFilled();
+
+  // Sem prospect — R1 habilitada se campos preenchidos, R2 sempre bloqueada
   if(!currentProspectId){
-    setBtn(btnR1,wrapR1,r1Tip,false,'Selecione um prospect primeiro');
-    setBtn(btnR2,wrapR2,r2Tip,false,'Selecione um prospect primeiro');
+    setBtn(btnR1,wrapR1,r1Tip,filled,filled?'':'Preencha os campos obrigatórios');
+    setBtn(btnR2,wrapR2,r2Tip,false,'Selecione um prospect para gerar a proposta R2');
     return;
   }
 
@@ -4281,17 +4302,22 @@ function updateAllButtonStates(status){
     return;
   }
 
-  // R1 permitida: prospect_criado, r1_iniciada, r1_concluida e superiores (pode refazer)
-  var r1Allowed = !!status;
-  setBtn(btnR1,wrapR1,r1Tip,r1Allowed,'Selecione um prospect primeiro');
+  // R1: habilitada se campos preenchidos e há prospect ativo
+  setBtn(btnR1,wrapR1,r1Tip,filled,'Preencha os campos obrigatórios');
 
-  // R2 permitida: r1_concluida ou superior
-  var r2Allowed = R2_ALLOWED_STATUSES.indexOf(status)>=0;
-  setBtn(btnR2,wrapR2,r2Tip,r2Allowed,'Conclua a R1 antes de gerar a proposta');
+  // R2: habilitada se campos preenchidos e status permite
+  var r2Allowed=filled&&R2_ALLOWED_STATUSES.indexOf(status)>=0;
+  setBtn(btnR2,wrapR2,r2Tip,r2Allowed,filled?'Conclua a R1 antes de gerar a proposta':'Preencha os campos obrigatórios');
 }
 
-// Manter updateR2ButtonState como alias para não quebrar chamadas existentes
+// Alias para compatibilidade
 function updateR2ButtonState(status){ updateAllButtonStates(status); }
+
+// Checagem dinâmica a cada mudança de campo
+function onFieldChange(){
+  var p=currentProspectId?allProspects.find(function(x){return x.id===currentProspectId;}):null;
+  updateAllButtonStates(p?p.status:null);
+}
 
 function onProspectSelect(){
   var id=document.getElementById('fProspectSel').value;
@@ -5024,7 +5050,7 @@ function captorConfirmCancel(){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║ CAPTOR — CHANGELOG                                   ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.14 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.15 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║

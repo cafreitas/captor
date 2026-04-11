@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.7.6</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.7.8</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -496,7 +496,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.6</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.8</div>
     </div>
   </div>
 </div>
@@ -536,7 +536,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.7.6</div>
+      <div class="hver" id="hverEl">v5.7.8</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -945,7 +945,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.6</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.8</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -2337,28 +2337,42 @@ async function generate(){
     ? 'Você é assessor sênior da '+nomeEmpresa+'. '+empresaPrompt
     : 'Você é assessor sênior da Captor Investimentos (XP credenciada, +R$12bi custódia, +15mil clientes, Nº1 NPS 2024). Portfólio completo: investimentos, renda variável, crédito, câmbio, seguros, wealth planning, offshore, Captor Family Office, M&A.'
   )+'\n\n'
-    +r1NotesCtx
-    +'Gere roteiro consultivo COMPLETO para:\n'
+    +'MÉTODO DE ATENDIMENTO:\n'
+    +'Esta assessoria usa o método R1/R2. A R1 (reunião de diagnóstico) já foi realizada. Agora é a R2 — reunião de apresentação da proposta. '
+    +'Na R2 o assessor apresenta a alocação recomendada e explica por que ela faz sentido para o perfil e momento de vida deste cliente. '
+    +'O cliente pode precisar de mais de uma R2 antes de fechar — não há pressão para fechamento imediato.\n\n'
+    +(r1NotesCtx
+      ? 'O QUE FOI APRENDIDO NA R1 (use para personalizar a apresentação):\n'+r1NotesCtx
+      : ''
+    )
+    +'CLIENTE:\n'
     +'Nome: '+nome+' | Patrimônio: '+patFmt+' | Profissão: '+prof+' | Idade: '+idade+' anos | Perfil: '+perfil+' | Objetivo: '+obj+' | Assessoria atual: '+(ass||'não informado')+' | Contexto: '+(ctx||'nenhum')+'\n'
     +'Problemas CONFIRMADOS na gestão atual: '+(gaps||'nenhum informado')+'\n'
-    +(currentAllocStr ? 'Alocação ATUAL do cliente (informada pelo assessor): '+currentAllocStr+'\n' : '')
-    +'\nREGRA CRÍTICA SOBRE GAPS E ARGUMENTOS: '
+    +(currentAllocStr ? 'Alocação ATUAL do cliente: '+currentAllocStr+'\n' : '')
+    +'\nESTRUTURA DO ROTEIRO R2 — gere exatamente 6 etapas nesta ordem:\n'
+    +'1. Abertura: retome o diagnóstico da R1 ("na nossa conversa você me contou que...") para mostrar que você ouviu e lembrou\n'
+    +'2. Apresentação da alocação: explique cada classe de ativo presente na carteira sugerida\n'
+    +'3. Por que faz sentido para você: conecte cada decisão de alocação ao perfil de risco, objetivo e momento de vida deste cliente específico\n'
+    +'4. Projeção patrimonial: mostre o potencial desta carteira no horizonte de tempo declarado\n'
+    +'5. Espaço para dúvidas: aborde proativamente as objeções levantadas na R1'+(r1NotesCtx?' (listadas acima)':'')+', com argumentos preparados\n'
+    +'6. Encerramento: sem pressão — deixe claro que o cliente pode levar o tempo que precisar e que você está disponível para uma próxima R2 se necessário\n\n'
+    +'REGRA CRÍTICA SOBRE GAPS E ARGUMENTOS: '
     +(gaps
       ? 'Use APENAS os problemas confirmados acima como base para argumentos e diagnóstico. Não invente outros gaps além dos listados.'
-      : 'Não há problemas confirmados. NUNCA afirme que existem gaps ou problemas na gestão atual do cliente — você não tem essa informação. Nos argumentos e diagnóstico, use linguagem de INVESTIGAÇÃO ("vale entender se...", "uma pergunta relevante é...", "dependendo do que encontrarmos...") e não de afirmação. Foque nos benefícios da Captor, não em críticas à situação atual.'
+      : 'Não há problemas confirmados. NUNCA afirme que existem gaps ou problemas na gestão atual do cliente. Nos argumentos, use linguagem de INVESTIGAÇÃO ("vale entender se...", "dependendo do que encontrarmos..."). Foque nos benefícios da Captor, não em críticas à situação atual.'
     )+'\n\n'
     +'REGRA DE ALOCAÇÃO OFICIAL CAPTOR para perfil '+perfil+': '+allocRuleStr+'\n'
     +(currentAllocStr
-      ? 'O cliente JÁ TEM a alocação informada acima. Sua sugestão deve mostrar a REALOCAÇÃO necessária para chegar à carteira ideal dentro das faixas Captor. No campo "alocacao" do JSON, coloque a alocação SUGERIDA (destino), não a atual. Nos argumentos e slides, mencione as principais mudanças de alocação que você propõe — por que fazem sentido para o objetivo e perfil deste cliente.\n'
-      : 'Para o campo "alocacao", escolha percentuais DENTRO das faixas acima para cada classe. Os percentuais devem somar exatamente 100%.\n'
+      ? 'O cliente JÁ TEM a alocação informada acima. Sua sugestão deve mostrar a REALOCAÇÃO necessária. No campo "alocacao" do JSON, coloque a alocação SUGERIDA (destino), não a atual. Nos argumentos e slides, mencione as principais mudanças propostas e por que fazem sentido.\n'
+      : 'Para o campo "alocacao", escolha percentuais DENTRO das faixas acima. Os percentuais devem somar exatamente 100%.\n'
     )
     +'Use os mesmos 9 labels de classes de ativos.\n'
-    +'IMPORTANTE: títulos dos slides em sentence case (ex: "Carteira otimizada", NÃO "SUA NOVA CARTEIRA OTIMIZADA"). Nunca use maiúsculas no título.\n'
-    +'IMPORTANTE: nunca use a palavra "rapport" em nenhum texto gerado. Substitua por: conexão, confiança, proximidade, abertura ou sintonia.\n'
-    +'IMPORTANTE: os percentuais citados nos textos de argumentos e slides DEVEM ser EXATAMENTE os mesmos definidos no campo alocacao.data. Nunca mencione percentuais que não estejam nesse campo.\n\n'
+    +'IMPORTANTE: títulos dos slides em sentence case. Nunca use maiúsculas no título.\n'
+    +'IMPORTANTE: nunca use a palavra "rapport". Substitua por: conexão, confiança, proximidade, abertura ou sintonia.\n'
+    +'IMPORTANTE: os percentuais nos textos DEVEM ser EXATAMENTE os mesmos do campo alocacao.data.\n\n'
     +'Responda SOMENTE JSON válido, sem markdown, sem texto antes ou depois:\n'
     +'{"resumoPerfil":"2-3 frases dirigidas ao cliente na 2ª pessoa (\'Você é...\'), tom consultivo e humano","roteiro":[{"titulo":"...","descricao":"...","dica":"...","minutos":5}],"perguntas":[{"pergunta":"...","motivo":"..."}],"argumentos":[{"titulo":"...","corpo":"texto na 2ª pessoa dirigido ao cliente (\'Você se beneficia de...\')","frase_gancho":"..."}],"slides":[{"numero":1,"rotulo":"Capa","titulo":"Crescimento patrimonial para [nome]","conteudo":"...","visual":"..."},{"numero":4,"rotulo":"Estratégia Captor","titulo":"Nossa proposta diferenciada","conteudo":"...","visual":"..."},{"numero":5,"rotulo":"Resultado Projetado","titulo":"Carteira otimizada","conteudo":"...","visual":"..."}],"alocacao":{"labels":["Pós Fixado","Inflação","Prefixado","Multimercados","Renda Variável BR","FII","Alternativos","RF Global","RV Global"],"data":[70,10,5,5,2,0,0,3,5]}}\n\n'
-    +'Gere exatamente: 6 etapas no roteiro, 5 perguntas, 3 argumentos, 6 slides (Capa / Contexto / Diagnóstico / Estratégia Captor / Resultado Projetado / Próximos Passos). Seja específico para o perfil real.';
+    +'Gere: 6 etapas no roteiro (estrutura acima), 3 perguntas de verificação de alinhamento (não de diagnóstico — checar se o cliente entendeu e se algo mudou), 3 argumentos, 6 slides (Capa / Contexto do cliente / Por que esta alocação / Estratégia Captor / Resultado Projetado / Próximos Passos). Seja específico para este cliente.';
 
   try{
     var resp=await fetch(PROXY_URL,{
@@ -2767,6 +2781,20 @@ async function saveDraftAndPreview(){
     data.alocacao.data = newAloc;
   }
 
+  // Determinar versão e prospect_id
+  var versao = 1;
+  var prospectIdParaSalvar = currentProspectId || null;
+  if(prospectIdParaSalvar && !proposalDraftHash){
+    // Nova proposta para prospect existente — buscar última versão
+    var {data:ultimaVersao} = await sb.from('proposals')
+      .select('versao')
+      .eq('prospect_id', prospectIdParaSalvar)
+      .order('versao', {ascending:false})
+      .limit(1)
+      .maybeSingle();
+    if(ultimaVersao) versao = (ultimaVersao.versao||1) + 1;
+  }
+
   // Salvar rascunho no Supabase com status 'rascunho'
   var hash = proposalDraftHash || generateHash();
   proposalDraftHash = hash;
@@ -2777,6 +2805,8 @@ async function saveDraftAndPreview(){
   var payload = {
     hash: hash,
     user_id: supabaseUserId,
+    prospect_id: prospectIdParaSalvar,
+    versao: versao,
     cliente_nome: meta.nome,
     cliente_pat: parseInt(meta.pat),
     cliente_perfil: meta.perfil,
@@ -2805,6 +2835,13 @@ async function saveDraftAndPreview(){
 
   // Atualizar UI — mostrar link de prévia e polling de aprovação
   btn.innerHTML = '✓ Salvo';
+  // Atualizar status do prospect para r2_iniciada (na primeira versão)
+  if(prospectIdParaSalvar && versao === 1){
+    await sb.from('prospects').update({status:'r2_iniciada'}).eq('id',prospectIdParaSalvar);
+    var p=allProspects.find(function(x){return x.id===prospectIdParaSalvar;});
+    if(p)p.status='r2_iniciada';
+    updateR2ButtonState('r2_iniciada');
+  }
   var hint = document.getElementById('approveHint');
   if(hint){
     hint.style.display = 'block';
@@ -3874,7 +3911,7 @@ function pixShowToast(msg) {
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.6 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.8 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║
@@ -4102,7 +4139,7 @@ var prospectStatusLabels = {
 async function loadProspectsSelector(){
   if(!supabaseUserId)return;
   var {data}=await sb.from('prospects')
-    .select('id,nome,status,perfil_risco,patrimonio_estimado,objetivo,profissao,idade,horizonte,email,telefone')
+    .select('id,nome,status,perfil_risco,patrimonio_estimado,objetivo,profissao,idade,horizonte,email,telefone,r1_notes')
     .eq('assessor_id',supabaseUserId)
     .not('status','in','(perdido_user,perdido_auto)')
     .order('created_at',{ascending:false});
@@ -4756,7 +4793,7 @@ async function saveProspect(){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║ CAPTOR — CHANGELOG                                   ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.6 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.8 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║

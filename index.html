@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.7.13</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.7.14</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -514,7 +514,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.13</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.14</div>
     </div>
   </div>
 </div>
@@ -554,7 +554,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.7.13</div>
+      <div class="hver" id="hverEl">v5.7.14</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -694,25 +694,33 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 
       <!-- BOTÕES R1 / R2 -->
       <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="genbtn" id="btnGenR1" onclick="generateR1()" style="background:var(--bg3);border:1px solid var(--lime);color:var(--lime)">
-          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 2a5 5 0 1 0 0 10A5 5 0 0 0 7 2zm0 1.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zm0 1.5a.75.75 0 0 0-.75.75v2c0 .2.08.38.22.52l1.25 1.25a.75.75 0 1 0 1.06-1.06L7.75 7.69V5.75A.75.75 0 0 0 7 5z" fill="currentColor"/></svg>
-          Gerar Roteiro R1
-        </button>
+
+        <!-- Confirmar R1 (visível apenas quando roteiro R1 gerado) -->
+        <div id="confirmR1Wrap" style="display:none">
+          <button onclick="confirmR1()" id="btnConfirmR1" style="width:100%;padding:10px;background:rgba(168,194,58,.15);border:1px solid var(--lime);border-radius:var(--r);color:var(--lime);font-family:var(--f);font-size:.8rem;font-weight:700;cursor:pointer">
+            ✓ Confirmar R1 concluída
+          </button>
+          <div style="font-size:.68rem;color:var(--dim);margin-top:4px;text-align:center">Registra o fim da reunião de diagnóstico</div>
+        </div>
+
+        <!-- Gerar R1 -->
+        <div style="position:relative" id="btnGenR1Wrap">
+          <button class="genbtn" id="btnGenR1" onclick="generateR1()" style="background:var(--bg3);border:1px solid var(--lime);color:var(--lime)" disabled>
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 2a5 5 0 1 0 0 10A5 5 0 0 0 7 2zm0 1.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zm0 1.5a.75.75 0 0 0-.75.75v2c0 .2.08.38.22.52l1.25 1.25a.75.75 0 1 0 1.06-1.06L7.75 7.69V5.75A.75.75 0 0 0 7 5z" fill="currentColor"/></svg>
+            Gerar Roteiro R1
+          </button>
+          <div id="btnGenR1Tip" style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;font-size:.7rem;color:var(--muted);white-space:nowrap;z-index:10;pointer-events:none">Selecione um prospect para gerar o roteiro R1</div>
+        </div>
+
+        <!-- Gerar R2 -->
         <div style="position:relative" id="btnGenWrap">
-          <button class="genbtn" id="btnGen" onclick="generate()">
+          <button class="genbtn" id="btnGen" onclick="generate()" disabled style="opacity:0.45">
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg>
             Gerar Proposta R2
           </button>
           <div id="btnGenR2Tip" style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;font-size:.7rem;color:var(--muted);white-space:nowrap;z-index:10;pointer-events:none">Conclua a R1 antes de gerar a proposta</div>
         </div>
-      </div>
 
-      <!-- BOTÃO CONFIRMAR R1 (aparece após roteiro R1 gerado) -->
-      <div id="confirmR1Wrap" style="display:none;margin-top:8px">
-        <button onclick="confirmR1()" style="width:100%;padding:10px;background:rgba(168,194,58,.15);border:1px solid var(--lime);border-radius:var(--r);color:var(--lime);font-family:var(--f);font-size:.8rem;font-weight:700;cursor:pointer">
-          ✓ Confirmar R1 concluída
-        </button>
-        <div style="font-size:.68rem;color:var(--dim);margin-top:4px;text-align:center">Registra o fim da reunião de diagnóstico</div>
       </div>
 
     </aside>
@@ -963,7 +971,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.13</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.14</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -3992,7 +4000,7 @@ function pixShowToast(msg) {
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.13 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.14 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║
@@ -4238,26 +4246,52 @@ async function loadProspectsSelector(){
 }
 
 var R2_ALLOWED_STATUSES=['r1_concluida','resumo_enviado','r1_aprovada','r2_iniciada','negocio_fechado'];
+var TERMINAL_STATUSES=['perdido_user','perdido_auto','negocio_fechado'];
 
-function updateR2ButtonState(status){
-  var btn=document.getElementById('btnGen');
-  var tip=document.getElementById('btnGenR2Tip');
-  var wrap=document.getElementById('btnGenWrap');
-  if(!btn)return;
-  if(!currentProspectId){
-    btn.disabled=false;btn.style.opacity='';
+function updateAllButtonStates(status){
+  var btnR1=document.getElementById('btnGenR1');
+  var btnR2=document.getElementById('btnGen');
+  var r1Tip=document.getElementById('btnGenR1Tip');
+  var r2Tip=document.getElementById('btnGenR2Tip');
+  var wrapR1=document.getElementById('btnGenR1Wrap');
+  var wrapR2=document.getElementById('btnGenWrap');
+
+  function setBtn(btn,wrap,tip,enabled,tipMsg){
+    if(!btn)return;
+    btn.disabled=!enabled;
+    btn.style.opacity=enabled?'':'0.45';
+    if(wrap){
+      wrap.onmouseenter=enabled?null:function(){if(tip){tip.textContent=tipMsg;tip.style.display='block';}};
+      wrap.onmouseleave=function(){if(tip)tip.style.display='none';};
+    }
     if(tip)tip.style.display='none';
+  }
+
+  // Sem prospect selecionado — tudo bloqueado
+  if(!currentProspectId){
+    setBtn(btnR1,wrapR1,r1Tip,false,'Selecione um prospect primeiro');
+    setBtn(btnR2,wrapR2,r2Tip,false,'Selecione um prospect primeiro');
     return;
   }
-  var allowed=!status||R2_ALLOWED_STATUSES.indexOf(status)>=0;
-  btn.disabled=!allowed;
-  btn.style.opacity=allowed?'':'0.45';
-  if(wrap){
-    wrap.onmouseenter=allowed?null:function(){if(tip)tip.style.display='block';};
-    wrap.onmouseleave=function(){if(tip)tip.style.display='none';};
+
+  // Status terminal — tudo bloqueado
+  if(TERMINAL_STATUSES.indexOf(status)>=0){
+    setBtn(btnR1,wrapR1,r1Tip,false,'Prospect finalizado');
+    setBtn(btnR2,wrapR2,r2Tip,false,'Prospect finalizado');
+    return;
   }
-  if(tip)tip.style.display='none';
+
+  // R1 permitida: prospect_criado, r1_iniciada, r1_concluida e superiores (pode refazer)
+  var r1Allowed = !!status;
+  setBtn(btnR1,wrapR1,r1Tip,r1Allowed,'Selecione um prospect primeiro');
+
+  // R2 permitida: r1_concluida ou superior
+  var r2Allowed = R2_ALLOWED_STATUSES.indexOf(status)>=0;
+  setBtn(btnR2,wrapR2,r2Tip,r2Allowed,'Conclua a R1 antes de gerar a proposta');
 }
+
+// Manter updateR2ButtonState como alias para não quebrar chamadas existentes
+function updateR2ButtonState(status){ updateAllButtonStates(status); }
 
 function onProspectSelect(){
   var id=document.getElementById('fProspectSel').value;
@@ -4990,7 +5024,7 @@ function captorConfirmCancel(){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║ CAPTOR — CHANGELOG                                   ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.13 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.14 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.7.12</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.7.13</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -514,7 +514,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.12</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.13</div>
     </div>
   </div>
 </div>
@@ -554,7 +554,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.7.12</div>
+      <div class="hver" id="hverEl">v5.7.13</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -963,7 +963,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.12</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.13</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -3360,21 +3360,66 @@ function onboardingClear() {
 }
 
 function fillExample() {
-  document.getElementById('fNome').value = 'João Gomes';
-  document.getElementById('fPat').value = 'R$ 45.000.000';
-  document.getElementById('fProf').value = 'Artista';
-  document.getElementById('fIdade').value = '27';
-  document.getElementById('fPerfil').value = 'Arrojado';
-  document.getElementById('fObj').value = 'Crescimento patrimonial acelerado';
-  document.getElementById('fAss').value = 'Não possui assessoria';
-  document.getElementById('fCtx').value = 'Cantor em ascensão com renda concentrada em shows e direitos autorais. Patrimônio recente, sem estrutura de investimentos. Preocupado em transformar o sucesso atual em segurança financeira de longo prazo.';
-  document.getElementById('fGaps').value = 'Não tem mais tempo para gerenciar seu patrimônio. Quer guardar 50% dos ganhos para uma aposentadoria tranquila.';
-  var onbAlloc = {0:30, 1:30, 2:20, 5:20};
-  for(var i=0;i<9;i++){
-    var el = document.getElementById('asl_'+i);
-    if(el){ el.value = onbAlloc[i]||0; el.disabled = false; }
+  var EXEMPLOS = [
+    // ── Só campos obrigatórios ──────────────────────────────────────────
+    {nome:'Carlos Mendes',pat:'R$ 280.000',prof:'Servidor público',idade:'41',perfil:'Conservador',obj:'Aposentadoria / Independência financeira',ass:'',horizonte:'',gaps:'',ctx:'',alloc:{}},
+    {nome:'Aline Rocha',pat:'R$ 1.200.000',prof:'Médica',idade:'38',perfil:'Moderado',obj:'Renda passiva',ass:'',horizonte:'',gaps:'',ctx:'',alloc:{}},
+    {nome:'Bruno Teixeira',pat:'R$ 5.500.000',prof:'Empresário',idade:'52',perfil:'Arrojado',obj:'Crescimento patrimonial acelerado',ass:'',horizonte:'',gaps:'',ctx:'',alloc:{}},
+    {nome:'Fernanda Lima',pat:'R$ 180.000',prof:'Professora',idade:'34',perfil:'Conservador',obj:'Compra de imóvel / bem',ass:'',horizonte:'',gaps:'',ctx:'',alloc:{}},
+
+    // ── Todos os campos ─────────────────────────────────────────────────
+    {nome:'João Gomes',pat:'R$ 45.000.000',prof:'Artista',idade:'27',perfil:'Arrojado',obj:'Crescimento patrimonial acelerado',ass:'Não possui assessoria',horizonte:'Mais de 10 anos',gaps:'Patrimônio concentrado em conta corrente. Sem estrutura de investimentos.',ctx:'Cantor em ascensão com renda concentrada em shows e direitos autorais. Preocupado em transformar o sucesso atual em segurança de longo prazo.',alloc:{0:30,1:30,2:20,5:20}},
+    {nome:'Regina Castilho',pat:'R$ 3.800.000',prof:'Advogada',idade:'49',perfil:'Moderado',obj:'Sucessão patrimonial / família',ass:'XP Investimentos',horizonte:'5 a 10 anos',gaps:'Carteira 100% renda fixa. Sem planejamento sucessório.',ctx:'Sócia de escritório de advocacia. Dois filhos. Quer estruturar holding familiar.',alloc:{0:60,1:20,2:10,3:10}},
+    {nome:'Thiago Andrade',pat:'R$ 920.000',prof:'Engenheiro',idade:'36',perfil:'Arrojado',obj:'Crescimento patrimonial acelerado',ass:'BTG Pactual',horizonte:'Mais de 10 anos',gaps:'Concentrado em ações de única empresa (employer stock).',ctx:'CLT em multinacional. Recebeu opções de ações no IPO da empresa. Quer diversificar.',alloc:{0:10,4:60,5:15,6:15}},
+    {nome:'Márcia Fonseca',pat:'R$ 12.000.000',prof:'Médica',idade:'58',perfil:'Moderado',obj:'Renda passiva',ass:'Itaú Private',horizonte:'3 a 5 anos',gaps:'Alta exposição a imóveis físicos (70% do patrimônio). Baixa liquidez.',ctx:'Cardiologista. Planejando reduzir carga de trabalho em 3 anos. Quer renda mensal de R$ 50k.',alloc:{0:40,1:20,2:10,3:15,5:15}},
+
+    // ── Edge cases ──────────────────────────────────────────────────────
+    // Jovem rico — patrimônio alto, idade baixa
+    {nome:'Lucas Drummond',pat:'R$ 8.000.000',prof:'Influenciador digital',idade:'22',perfil:'Agressivo',obj:'Crescimento patrimonial acelerado',ass:'Não possui assessoria',horizonte:'Mais de 10 anos',gaps:'Nunca investiu. Tudo em conta corrente e imóvel. Sem noção de risco.',ctx:'Recebeu R$ 8M de venda de startup. Primeira experiência com patrimônio relevante.',alloc:{}},
+    // Aposentado conservador — patrimônio médio, horizonte curto
+    {nome:'José Almeida',pat:'R$ 650.000',prof:'Aposentado',idade:'68',perfil:'Conservador',obj:'Renda passiva',ass:'Bradesco',horizonte:'Até 2 anos',gaps:'CDB banco com rendimento abaixo do CDI. Sem diversificação.',ctx:'Aposentado há 3 anos. Depende dos investimentos para complementar a aposentadoria do INSS.',alloc:{0:80,1:20}},
+    // Patrimônio baixo — início de jornada
+    {nome:'Camila Souza',pat:'R$ 35.000',prof:'Designer',idade:'28',perfil:'Moderado',obj:'Crescimento patrimonial acelerado',ass:'Não possui assessoria',horizonte:'5 a 10 anos',gaps:'',ctx:'Começou a guardar dinheiro recentemente. Quer entender onde investir.',alloc:{}},
+    // Patrimônio altíssimo — family office
+    {nome:'Eduardo Saraiva',pat:'R$ 180.000.000',prof:'Empresário',idade:'61',perfil:'Moderado',obj:'Proteção e preservação',ass:'Family Office próprio',horizonte:'Mais de 10 anos',gaps:'Gestão fragmentada entre múltiplos bancos sem visão consolidada.',ctx:'Fundador de grupo industrial. Planejamento de saída e sucessão para os filhos.',alloc:{0:20,1:15,2:5,3:20,4:10,5:10,6:10,7:5,8:5}},
+    // Internacional — offshore
+    {nome:'Patricia Nunes',pat:'R$ 4.500.000',prof:'Executiva',idade:'44',perfil:'Arrojado',obj:'Investimentos internacionais / Offshore',ass:'XP Investimentos',horizonte:'Mais de 10 anos',gaps:'Zero exposição internacional. Alta concentração em Brasil.',ctx:'CFO de multinacional. Recebe parte do bônus em dólar. Quer proteção cambial.',alloc:{0:30,1:10,4:20,6:10,7:15,8:15}},
+    // Profissão incomum
+    {nome:'Rafael Matos',pat:'R$ 2.100.000',prof:'Jogador de futebol',idade:'31',perfil:'Arrojado',obj:'Proteção e preservação',ass:'Não possui assessoria',horizonte:'3 a 5 anos',gaps:'Renda irregular e com prazo definido. Sem reserva para pós-carreira.',ctx:'Atacante em clube da série A. Contrato até 2027. Sabe que precisa preservar capital para a aposentadoria.',alloc:{}},
+    // Médico pessoa jurídica
+    {nome:'Dra. Ana Paula Vieira',pat:'R$ 1.800.000',prof:'Médica',idade:'42',perfil:'Moderado',obj:'Crescimento patrimonial acelerado',ass:'Rico / XP',horizonte:'5 a 10 anos',gaps:'Investimentos misturados PF e PJ. Alta exposição a fundos do banco de relacionamento.',ctx:'Dermatologista com clínica própria. Fatura R$ 80k/mês via PJ. Quer estruturar separação patrimonial.',alloc:{0:35,1:20,2:10,3:20,4:15}},
+  ];
+
+  var ex = EXEMPLOS[Math.floor(Math.random() * EXEMPLOS.length)];
+
+  // Limpar erros e highlights anteriores
+  ['fNome','fPat','fProf','fIdade','fPerfil','fObj'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el){el.style.borderColor='';el.classList.remove('field-error');}
+  });
+  var errEl=document.getElementById('r2ValidationError');
+  if(errEl)errEl.style.display='none';
+  var r1Err=document.getElementById('r1ValidationError');
+  if(r1Err)r1Err.style.display='none';
+
+  document.getElementById('fNome').value = ex.nome;
+  document.getElementById('fPat').value  = ex.pat;
+  document.getElementById('fProf').value = ex.prof;
+  document.getElementById('fIdade').value= ex.idade;
+  document.getElementById('fPerfil').value= ex.perfil;
+  document.getElementById('fObj').value  = ex.obj;
+  document.getElementById('fAss').value  = ex.ass||'';
+  document.getElementById('fHorizonte').value = ex.horizonte||'';
+  document.getElementById('fGaps').value = ex.gaps||'';
+  document.getElementById('fCtx').value  = ex.ctx||'';
+  resetSliders();
+  if(ex.alloc && Object.keys(ex.alloc).length){
+    for(var i=0;i<9;i++){
+      var el=document.getElementById('asl_'+i);
+      if(el){el.value=ex.alloc[i]||0;el.disabled=false;}
+    }
+    updateSliders(-1);
   }
-  updateSliders(-1);
 }
 
 async function updateProposal() {
@@ -3947,7 +3992,7 @@ function pixShowToast(msg) {
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.12 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.13 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║
@@ -4945,7 +4990,7 @@ function captorConfirmCancel(){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║ CAPTOR — CHANGELOG                                   ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.12 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.13 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║

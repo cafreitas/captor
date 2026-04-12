@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.7.18</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.7.19</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -522,7 +522,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.18</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.19</div>
     </div>
   </div>
 </div>
@@ -562,7 +562,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.7.18</div>
+      <div class="hver" id="hverEl">v5.7.19</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -979,7 +979,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.18</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.19</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -4010,7 +4010,7 @@ function pixShowToast(msg) {
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.18 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.19 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║
@@ -4468,7 +4468,11 @@ async function generateR1(){
     +'"encerramento":{"objetivo":"...","proximo_passo":"..."}}\n\n'
     +'Gere 6 a 8 perguntas em categorias como: Situação atual, Objetivos, Experiência com investimentos, '
     +'Tolerância a risco, Preocupações / objeções, Horizonte e liquidez. '
-    +'As perguntas devem ser abertas, naturais e adaptadas ao perfil deste prospect específico.';
+    +'As perguntas devem ser abertas, naturais e adaptadas ao perfil deste prospect específico.\n\n'
+    +'INSTRUÇÃO PARA sinais_alerta: gere 3 a 4 sinais específicos para ESTE prospect — comportamentos ou respostas durante a reunião que indicam risco de não fechamento ou complicação na R2. '
+    +'Baseie-se no contexto, profissão, patrimônio e objetivo informados. '
+    +'Exemplos do que NÃO fazer: "cliente pode ter resistência a mudanças" (genérico demais). '
+    +'Exemplos do que fazer: "se mencionar que o contador gerencia os investimentos da PJ, há risco de interferência de terceiro na decisão" (específico ao contexto desta médica com PJ).';
 
   try{
     var resp=await fetch(PROXY_URL,{
@@ -5073,7 +5077,7 @@ function captorConfirmCancel(){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║ CAPTOR — CHANGELOG                                   ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.18 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.19 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║

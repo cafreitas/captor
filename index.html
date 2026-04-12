@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.7.16</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.7.17</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -145,7 +145,7 @@ header{height:54px;display:flex;align-items:center;justify-content:space-between
 .r1q-followup{margin-top:5px;font-size:.78rem;color:rgba(240,240,240,.8);line-height:1.5;padding-left:10px;border-left:2px solid var(--border)}
 /* Tooltip global */
 .captor-tip{position:relative;display:inline-flex;cursor:help}
-.captor-tip .tip-content{visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:7px 11px;font-size:.72rem;color:var(--text);line-height:1.55;white-space:normal;width:220px;z-index:200;transition:opacity .15s;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.captor-tip .tip-content{visibility:hidden;opacity:0;position:absolute;top:calc(100% + 6px);left:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:6px 10px;font-size:.71rem;color:var(--text);line-height:1.5;white-space:normal;width:200px;max-width:200px;z-index:200;transition:opacity .15s;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.3)}
 .captor-tip:hover .tip-content{visibility:visible;opacity:1}
 .captor-tip .tip-icon{font-size:.82rem;line-height:1}
 
@@ -522,7 +522,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.16</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.17</div>
     </div>
   </div>
 </div>
@@ -562,7 +562,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.7.16</div>
+      <div class="hver" id="hverEl">v5.7.17</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -979,7 +979,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.16</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.17</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -4010,7 +4010,7 @@ function pixShowToast(msg) {
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.16 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.17 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║
@@ -4521,12 +4521,12 @@ function renderR1Output(nome,patFmt,data){
     b1.body.innerHTML=data.perguntas.map(function(q,i){
       var motivoHtml=q.motivo
         ?'<div class="r1q-motivo">'
-          +'<span class="captor-tip"><span class="tip-icon">💡</span><span class="tip-content">Esta pergunta serve para: '+q.motivo+'</span></span>'
+          +'<span class="captor-tip"><span class="tip-icon">💡</span><span class="tip-content">O motivo desta pergunta: '+q.motivo+'</span></span>'
           +'<span style="color:rgba(240,240,240,.7);font-size:.75rem">'+q.motivo+'</span>'
           +'</div>'
         :'';
       var followupHtml=q.followup
-        ?'<div class="r1q-followup"><span style="font-size:.7rem;font-weight:700;color:var(--lime);text-transform:uppercase;letter-spacing:.04em">Se necessário: </span>'+q.followup+'</div>'
+        ?'<div class="r1q-followup"><span style="font-size:.7rem;font-weight:700;color:var(--lime);text-transform:uppercase;letter-spacing:.04em">Aprofunde: </span>'+q.followup+'</div>'
         :'';
       return '<div class="rotitem"><div class="rotnum">'+(i+1)+'</div><div class="rotcont">'
         +'<div style="font-size:.65rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">'+q.categoria+'</div>'
@@ -5067,7 +5067,7 @@ function captorConfirmCancel(){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║ CAPTOR — CHANGELOG                                   ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.16 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.17 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║

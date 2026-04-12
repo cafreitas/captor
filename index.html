@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.7.19</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.7.20</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -205,6 +205,22 @@ header{height:54px;display:flex;align-items:center;justify-content:space-between
 .ps-perdido_auto{background:rgba(239,68,68,.07);color:#f87171}
 .dash-link{background:transparent;border:1px solid var(--border);border-radius:5px;padding:3px 8px;color:var(--muted);font-size:.65rem;cursor:pointer;font-family:var(--f);transition:all .15s}
 .dash-link:hover{border-color:var(--lime);color:var(--lime)}
+/* Prospect table header */
+.pth{padding:7px 12px;text-align:left;font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;user-select:none;white-space:nowrap}
+.pth-sort{cursor:pointer;display:inline-flex;align-items:center;gap:4px;color:var(--dim);transition:color .15s}
+.pth-sort:hover{color:var(--text)}
+.pth-sort.active{color:var(--lime)}
+.pth-tri{font-size:.55rem;opacity:.5}
+.pth-sort.active .pth-tri{opacity:1}
+/* Nome search inline */
+.pth-search-wrap{position:relative;display:inline-block}
+.pth-search-input{background:var(--bg3);border:1px solid var(--lime);border-radius:4px;color:var(--text);font-family:var(--f);font-size:.72rem;padding:2px 6px;width:130px;outline:none}
+.pth-search-ac{position:absolute;top:100%;left:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);z-index:100;width:180px;max-height:160px;overflow-y:auto}
+.pth-search-ac div{padding:6px 10px;font-size:.75rem;color:var(--text);cursor:pointer}
+.pth-search-ac div:hover{background:var(--bg3)}
+/* Perfil/Status inline select */
+.pth-fsel{background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--muted);font-family:var(--f);font-size:.68rem;padding:2px 4px;cursor:pointer;outline:none;max-width:110px}
+.pth-fsel:focus,.pth-fsel:hover{border-color:var(--lime);color:var(--text)}
 .kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px;cursor:pointer;transition:border-color .18s}
 .kpi:hover{border-color:var(--lime)}
 .kpi.active{border-color:var(--lime);background:rgba(168,194,58,.06)}
@@ -522,7 +538,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.19</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.7.20</div>
     </div>
   </div>
 </div>
@@ -562,7 +578,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.7.19</div>
+      <div class="hver" id="hverEl">v5.7.20</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -757,21 +773,8 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
   <div id="prospectview" style="display:none;padding:24px 26px">
     <div class="dht">Prospects</div>
     <div class="dhs" id="prospectSubtitle">Carregando...</div>
-    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
-      <input class="fi" id="prospectSearch" placeholder="Buscar por nome..." oninput="filterProspects()" style="max-width:260px;margin-bottom:0">
-      <select class="fsel" id="prospectStatusFilter" onchange="filterProspects()" style="max-width:200px;margin-bottom:0">
-        <option value="">Todos os status</option>
-        <option value="prospect_criado">Criado</option>
-        <option value="r1_iniciada">R1 Iniciada</option>
-        <option value="r1_concluida">R1 Concluída</option>
-        <option value="resumo_enviado">Resumo Enviado</option>
-        <option value="r1_aprovada">R1 Aprovada</option>
-        <option value="r2_iniciada">R2 Iniciada</option>
-        <option value="negocio_fechado">Negócio Fechado</option>
-        <option value="perdido_user">Perdido</option>
-        <option value="perdido_auto">Perdido (auto)</option>
-      </select>
-      <button onclick="openNewProspectModal()" style="margin-left:auto;padding:7px 16px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer">+ Novo prospect</button>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+      <button onclick="openNewProspectModal()" style="padding:7px 16px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer">+ Novo prospect</button>
     </div>
     <div class="block">
       <div class="blkhd" style="cursor:default">
@@ -781,13 +784,63 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="prospectTableWrap" style="overflow-x:auto">
         <table style="width:100%;border-collapse:collapse;font-size:.78rem">
           <thead>
-            <tr style="border-bottom:1px solid var(--border)">
-              <th style="padding:8px 12px;text-align:left;color:var(--dim);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em">Nome</th>
-              <th style="padding:8px 12px;text-align:left;color:var(--dim);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em">Perfil</th>
-              <th style="padding:8px 12px;text-align:left;color:var(--dim);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em">Patrimônio</th>
-              <th style="padding:8px 12px;text-align:left;color:var(--dim);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em">Status</th>
-              <th style="padding:8px 12px;text-align:left;color:var(--dim);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em">Criado em</th>
-              <th style="padding:8px 12px;text-align:left;color:var(--dim);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em">Ações</th>
+            <tr style="border-bottom:2px solid var(--border)">
+              <!-- Nome: busca + sort -->
+              <th class="pth">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <span class="pth-sort active" id="pthNome" onclick="prospectSort('nome')" data-dir="asc">
+                    Nome <span class="pth-tri" id="triNome">▲</span>
+                  </span>
+                  <div class="pth-search-wrap">
+                    <input class="pth-search-input" id="pthNomeSearch" placeholder="Buscar..." oninput="onProspectNomeSearch(this.value)" autocomplete="off">
+                    <div class="pth-search-ac" id="pthNomeAc" style="display:none"></div>
+                  </div>
+                </div>
+              </th>
+              <!-- Perfil: filtro dropdown -->
+              <th class="pth">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <span style="color:var(--dim)">Perfil</span>
+                  <select class="pth-fsel" id="pthPerfilFilter" onchange="applyProspectFilters()">
+                    <option value="">Todos</option>
+                    <option>Conservador</option>
+                    <option>Moderado</option>
+                    <option>Arrojado</option>
+                    <option>Agressivo</option>
+                  </select>
+                </div>
+              </th>
+              <!-- Patrimônio: sort -->
+              <th class="pth">
+                <span class="pth-sort" id="pthPat" onclick="prospectSort('patrimonio')" data-dir="desc">
+                  Patrimônio <span class="pth-tri" id="triPat">▼</span>
+                </span>
+              </th>
+              <!-- Status: filtro dropdown -->
+              <th class="pth">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <span style="color:var(--dim)">Status</span>
+                  <select class="pth-fsel" id="pthStatusFilter" onchange="applyProspectFilters()">
+                    <option value="">Todos</option>
+                    <option value="prospect_criado">Criado</option>
+                    <option value="r1_iniciada">R1 Iniciada</option>
+                    <option value="r1_concluida">R1 Concluída</option>
+                    <option value="resumo_enviado">Resumo Enviado</option>
+                    <option value="r1_aprovada">R1 Aprovada</option>
+                    <option value="r2_iniciada">R2 Iniciada</option>
+                    <option value="negocio_fechado">Fechado</option>
+                    <option value="perdido_user">Perdido</option>
+                    <option value="perdido_auto">Perdido (auto)</option>
+                  </select>
+                </div>
+              </th>
+              <!-- Criado em: sort -->
+              <th class="pth">
+                <span class="pth-sort" id="pthData" onclick="prospectSort('data')" data-dir="desc">
+                  Criado em <span class="pth-tri" id="triData">▼</span>
+                </span>
+              </th>
+              <th class="pth" style="color:var(--dim)">Ações</th>
             </tr>
           </thead>
           <tbody id="prospectTableBody">
@@ -979,7 +1032,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.19</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.7.20</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -4010,7 +4063,7 @@ function pixShowToast(msg) {
      ║        Confirmação de logout ao clicar no nome       ║
      ║        favicon.ico com múltiplas resoluções (16-256) ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.19 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.20 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║
@@ -4906,8 +4959,9 @@ async function loadProspects(){
     .order('created_at',{ascending:false});
   if(error){if(sub)sub.textContent='Erro ao carregar.';return;}
   var rows=data||[];
+  allProspects=rows;
   if(sub)sub.textContent=rows.length+' prospect'+(rows.length!==1?'s':'');
-  renderProspectTable(rows);
+  applyProspectFilters();
 }
 
 function renderProspectTable(rows){
@@ -4938,16 +4992,93 @@ function renderProspectTable(rows){
   }).join('');
 }
 
-function filterProspects(){
-  var q=(document.getElementById('prospectSearch').value||'').toLowerCase();
-  var st=document.getElementById('prospectStatusFilter').value;
+// ── PROSPECT TABLE SORT / FILTER ─────────────────────────────────────────────
+var prospectSortCol='nome';
+var prospectSortDir={nome:'asc',patrimonio:'desc',data:'desc'};
+
+function prospectSort(col){
+  // Toggle dir se mesma coluna, senão manter última dir usada
+  if(prospectSortCol===col){
+    prospectSortDir[col]=prospectSortDir[col]==='asc'?'desc':'asc';
+  }
+  prospectSortCol=col;
+  // Atualizar ícones
+  ['nome','patrimonio','data'].forEach(function(c){
+    var el=document.getElementById('pth'+c.charAt(0).toUpperCase()+c.slice(1));
+    var tri=document.getElementById('tri'+c.charAt(0).toUpperCase()+c.slice(1));
+    if(!el)return;
+    var isActive=c===col;
+    el.classList.toggle('active',isActive);
+    if(tri)tri.textContent=prospectSortDir[c]==='asc'?'▲':'▼';
+  });
+  // Fix: triNome key
+  var triNome=document.getElementById('triNome');
+  if(triNome)triNome.textContent=prospectSortDir['nome']==='asc'?'▲':'▼';
+  applyProspectFilters();
+}
+
+function onProspectNomeSearch(val){
+  var ac=document.getElementById('pthNomeAc');
+  if(!ac)return;
+  if(!val.trim()){ac.style.display='none';applyProspectFilters();return;}
+  var q=val.toLowerCase();
+  var matches=allProspects.filter(function(p){return p.nome.toLowerCase().includes(q);}).slice(0,8);
+  if(!matches.length){ac.style.display='none';applyProspectFilters();return;}
+  ac.innerHTML=matches.map(function(p){
+    return '<div onclick="selectProspectNomeSearch(\''+p.nome.replace(/'/g,"\\'")+'\')">'
+      +p.nome.replace(new RegExp('('+val.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<strong>$1</strong>')
+      +'</div>';
+  }).join('');
+  ac.style.display='block';
+  applyProspectFilters();
+}
+
+function selectProspectNomeSearch(nome){
+  var inp=document.getElementById('pthNomeSearch');
+  if(inp)inp.value=nome;
+  var ac=document.getElementById('pthNomeAc');
+  if(ac)ac.style.display='none';
+  applyProspectFilters();
+}
+
+// Fechar autocomplete ao clicar fora
+document.addEventListener('click',function(e){
+  var ac=document.getElementById('pthNomeAc');
+  if(ac&&!ac.contains(e.target)&&e.target.id!=='pthNomeSearch')ac.style.display='none';
+});
+
+function applyProspectFilters(){
+  var q=(document.getElementById('pthNomeSearch')&&document.getElementById('pthNomeSearch').value||'').toLowerCase();
+  var perfil=(document.getElementById('pthPerfilFilter')&&document.getElementById('pthPerfilFilter').value)||'';
+  var st=(document.getElementById('pthStatusFilter')&&document.getElementById('pthStatusFilter').value)||'';
+
   var filtered=allProspects.filter(function(p){
     var matchQ=!q||p.nome.toLowerCase().includes(q);
+    var matchP=!perfil||p.perfil_risco===perfil;
     var matchS=!st||p.status===st;
-    return matchQ&&matchS;
+    return matchQ&&matchP&&matchS;
   });
+
+  // Sort
+  filtered=filtered.slice().sort(function(a,b){
+    var dir=prospectSortDir[prospectSortCol]==='asc'?1:-1;
+    if(prospectSortCol==='nome'){
+      return dir*a.nome.localeCompare(b.nome,'pt-BR');
+    }
+    if(prospectSortCol==='patrimonio'){
+      return dir*((a.patrimonio_estimado||0)-(b.patrimonio_estimado||0));
+    }
+    if(prospectSortCol==='data'){
+      return dir*(new Date(a.created_at)-new Date(b.created_at));
+    }
+    return 0;
+  });
+
   renderProspectTable(filtered);
 }
+
+// Alias para compatibilidade com código existente
+function filterProspects(){ applyProspectFilters(); }
 
 function loadProspectIntoSidebar(id){
   // Navegar para tab Gerador e carregar prospect
@@ -5077,7 +5208,7 @@ function captorConfirmCancel(){
 <!-- ╔══════════════════════════════════════════════════════╗
      ║ CAPTOR — CHANGELOG                                   ║
      ╠══════════════════════════════════════════════════════╣
-     ║ v5.7.19 — Captor Teams: Signup + Convite             ║
+     ║ v5.7.20 — Captor Teams: Signup + Convite             ║
      ║        Aba "Conta Empresarial" no login              ║
      ║        Criação de empresa + slug com validação         ║
      ║        Banner de convite na URL (?invite=TOKEN)      ║

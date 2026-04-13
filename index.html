@@ -4531,7 +4531,7 @@ async function generateR1(){
     var resp=await fetch(PROXY_URL,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:prompt}]})
     });
     var rd=await resp.json();
     var txt=(rd.content&&rd.content[0]&&rd.content[0].text)||'';

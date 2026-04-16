@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.8.1</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.8.2</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -538,7 +538,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.8.1</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.8.2</div>
     </div>
   </div>
 </div>
@@ -578,7 +578,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.8.1</div>
+      <div class="hver" id="hverEl">v5.8.2</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -1034,7 +1034,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.8.1</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.8.2</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -1071,18 +1071,42 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 
       <!-- Step 0: Upload Apresentação -->
       <div class="modal-body" id="mStep0">
-        <div class="upload-zone" id="uploadZone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-          <input type="file" id="fileInput" accept=".pdf,.pptx" onchange="handleFileSelect(event)">
-          <div class="upload-icon">📊</div>
-          <div class="upload-title">Arraste ou clique para importar</div>
-          <div class="upload-sub">Apresentação institucional em PDF ou PPTX · Máx. 20MB</div>
+        <!-- Tabs -->
+        <div style="display:flex;gap:0;margin-bottom:16px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+          <button type="button" id="tab0Upload" onclick="step0Tab('upload')" style="flex:1;padding:9px;font-size:.78rem;font-weight:600;background:var(--lime);color:#1a1a1a;border:none;cursor:pointer">📊 Upload PDF / PPTX</button>
+          <button type="button" id="tab0Site" onclick="step0Tab('site')" style="flex:1;padding:9px;font-size:.78rem;font-weight:600;background:var(--bg3);color:var(--muted);border:none;cursor:pointer">🌐 Via site da empresa</button>
         </div>
-        <div id="fileInfo" style="display:none"></div>
-        <div id="extractResult" style="display:none"></div>
-        <button class="extract-btn" id="extractBtn" style="display:none" onclick="extractFromFile()">
-          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg>
-          Extrair dados com IA
-        </button>
+
+        <!-- Painel Upload -->
+        <div id="panel0Upload">
+          <div class="upload-zone" id="uploadZone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+            <input type="file" id="fileInput" accept=".pdf,.pptx" onchange="handleFileSelect(event)">
+            <div class="upload-icon">📊</div>
+            <div class="upload-title">Arraste ou clique para importar</div>
+            <div class="upload-sub">Apresentação institucional em PDF ou PPTX · Máx. 20MB</div>
+          </div>
+          <div id="fileInfo" style="display:none"></div>
+          <div id="extractResult" style="display:none"></div>
+          <button class="extract-btn" id="extractBtn" style="display:none" onclick="extractFromFile()">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg>
+            Extrair dados com IA
+          </button>
+        </div>
+
+        <!-- Painel Site -->
+        <div id="panel0Site" style="display:none">
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.5">A IA vai acessar o site, extrair as informações disponíveis e preencher o perfil. Você revisa e completa o que faltar.</div>
+          <div class="fg">
+            <label class="fl">URL do site da empresa</label>
+            <input class="fi" id="siteUrl" placeholder="Ex: https://edro.com.br" type="url">
+          </div>
+          <div id="siteExtractResult" style="display:none;margin-top:10px"></div>
+          <button class="extract-btn" id="siteExtractBtn" onclick="extractFromSite()" style="margin-top:12px;width:100%">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg>
+            Extrair dados com IA
+          </button>
+        </div>
+
         <span class="skip-link" onclick="empresaGoToStep(1)">Pular esta etapa → preencher manualmente</span>
       </div>
 
@@ -1935,6 +1959,94 @@ function removeFile(){
   document.getElementById('fileInput').value='';
 }
 
+// ── STEP 0 TABS ──
+function step0Tab(tab){
+  var isUpload=tab==='upload';
+  document.getElementById('panel0Upload').style.display=isUpload?'':'none';
+  document.getElementById('panel0Site').style.display=isUpload?'none':'';
+  document.getElementById('tab0Upload').style.background=isUpload?'var(--lime)':'var(--bg3)';
+  document.getElementById('tab0Upload').style.color=isUpload?'#1a1a1a':'var(--muted)';
+  document.getElementById('tab0Site').style.background=isUpload?'var(--bg3)':'var(--lime)';
+  document.getElementById('tab0Site').style.color=isUpload?'var(--muted)':'#1a1a1a';
+}
+
+// ── EXTRACT FROM SITE ──
+async function extractFromSite(){
+  var url=document.getElementById('siteUrl').value.trim();
+  if(!url){showToast('Informe a URL do site.','error');return;}
+  if(!/^https?:\/\//i.test(url)){url='https://'+url;document.getElementById('siteUrl').value=url;}
+  var btn=document.getElementById('siteExtractBtn');
+  var res=document.getElementById('siteExtractResult');
+  btn.disabled=true;
+  btn.innerHTML='<span style="opacity:.7">Acessando site...</span>';
+  res.style.display='none';
+  try{
+    // 1. Fetch HTML via Edge Function
+    var scrapeResp=await fetch(SUPABASE_URL+'/functions/v1/scrape-site',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+      body:JSON.stringify({url:url})
+    });
+    var scrapeData=await scrapeResp.json();
+    if(!scrapeResp.ok||scrapeData.error)throw new Error(scrapeData.error||'Erro ao acessar o site');
+    var html=scrapeData.text;
+    if(!html||html.trim().length<100)throw new Error('O site não retornou conteúdo suficiente para extração.');
+
+    // 2. Extract via AI
+    btn.innerHTML='<span style="opacity:.7">Analisando com IA...</span>';
+    var aiResp=await fetch(PROXY_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1400,
+        messages:[{
+          role:'user',
+          content:'Você é um assistente especializado em extrair informações institucionais de sites de empresas de assessoria de investimentos.\n\nAnalise o conteúdo abaixo extraído do site '+url+' e extraia todas as informações disponíveis.\n\nCONTEÚDO DO SITE:\n'+html.substring(0,10000)+'\n\nResponda SOMENTE com JSON válido, sem markdown:\n{"empresa_nome":"","empresa_credenciadora":"","empresa_segmento":"","empresa_anos":"","empresa_aum":"","empresa_clientes":"","empresa_diferenciais":"","empresa_premios":"","assessores_numero":"","assessores_certificacoes":"","redes_sociais":{"linkedin":"","instagram":""},"produtos_investimento":"","produtos_servicos":"","produtos_premium":"","expertise":"","brand_color_hex":""}\n\nRegras:\n- empresa_aum: patrimônio sob custódia (ex: "R$ 12 bilhões")\n- empresa_anos: tempo de mercado (ex: "8 anos")\n- brand_color_hex: cor destaque principal da marca em hex se identificável no texto\n- assessores_numero: número de assessores ou profissionais da equipe\n- assessores_certificacoes: certificações mencionadas (ex: "CEA, CFP, CGA")\n- redes_sociais: URLs de LinkedIn e Instagram se mencionadas\n- produtos_investimento: produtos de investimento mencionados\n- produtos_servicos: outros serviços (câmbio, crédito, seguros etc)\n- produtos_premium: produtos exclusivos (Family Office, Offshore, Wealth Planning, M&A etc)\n- empresa_diferenciais: principais diferenciais em 2-4 frases\n- Deixe "" nos campos não encontrados'
+        }]
+      })
+    });
+    if(!aiResp.ok)throw new Error('Erro na API de IA: '+aiResp.status);
+    var aiData=await aiResp.json();
+    var rawText=aiData.content&&aiData.content[0]&&aiData.content[0].text?aiData.content[0].text:'';
+    var clean=rawText.replace(/```json|```/g,'').trim();
+    var extracted=JSON.parse(clean);
+
+    // 3. Fill form fields
+    var f=function(id,val){var el=document.getElementById(id);if(el&&val)el.value=val;};
+    f('eNome',extracted.empresa_nome);
+    f('eCred',extracted.empresa_credenciadora);
+    f('eSeg',extracted.empresa_segmento);
+    f('eAnos',extracted.empresa_anos);
+    if(extracted.empresa_aum){var aumEl=document.getElementById('eAum');if(aumEl)aumEl.value=extracted.empresa_aum;}
+    f('eClientes',extracted.empresa_clientes);
+    f('eDiferenciais',extracted.empresa_diferenciais);
+    f('ePremios',extracted.empresa_premios);
+    f('eAssessoresNum',extracted.assessores_numero);
+    f('eAssessoresCert',extracted.assessores_certificacoes);
+    if(extracted.redes_sociais){f('eLinkedin',extracted.redes_sociais.linkedin);f('eInstagram',extracted.redes_sociais.instagram);}
+    f('eProdInvest',extracted.produtos_investimento);
+    f('eProdServ',extracted.produtos_servicos);
+    f('eProdPremium',extracted.produtos_premium);
+    f('eExpertise',extracted.expertise);
+    if(extracted.brand_color_hex&&extracted.brand_color_hex.match(/^#[0-9a-fA-F]{6}$/)){
+      extractedColors=[extracted.brand_color_hex];
+    }
+    var fieldsFound=Object.keys(extracted).filter(function(k){return k!=='brand_color_hex'&&k!=='redes_sociais'&&extracted[k]&&extracted[k].trim&&extracted[k].trim();});
+    res.style.display='block';
+    res.innerHTML='<div class="extract-result"><div class="extract-ok">✓ '+fieldsFound.length+' campos extraídos. Revise e complete o que faltar.</div></div>';
+    btn.disabled=false;
+    btn.innerHTML='Confirmar e revisar campos →';
+    btn.onclick=function(){empresaGoToStep(1);};
+  }catch(e){
+    res.style.display='block';
+    res.innerHTML='<div class="extract-result"><div style="color:#f08080;font-size:.78rem">Erro: '+e.message+'</div></div>';
+    btn.disabled=false;
+    btn.innerHTML='<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg> Extrair dados com IA';
+    btn.onclick=extractFromSite;
+  }
+}
+
 // ── FILE TO BASE64 ──
 async function fileToBase64(file){
   return new Promise(function(resolve){
@@ -1993,7 +2105,7 @@ async function extractFromFile(){
           role:'user',
           content:[
             {type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},
-            {type:'text',text:'Você é um assistente especializado em extrair informações institucionais de apresentações corporativas.\n\nAnalise esta apresentação institucional de uma empresa de assessoria de investimentos e extraia todas as informações disponíveis.\n\nResponda SOMENTE com JSON válido, sem markdown, sem texto antes ou depois:\n{"empresa_nome":"","empresa_credenciadora":"","empresa_segmento":"","empresa_anos":"","empresa_aum":"","empresa_clientes":"","empresa_diferenciais":"","empresa_premios":"","assessores_numero":"","assessores_certificacoes":"","redes_sociais":{"linkedin":"","instagram":""},"produtos_investimento":"","produtos_servicos":"","produtos_premium":"","expertise":"","brand_color_hex":""}\n\nRegras:\n- empresa_aum: patrimônio sob custódia (ex: "R$ 12 bilhões")\n- empresa_anos: tempo de mercado (ex: "8 anos")\n- brand_color_hex: cor destaque principal da marca em hex (ex: "#8cb800")\n- assessores_numero: número de assessores ou profissionais da equipe\n- assessores_certificacoes: certificações mencionadas (ex: "CEA, CFP, CGA")\n- redes_sociais: URLs de LinkedIn e Instagram se mencionadas\n- produtos_investimento: produtos de investimento mencionados\n- produtos_servicos: outros serviços (câmbio, crédito, seguros etc)\n- produtos_premium: produtos exclusivos (Family Office, Offshore, Wealth Planning, M&A etc)\n- empresa_diferenciais: principais diferenciais em 2-4 frases\n- Deixe "" nos campos não encontrados'}
+            {type:'text',text:'Você é um assistente especializado em extrair informações institucionais de apresentações corporativas.\n\nAnalise esta apresentação institucional de uma empresa de assessoria de investimentos e extraia todas as informações disponíveis.\n\nResponda SOMENTE com JSON válido, sem markdown, sem texto antes ou depois:\n{"empresa_nome":"","empresa_credenciadora":"","empresa_segmento":"","empresa_anos":"","empresa_aum":"","empresa_clientes":"","empresa_diferenciais":"","empresa_premios":"","produtos_investimento":"","produtos_servicos":"","produtos_premium":"","expertise":"","brand_color_hex":""}\n\nRegras:\n- empresa_aum: patrimônio sob custódia (ex: "R$ 12 bilhões")\n- empresa_anos: tempo de mercado (ex: "8 anos")\n- brand_color_hex: cor destaque principal da marca em hex (ex: "#8cb800")\n- produtos_investimento: produtos de investimento mencionados\n- produtos_servicos: outros serviços (câmbio, crédito, seguros etc)\n- produtos_premium: produtos exclusivos (Family Office, Offshore, Wealth Planning, M&A etc)\n- empresa_diferenciais: principais diferenciais em 2-4 frases\n- Deixe "" nos campos não encontrados'}
           ]
         }]
       };
@@ -2006,7 +2118,7 @@ async function extractFromFile(){
         max_tokens:1400,
         messages:[{
           role:'user',
-          content:'Você é um assistente especializado em extrair informações institucionais de apresentações corporativas.\n\nAnalise o conteúdo abaixo extraído de uma apresentação PPTX e extraia as informações disponíveis.\n\nCONTEÚDO:\n'+text.substring(0,6000)+'\n\nResponda SOMENTE com JSON válido, sem markdown:\n{"empresa_nome":"","empresa_credenciadora":"","empresa_segmento":"","empresa_anos":"","empresa_aum":"","empresa_clientes":"","empresa_diferenciais":"","empresa_premios":"","assessores_numero":"","assessores_certificacoes":"","redes_sociais":{"linkedin":"","instagram":""},"produtos_investimento":"","produtos_servicos":"","produtos_premium":"","expertise":"","brand_color_hex":""}\n\nRegras:\n- empresa_aum: patrimônio sob custódia (ex: "R$ 12 bilhões")\n- empresa_anos: tempo de mercado (ex: "8 anos")\n- brand_color_hex: cor destaque principal da marca em hex se mencionada\n- assessores_numero: número de assessores ou profissionais da equipe\n- assessores_certificacoes: certificações mencionadas (ex: "CEA, CFP, CGA")\n- redes_sociais: URLs de LinkedIn e Instagram se mencionadas\n- Deixe "" nos campos não encontrados'
+          content:'Você é um assistente especializado em extrair informações institucionais de apresentações corporativas.\n\nAnalise o conteúdo abaixo extraído de uma apresentação PPTX e extraia as informações disponíveis.\n\nCONTEÚDO:\n'+text.substring(0,6000)+'\n\nResponda SOMENTE com JSON válido, sem markdown:\n{"empresa_nome":"","empresa_credenciadora":"","empresa_segmento":"","empresa_anos":"","empresa_aum":"","empresa_clientes":"","empresa_diferenciais":"","empresa_premios":"","produtos_investimento":"","produtos_servicos":"","produtos_premium":"","expertise":"","brand_color_hex":""}\n\nRegras:\n- empresa_aum: patrimônio sob custódia (ex: "R$ 12 bilhões")\n- empresa_anos: tempo de mercado (ex: "8 anos")\n- brand_color_hex: cor destaque principal da marca em hex se mencionada\n- Deixe "" nos campos não encontrados'
         }]
       };
     }
@@ -2182,9 +2294,6 @@ function openEmpresaModal(startStep){
     f('eClientes',empresaData.empresa_clientes);
     f('eDiferenciais',empresaData.empresa_diferenciais);
     f('ePremios',empresaData.empresa_premios);
-    f('eAssessoresNum',empresaData.assessores_numero);
-    f('eAssessoresCert',empresaData.assessores_certificacoes);
-    if(empresaData.redes_sociais){f('eLinkedin',empresaData.redes_sociais.linkedin);f('eInstagram',empresaData.redes_sociais.instagram);}
     f('eProdInvest',empresaData.produtos_investimento);
     f('eProdServ',empresaData.produtos_servicos);
     f('eProdPremium',empresaData.produtos_premium);
@@ -2274,9 +2383,6 @@ async function empresaStepNext(){
     empresa_clientes:document.getElementById('eClientes').value.trim(),
     empresa_diferenciais:document.getElementById('eDiferenciais').value.trim(),
     empresa_premios:document.getElementById('ePremios').value.trim(),
-    assessores_numero:document.getElementById('eAssessoresNum').value.trim(),
-    assessores_certificacoes:document.getElementById('eAssessoresCert').value.trim(),
-    redes_sociais:{linkedin:document.getElementById('eLinkedin').value.trim(),instagram:document.getElementById('eInstagram').value.trim()},
     produtos_investimento:document.getElementById('eProdInvest').value.trim(),
     produtos_servicos:document.getElementById('eProdServ').value.trim(),
     produtos_premium:document.getElementById('eProdPremium').value.trim(),
@@ -2318,9 +2424,6 @@ function buildEmpresaPrompt(){
   if(e.empresa_clientes)txt+='Clientes: '+e.empresa_clientes+'\n';
   if(e.empresa_diferenciais)txt+='Diferenciais: '+e.empresa_diferenciais+'\n';
   if(e.empresa_premios)txt+='Prêmios: '+e.empresa_premios+'\n';
-  if(e.assessores_numero)txt+='Nº de assessores: '+e.assessores_numero+'\n';
-  if(e.assessores_certificacoes)txt+='Certificações da equipe: '+e.assessores_certificacoes+'\n';
-  if(e.redes_sociais&&e.redes_sociais.linkedin)txt+='LinkedIn: '+e.redes_sociais.linkedin+'\n';
   if(e.produtos_investimento)txt+='Produtos de investimento: '+e.produtos_investimento+'\n';
   if(e.produtos_servicos)txt+='Serviços: '+e.produtos_servicos+'\n';
   if(e.produtos_premium)txt+='Produtos premium: '+e.produtos_premium+'\n';
@@ -5165,12 +5268,16 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
+v5.8.2 — 2026-04-16
+- Edge Function scrape-site: busca HTML de sites externos (bypassa CORS)
+- Step 0: tab "Via site da empresa" funcional — extrai dados com IA e preenche Step 1
+- Corrigido: scrapeData.html → scrapeData.text na extractFromSite
+
 v5.8.1 — 2026-04-16
-- Novos campos no perfil da empresa: Nº de assessores, Certificações da equipe, LinkedIn, Instagram
-- SQL: colunas assessores_numero, assessores_certificacoes, redes_sociais(jsonb) em company_profiles
-- Step 1 (Identidade): bloco "Equipe" + bloco "Redes sociais" adicionados ao formulário
-- Funções save, load e buildEmpresaPrompt atualizadas com novos campos
-- Prompts de extração PDF e PPTX atualizados para capturar novos campos
+- Novos campos no perfil: Nº de assessores, Certificações da equipe, LinkedIn, Instagram
+- SQL: colunas assessores_numero, assessores_certificacoes, redes_sociais(jsonb)
+- Step 1: bloco "Equipe" e "Redes sociais" no formulário
+- Save, load, buildEmpresaPrompt e prompts de extração PDF/PPTX atualizados
 -->
 </body>
 </html>

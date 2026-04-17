@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.11.0</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.11.1</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -95,13 +95,13 @@ header{height:54px;display:flex;align-items:center;justify-content:space-between
 .content{padding:24px 26px;overflow-y:auto;background:var(--bg)}
 
 /* EMPTY */
-.empty{height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center}
+.empty{min-height:180px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center}
 .emicon{width:66px;height:66px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--dim)}
 .emtit{font-size:.95rem;font-weight:700;color:var(--dim)}
 .emdesc{font-size:.75rem;color:var(--dim);max-width:240px;line-height:1.6}
 
 /* LOADING */
-.ldwrap{height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.ldwrap{min-height:180px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
 .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--lime);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .ldlabel{font-size:.8rem;color:var(--muted);font-weight:500}
@@ -579,7 +579,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.11.0</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.11.1</div>
     </div>
   </div>
 </div>
@@ -619,7 +619,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.11.0</div>
+      <div class="hver" id="hverEl">v5.11.1</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -1122,7 +1122,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.11.0</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.11.1</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -2756,6 +2756,8 @@ async function generate(){
       window._lastOutput=parsed;
       renderOutput(nome,patFmt,parsed,window._lastMeta);
       document.getElementById('btnGen').disabled=false;
+      var out=document.getElementById('outArea');
+      if(out)setTimeout(function(){out.scrollIntoView({behavior:'smooth',block:'start'});},100);
     },300);
   }catch(e){
     clearInterval(iv);
@@ -4858,6 +4860,11 @@ async function generateR1(){
     document.getElementById('confirmR1Wrap').style.display='flex';
     var p=AppState.prospects.currentId?AppState.prospects.all.find(function(x){return x.id===AppState.prospects.currentId;}):null;
     syncToggleR1(p?p.status:null);
+    // Scroll para mostrar resultado
+    setTimeout(function(){
+      var out=document.getElementById('outArea');
+      if(out)out.scrollIntoView({behavior:'smooth',block:'start'});
+    },150);
     // Salvar roteiro no prospect
     if(AppState.prospects.currentId){
       await sb.from('prospects').update({roteiro_r1:r1data}).eq('id',AppState.prospects.currentId);
@@ -5975,11 +5982,15 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
+v5.11.1 — 2026-04-17
+- Fix: loading spinner visível (height:100% → min-height:180px em ldwrap e empty)
+- Fix: scroll automático para outArea após R1 e R2 gerados
+
 v5.11.0 — 2026-04-17
 - Tab "Dashboard" renomeada para "Propostas"
-- Pipeline visual de funil: 7 estágios com barras proporcionais + taxa de conversão entre estágios
+- Pipeline visual de funil: 7 estágios com barras proporcionais + taxa de conversão
 - Pipeline clicável — filtra tabela pelo estágio
-- PJ: busca propostas de todos os assessores da empresa; coluna "Assessor" na tabela
+- PJ: busca propostas de todos os assessores; coluna "Assessor" na tabela
 - PJ: ranking de assessores (enviadas, aceitas, conversão)
 - PJ: título da tela inclui nome da empresa
 

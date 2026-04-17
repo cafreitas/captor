@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.9.1</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.9.2</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -547,7 +547,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.9.1</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.9.2</div>
     </div>
   </div>
 </div>
@@ -587,7 +587,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.9.1</div>
+      <div class="hver" id="hverEl">v5.9.2</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -1043,7 +1043,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.9.1</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.9.2</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -2479,17 +2479,24 @@ async function generate(){
   var ass=vd.ass;
   var gaps=vd.gaps;
   var ctx=vd.ctx;
-  var currentAlloc=getSliderAlloc();
+  // Usa sliders da Anotações R1 se disponíveis (alocação confirmada na reunião), senão sidebar
+  var currentAlloc=(function(){
+    var r1sl=document.getElementById('r1_sl_0');
+    if(r1sl){
+      var a={};
+      for(var i=0;i<9;i++){var s=document.getElementById('r1_sl_'+i);if(s&&parseInt(s.value))a[i]=parseInt(s.value);}
+      return Object.keys(a).length?a:getSliderAlloc();
+    }
+    return getSliderAlloc();
+  })();
   if(!nome||!pat||!prof||!idade||!perfil||!obj){
-    // Highlight campos vazios — val_* se bloco existe, fallback sidebar
-    var inVal=!!document.getElementById('val_nome');
+    var inVal=!!document.getElementById('r1_perfil_confirmado');
     var fields=[
-      {id:inVal?'val_nome':'fNome',val:nome,label:'Nome'},
-      {id:inVal?'val_pat':'fPat',val:pat,label:'Patrimônio'},
-      {id:inVal?'val_prof':'fProf',val:prof,label:'Profissão'},
-      {id:inVal?'val_idade':'fIdade',val:idade,label:'Idade'},
-      {id:inVal?'val_perfil':'fPerfil',val:perfil,label:'Perfil de risco'},
-      {id:inVal?'val_obj':'fObj',val:obj,label:'Objetivo'}
+      {id:inVal?'r1_prof':'fProf',val:prof,label:'Profissão'},
+      {id:inVal?'r1_pat_confirmado':'fPat',val:pat,label:'Patrimônio'},
+      {id:inVal?'r1_idade':'fIdade',val:idade,label:'Idade'},
+      {id:inVal?'r1_perfil_confirmado':'fPerfil',val:perfil,label:'Perfil de risco'},
+      {id:inVal?'r1_obj':'fObj',val:obj,label:'Objetivo'}
     ];
     var missing=[];
     fields.forEach(function(f){
@@ -2501,7 +2508,6 @@ async function generate(){
         if(el){el.style.borderColor='';el.classList.remove('field-error');}
       }
     });
-    // Erro inline igual ao R1
     var r2ErrEl=document.getElementById('r2ValidationError');
     if(!r2ErrEl){
       r2ErrEl=document.createElement('div');
@@ -2509,7 +2515,7 @@ async function generate(){
       r2ErrEl.className='captor-inline-error';
       document.getElementById('btnGen').parentNode.appendChild(r2ErrEl);
     }
-    r2ErrEl.textContent='Preencha na Validação: '+missing.join(', ')+'.';
+    r2ErrEl.textContent='Preencha nas Anotações R1: '+missing.join(', ')+'.';
     r2ErrEl.style.display='block';
     if(inVal){
       var bv=document.getElementById('validacaoBloco');
@@ -2522,7 +2528,7 @@ async function generate(){
     return;
   }
   // Limpa highlights e erros inline
-  ['val_nome','val_pat','val_prof','val_idade','val_perfil','val_obj','fNome','fPat','fProf','fIdade','fPerfil','fObj'].forEach(function(id){
+  ['r1_prof','r1_pat_confirmado','r1_idade','r1_perfil_confirmado','r1_obj','fNome','fPat','fProf','fIdade','fPerfil','fObj'].forEach(function(id){
     var el=document.getElementById(id);
     if(el){el.style.borderColor='';el.classList.remove('field-error');}
   });
@@ -4698,10 +4704,12 @@ function renderR1Output(nome,patFmt,data){
   }
 
   // Bloco de Anotações da R1
-  var bAnot=mkBlock('📝','Anotações da R1',true);
+  var bAnot=mkBlock('📝','Anotações R1',true);
+  bAnot.el.id='validacaoBloco';
   var perguntasParaAnot=data.perguntas||[];
   bAnot.body.innerHTML=buildAnotacoesR1HTML(perguntasParaAnot);
   area.appendChild(bAnot.el);
+  setTimeout(function(){preencheValidacao();},80);
   // Auto-save ao digitar
   setTimeout(function(){
     bAnot.body.querySelectorAll('input,textarea,select').forEach(function(el){
@@ -4723,13 +4731,6 @@ function renderR1Output(nome,patFmt,data){
     });
   },100);
 
-  // Validação — perfil confirmado pós-R1 (usado para gerar R2)
-  var bVal=mkBlock('✅','Validação',false);
-  bVal.el.id='validacaoBloco';
-  bVal.body.innerHTML=buildValidacaoHTML();
-  area.appendChild(bVal.el);
-  setTimeout(function(){preencheValidacao();},80);
-
   area.style.display='block';
   expandSidebar();
 }
@@ -4738,42 +4739,79 @@ function renderR1Output(nome,patFmt,data){
 function buildAnotacoesR1HTML(perguntas){
   var tabBtnStyle='padding:5px 14px;border:none;border-radius:6px;font-family:var(--f);font-size:.74rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;color:var(--muted)';
   var tabBtnActiveStyle='background:var(--lime);color:#1a1a1a';
+  var lbl='font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--lime);margin-bottom:4px;display:block';
+  var allocLabels=['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'];
 
-  // Aba Durante
-  var duranteHTML='<div data-panel="durante" class="r1tab-panel" style="padding:14px 0">'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">'
-    // Perfil confirmado
-    +'<div><div style="font-size:.72rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Perfil confirmado</div>'
-    +['Conservador','Moderado','Arrojado','Agressivo'].map(function(p){
-      return '<label style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:.8rem;color:var(--muted);cursor:pointer">'
-        +'<input type="radio" name="r1_perfil_confirmado" value="'+p+'" style="accent-color:var(--lime)"> '+p+'</label>';
-    }).join('')+'</div>'
-    // Objeções
-    +'<div><div style="font-size:.72rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Objeções levantadas</div>'
+  // ── Aba Durante ──
+  var duranteHTML='<div data-panel="durante" class="r1tab-panel" style="padding:12px 0">'
+    // Linha 1: Perfil | Sofisticação | Assessoria
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">'
+    +'<div><span style="'+lbl+'">Perfil confirmado</span>'
+    +'<select class="fsel" id="r1_perfil_confirmado" style="font-size:.8rem;padding:6px 8px">'
+    +'<option value="">Selecione...</option>'
+    +['Conservador','Moderado','Arrojado','Agressivo'].map(function(p){return '<option>'+p+'</option>';}).join('')
+    +'</select></div>'
+    +'<div><span style="'+lbl+'">Sofisticação</span>'
+    +'<select class="fsel" id="r1_sofisticacao" style="font-size:.8rem;padding:6px 8px">'
+    +'<option value="">Selecione...</option>'
+    +['Iniciante','Intermediário','Avançado','Especialista'].map(function(s){return '<option>'+s+'</option>';}).join('')
+    +'</select></div>'
+    +'<div><span style="'+lbl+'">Assessoria atual</span>'
+    +'<input class="fi" id="r1_ass" placeholder="Ex: XP, BTG..." style="font-size:.8rem;padding:6px 8px"></div>'
+    +'</div>'
+    // Linha 2: Patrimônio | Profissão | Idade
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 80px;gap:8px;margin-bottom:8px">'
+    +'<div><span style="'+lbl+'">Patrimônio</span>'
+    +'<input class="fi" id="r1_pat_confirmado" placeholder="Ex: 850k, 1,2M" oninput="maskR1Pat(this)" style="font-size:.8rem;padding:6px 8px"></div>'
+    +'<div><span style="'+lbl+'">Profissão</span>'
+    +'<input class="fi" id="r1_prof" placeholder="Ex: Empresário" style="font-size:.8rem;padding:6px 8px"></div>'
+    +'<div><span style="'+lbl+'">Idade</span>'
+    +'<input class="fi" id="r1_idade" type="number" placeholder="45" min="18" max="90" style="font-size:.8rem;padding:6px 8px"></div>'
+    +'</div>'
+    // Linha 3: Objetivo | Horizonte
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
+    +'<div><span style="'+lbl+'">Objetivo</span>'
+    +'<select class="fsel" id="r1_obj" style="font-size:.8rem;padding:6px 8px">'
+    +'<option value="">Selecione...</option>'
+    +['Aposentadoria / Independência financeira','Sucessão patrimonial / família','Compra de imóvel / bem','Crescimento patrimonial acelerado','Proteção e preservação','Renda passiva','Investimentos internacionais / Offshore'].map(function(o){return '<option>'+o+'</option>';}).join('')
+    +'</select></div>'
+    +'<div><span style="'+lbl+'">Horizonte</span>'
+    +'<select class="fsel" id="r1_horizonte" style="font-size:.8rem;padding:6px 8px">'
+    +'<option value="">Selecione...</option>'
+    +['Até 2 anos','3 a 5 anos','5 a 10 anos','Mais de 10 anos'].map(function(h){return '<option>'+h+'</option>';}).join('')
+    +'</select></div>'
+    +'</div>'
+    // Linha 4: Objeções | Produtos (verticais, 2 col)
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:10px">'
+    +'<div><span style="'+lbl+'">Objeções levantadas</span>'
     +['Liquidez','Taxas','Risco','Timing','Já tem assessor','Outros'].map(function(o){
-      return '<label style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:.8rem;color:var(--muted);cursor:pointer">'
+      return '<label style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:.78rem;color:var(--muted);cursor:pointer">'
         +'<input type="checkbox" name="r1_objecao" value="'+o+'" style="accent-color:var(--lime)"> '+o+'</label>';
-    }).join('')+'</div></div>'
-    // Produtos que já possui
-    +'<div style="margin-bottom:14px"><div style="font-size:.72rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Produtos que já possui</div>'
-    +'<div style="display:flex;flex-wrap:wrap;gap:6px">'
+    }).join('')+'</div>'
+    +'<div><span style="'+lbl+'">Produtos que já possui</span>'
     +['CDB/RDB','Tesouro Direto','Ações','FIIs','Fundos','Previdência','Câmbio/Offshore','Outros'].map(function(p){
-      return '<label style="display:flex;align-items:center;gap:4px;font-size:.78rem;color:var(--muted);cursor:pointer;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:3px 10px">'
+      return '<label style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:.78rem;color:var(--muted);cursor:pointer">'
         +'<input type="checkbox" name="r1_produto" value="'+p+'" style="accent-color:var(--lime)"> '+p+'</label>';
-    }).join('')+'</div></div>'
-    // Patrimônio confirmado + observações
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-    +'<div class="fg" style="margin-bottom:0"><label class="fl">Patrimônio confirmado</label>'
-    +'<input class="fi" id="r1_pat_confirmado" placeholder="R$ 0" oninput="maskR1Pat(this)"></div>'
-    +'<div class="fg" style="margin-bottom:0"><label class="fl">Nível de sofisticação</label>'
-    +'<select class="fsel" id="r1_sofisticacao"><option value="">Selecione...</option>'
-    +'<option>Iniciante</option><option>Intermediário</option><option>Avançado</option><option>Especialista</option>'
-    +'</select></div></div>'
-    +'<div class="fg" style="margin-top:10px"><label class="fl">Observações rápidas</label>'
-    +'<textarea class="fta" id="r1_obs_rapidas" placeholder="Ex: muito preocupado com liquidez, mencionou divórcio recente..." style="min-height:54px"></textarea></div>'
+    }).join('')+'</div>'
+    +'</div>'
+    // Sliders alocação atual
+    +'<div style="margin-bottom:10px"><span style="'+lbl+'">Alocação atual do cliente</span>'
+    +allocLabels.map(function(lb,i){
+      return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'
+        +'<span style="font-size:.68rem;color:var(--muted);width:118px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+lb+'</span>'
+        +'<input type="range" class="aslider" id="r1_sl_'+i+'" min="0" max="100" value="0" style="flex:1" oninput="document.getElementById(\'r1_sl_'+i+'_v\').textContent=this.value+\'%\'">'
+        +'<span id="r1_sl_'+i+'_v" style="font-size:.7rem;font-weight:700;color:var(--lime);width:30px;text-align:right;flex-shrink:0">0%</span>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    // Gaps + Contexto
+    +'<div style="margin-bottom:6px"><span style="'+lbl+'">Gaps / problemas confirmados</span>'
+    +'<textarea class="fta" id="r1_gaps" style="min-height:44px;font-size:.8rem" placeholder="Ex: carteira 100% CDB, sem proteção cambial..."></textarea></div>'
+    +'<div><span style="'+lbl+'">Contexto / observações</span>'
+    +'<textarea class="fta" id="r1_ctx" style="min-height:44px;font-size:.8rem" placeholder="Ex: tem empresa, preocupado com câmbio..."></textarea></div>'
     +'</div>';
 
-  // Aba Depois
+  // ── Aba Depois ──
   var depoisHTML='<div data-panel="depois" class="r1tab-panel" style="padding:14px 0;display:none">'
     +(perguntas.length
       ? perguntas.map(function(q,i){
@@ -4789,7 +4827,7 @@ function buildAnotacoesR1HTML(perguntas){
     +'<textarea class="fta" id="r1_obs_gerais" placeholder="Impressões, contexto, próximos passos acordados..."></textarea></div>'
     +'</div>';
 
-  // Aba Transcrição
+  // ── Aba Transcrição ──
   var transcricaoHTML='<div data-panel="transcricao" class="r1tab-panel" style="padding:14px 0;display:none">'
     +'<div class="fg"><label class="fl">Cole a transcrição da reunião</label>'
     +'<textarea class="fta" id="r1_transcricao" placeholder="Cole aqui o texto da transcrição (Fireflies, Otter, Zoom, etc.)..." style="min-height:120px"></textarea></div>'
@@ -4798,7 +4836,7 @@ function buildAnotacoesR1HTML(perguntas){
     +'<div id="extractTranscricaoStatus" style="font-size:.72rem;color:var(--dim);margin-top:6px;min-height:16px"></div>'
     +'</div>';
 
-  return '<div style="border-bottom:1px solid var(--border);margin-bottom:12px;display:flex;gap:4px;background:var(--bg3);border-radius:var(--r);padding:3px;width:fit-content">'
+  return '<div style="margin-bottom:12px;display:flex;gap:4px;background:var(--bg3);border-radius:var(--r);padding:3px;width:fit-content">'
     +'<button class="r1tab-btn active" data-tab="durante" style="'+tabBtnStyle+';'+tabBtnActiveStyle+'">Durante</button>'
     +'<button class="r1tab-btn" data-tab="depois" style="'+tabBtnStyle+'">Depois</button>'
     +'<button class="r1tab-btn" data-tab="transcricao" style="'+tabBtnStyle+'">Transcrição</button>'
@@ -4813,64 +4851,40 @@ function maskR1Pat(el){
   el.value=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(parseInt(v));
 }
 
-// ── VALIDAÇÃO PÓS-R1 ──────────────────────────────────────────────────────────
-function buildValidacaoHTML(){
-  var perfilOpts=['Conservador','Moderado','Arrojado','Agressivo'];
-  var objOpts=['Aposentadoria / Independência financeira','Sucessão patrimonial / família','Compra de imóvel / bem','Crescimento patrimonial acelerado','Proteção e preservação','Renda passiva','Investimentos internacionais / Offshore'];
-  var horOpts=['Até 2 anos','3 a 5 anos','5 a 10 anos','Mais de 10 anos'];
-  return '<div style="display:flex;flex-direction:column;gap:10px">'
-    +'<div class="fg" style="margin-bottom:0"><label class="fl">Nome</label>'
-    +'<input class="fi" id="val_nome" placeholder="Nome do cliente"></div>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-    +'<div class="fg" style="margin-bottom:0"><label class="fl">Patrimônio</label>'
-    +'<input class="fi" id="val_pat" placeholder="R$ 0" oninput="maskValPat(this)"></div>'
-    +'<div class="fg" style="margin-bottom:0"><label class="fl">Idade</label>'
-    +'<input class="fi" id="val_idade" type="number" placeholder="Ex: 45" min="18" max="90"></div>'
-    +'</div>'
-    +'<div class="fg" style="margin-bottom:0"><label class="fl">Profissão</label>'
-    +'<input class="fi" id="val_prof" placeholder="Ex: Empresário"></div>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-    +'<div class="fg" style="margin-bottom:0"><label class="fl">Perfil de risco</label>'
-    +'<select class="fsel" id="val_perfil"><option value="">Selecione...</option>'
-    +perfilOpts.map(function(p){return '<option>'+p+'</option>';}).join('')+'</select></div>'
-    +'<div class="fg" style="margin-bottom:0"><label class="fl">Horizonte</label>'
-    +'<select class="fsel" id="val_horizonte"><option value="">Selecione...</option>'
-    +horOpts.map(function(h){return '<option>'+h+'</option>';}).join('')+'</select></div>'
-    +'</div>'
-    +'<div class="fg" style="margin-bottom:0"><label class="fl">Objetivo</label>'
-    +'<select class="fsel" id="val_obj"><option value="">Selecione...</option>'
-    +objOpts.map(function(o){return '<option>'+o+'</option>';}).join('')+'</select></div>'
-    +'<div class="fg" style="margin-bottom:0"><label class="fl">Assessoria atual</label>'
-    +'<input class="fi" id="val_ass" placeholder="Ex: XP, BTG, sem assessoria..."></div>'
-    +'<div class="fg" style="margin-bottom:0"><label class="fl">Gaps / problemas confirmados</label>'
-    +'<textarea class="fta" id="val_gaps" style="min-height:54px" placeholder="Ex: carteira 100% CDB banco, sem proteção cambial..."></textarea></div>'
-    +'<div class="fg" style="margin-bottom:0"><label class="fl">Contexto</label>'
-    +'<textarea class="fta" id="val_ctx" style="min-height:54px" placeholder="Ex: veio por indicação, tem empresa..."></textarea></div>'
-    +'<div style="font-size:.7rem;color:var(--dim);padding:6px 0">Estes dados serão usados para gerar a Proposta R2. Revise e corrija o que mudou após a reunião.</div>'
-    +'</div>';
-}
 
 function preencheValidacao(){
-  var m={val_nome:'fNome',val_prof:'fProf',val_idade:'fIdade',val_perfil:'fPerfil',val_obj:'fObj',val_horizonte:'fHorizonte',val_ass:'fAss',val_gaps:'fGaps',val_ctx:'fCtx'};
-  Object.keys(m).forEach(function(valId){
-    var src=document.getElementById(m[valId]);
-    var dst=document.getElementById(valId);
+  // Fills Durante tab fields from sidebar values
+  var m={r1_prof:'fProf',r1_idade:'fIdade',r1_perfil_confirmado:'fPerfil',r1_obj:'fObj',r1_horizonte:'fHorizonte',r1_ass:'fAss',r1_gaps:'fGaps',r1_ctx:'fCtx'};
+  Object.keys(m).forEach(function(dstId){
+    var src=document.getElementById(m[dstId]);
+    var dst=document.getElementById(dstId);
     if(src&&dst)dst.value=src.value;
   });
+  // Patrimônio
   var patSrc=document.getElementById('fPat');
-  var patDst=document.getElementById('val_pat');
+  var patDst=document.getElementById('r1_pat_confirmado');
   if(patSrc&&patDst)patDst.value=patSrc.value;
+  // Sliders — copia alocação atual do sidebar
+  var sidebarAlloc=getSliderAlloc();
+  if(sidebarAlloc){
+    Object.keys(sidebarAlloc).forEach(function(i){
+      var sl=document.getElementById('r1_sl_'+i);
+      var vl=document.getElementById('r1_sl_'+i+'_v');
+      if(sl){sl.value=sidebarAlloc[i]||0;if(vl)vl.textContent=(sidebarAlloc[i]||0)+'%';}
+    });
+  }
 }
 
 function getRawPatVal(){
-  var el=document.getElementById('val_pat');
+  var el=document.getElementById('r1_pat_confirmado');
   if(!el||!el.value)return getRawPat();
   return el.value.replace(/\D/g,'');
 }
 
 function getValidacaoData(){
-  var nomEl=document.getElementById('val_nome');
-  if(!nomEl){
+  var perfilEl=document.getElementById('r1_perfil_confirmado');
+  if(!perfilEl){
+    // Sem bloco Anotações no DOM — fallback sidebar
     return {
       nome:document.getElementById('fNome').value.trim(),
       pat:getRawPat(),
@@ -4886,32 +4900,26 @@ function getValidacaoData(){
   }
   function gv(id){var el=document.getElementById(id);return el?el.value:'';}
   return {
-    nome:nomEl.value.trim(),
+    nome:document.getElementById('fNome').value.trim(), // nome sempre do sidebar
     pat:getRawPatVal(),
-    prof:gv('val_prof'),
-    idade:gv('val_idade'),
-    perfil:gv('val_perfil'),
-    obj:gv('val_obj'),
-    horizonte:gv('val_horizonte'),
-    ass:gv('val_ass'),
-    gaps:(gv('val_gaps')||'').trim(),
-    ctx:(gv('val_ctx')||'').trim()
+    prof:gv('r1_prof')||document.getElementById('fProf').value,
+    idade:gv('r1_idade')||document.getElementById('fIdade').value,
+    perfil:gv('r1_perfil_confirmado')||document.getElementById('fPerfil').value,
+    obj:gv('r1_obj')||document.getElementById('fObj').value,
+    horizonte:gv('r1_horizonte')||document.getElementById('fHorizonte').value,
+    ass:gv('r1_ass'),
+    gaps:(gv('r1_gaps')||'').trim(),
+    ctx:(gv('r1_ctx')||'').trim()
   };
 }
 
 function isValidacaoPreenchida(){
-  var nom=document.getElementById('val_nome');
-  var perf=document.getElementById('val_perfil');
-  var obj=document.getElementById('val_obj');
-  if(!nom)return true; // bloco não existe, não bloquear
-  return !!(nom.value.trim()&&perf&&perf.value&&obj&&obj.value);
+  var perf=document.getElementById('r1_perfil_confirmado');
+  var obj=document.getElementById('r1_obj');
+  if(!perf)return true; // bloco não existe, não bloquear
+  return !!(perf.value&&obj&&obj.value);
 }
 
-function maskValPat(el){
-  var v=el.value.replace(/\D/g,'');
-  if(!v){el.value='';return;}
-  el.value=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(parseInt(v));
-}
 
 function debounceAutoSaveR1(){
   clearTimeout(AppState.prospects.r1AutoSaveTimer);
@@ -4930,19 +4938,26 @@ async function autoSaveR1Notes(){
 }
 
 function collectR1Notes(){
-  // Detectar aba ativa
   var activeTab=document.querySelector('.r1tab-btn.active');
   var modoUtilizado=activeTab?activeTab.dataset.tab:'durante';
 
   // ── Durante ──
-  var perfilEl=document.querySelector('input[name="r1_perfil_confirmado"]:checked');
+  var perfilEl=document.getElementById('r1_perfil_confirmado');
   var objecoes=[];
   document.querySelectorAll('input[name="r1_objecao"]:checked').forEach(function(el){objecoes.push(el.value);});
   var produtos=[];
   document.querySelectorAll('input[name="r1_produto"]:checked').forEach(function(el){produtos.push(el.value);});
   var patEl=document.getElementById('r1_pat_confirmado');
   var sofEl=document.getElementById('r1_sofisticacao');
-  var obsRapEl=document.getElementById('r1_obs_rapidas');
+  var profEl=document.getElementById('r1_prof');
+  var idadeEl=document.getElementById('r1_idade');
+  var objEl=document.getElementById('r1_obj');
+  var horizEl=document.getElementById('r1_horizonte');
+  var assEl=document.getElementById('r1_ass');
+  var gapsEl=document.getElementById('r1_gaps');
+  var ctxEl=document.getElementById('r1_ctx');
+  var alloc={};
+  for(var i=0;i<9;i++){var sl=document.getElementById('r1_sl_'+i);if(sl&&parseInt(sl.value))alloc[i]=parseInt(sl.value);}
 
   // ── Depois ──
   var respostas=[];
@@ -4955,24 +4970,30 @@ function collectR1Notes(){
   // ── Transcrição ──
   var transcEl=document.getElementById('r1_transcricao');
 
-  // Estrutura completa — campos vazios salvos como null para rastreabilidade
   return {
     modo_utilizado: modoUtilizado,
     durante:{
-      perfil_confirmado:      perfilEl?perfilEl.value:null,
-      objecoes:               objecoes.length?objecoes:[],
-      produtos_atuais:        produtos.length?produtos:[],
-      patrimonio_confirmado:  patEl&&patEl.value?patEl.value:null,
-      sofisticacao:           sofEl&&sofEl.value?sofEl.value:null,
-      obs_rapidas:            obsRapEl&&obsRapEl.value.trim()?obsRapEl.value.trim():null
+      perfil_confirmado:     perfilEl&&perfilEl.value?perfilEl.value:null,
+      sofisticacao:          sofEl&&sofEl.value?sofEl.value:null,
+      patrimonio_confirmado: patEl&&patEl.value?patEl.value:null,
+      prof:                  profEl&&profEl.value.trim()?profEl.value.trim():null,
+      idade:                 idadeEl&&idadeEl.value?idadeEl.value:null,
+      obj:                   objEl&&objEl.value?objEl.value:null,
+      horizonte:             horizEl&&horizEl.value?horizEl.value:null,
+      ass:                   assEl&&assEl.value.trim()?assEl.value.trim():null,
+      objecoes:              objecoes.length?objecoes:[],
+      produtos_atuais:       produtos.length?produtos:[],
+      alloc_atual:           Object.keys(alloc).length?alloc:null,
+      gaps:                  gapsEl&&gapsEl.value.trim()?gapsEl.value.trim():null,
+      ctx:                   ctxEl&&ctxEl.value.trim()?ctxEl.value.trim():null
     },
     depois:{
-      respostas_perguntas:    respostas,
-      objecoes_texto:         objtexto&&objtexto.value.trim()?objtexto.value.trim():null,
-      obs_gerais:             obsGerais&&obsGerais.value.trim()?obsGerais.value.trim():null
+      respostas_perguntas: respostas,
+      objecoes_texto:      objtexto&&objtexto.value.trim()?objtexto.value.trim():null,
+      obs_gerais:          obsGerais&&obsGerais.value.trim()?obsGerais.value.trim():null
     },
     transcricao:{
-      texto:                  transcEl&&transcEl.value.trim()?transcEl.value.trim():null
+      texto: transcEl&&transcEl.value.trim()?transcEl.value.trim():null
     }
   };
 }
@@ -5035,16 +5056,28 @@ async function extractFromTranscricao(){
 function buildR1NotesContext(notes){
   if(!notes||!Object.keys(notes).length)return '';
   var txt='ANOTAÇÕES DA REUNIÃO R1 (modo: '+(notes.modo_utilizado||'não registrado')+'):\n';
-  // Suporte à estrutura nova (aninhada) e antiga (flat) para retrocompatibilidade
   var d=notes.durante||notes;
   var dp=notes.depois||notes;
   var tr=notes.transcricao||{};
   if(d.perfil_confirmado)txt+='Perfil confirmado na reunião: '+d.perfil_confirmado+'\n';
+  if(d.sofisticacao)txt+='Nível de sofisticação financeira: '+d.sofisticacao+' — INSTRUÇÃO: adapte a linguagem da proposta a este nível. Iniciante: evite jargões, use analogias simples. Intermediário: use termos técnicos com breve explicação. Avançado/Especialista: linguagem técnica direta, sem simplificações.\n';
   if(d.patrimonio_confirmado)txt+='Patrimônio confirmado: '+d.patrimonio_confirmado+'\n';
-  if(d.sofisticacao)txt+='Nível de sofisticação: '+d.sofisticacao+'\n';
+  if(d.prof)txt+='Profissão confirmada: '+d.prof+'\n';
+  if(d.idade)txt+='Idade confirmada: '+d.idade+' anos\n';
+  if(d.obj)txt+='Objetivo confirmado: '+d.obj+'\n';
+  if(d.horizonte)txt+='Horizonte confirmado: '+d.horizonte+'\n';
+  if(d.ass)txt+='Assessoria atual confirmada: '+d.ass+'\n';
   if(d.produtos_atuais&&d.produtos_atuais.length)txt+='Produtos que já possui: '+d.produtos_atuais.join(', ')+'\n';
   if(d.objecoes&&d.objecoes.length)txt+='Objeções levantadas: '+d.objecoes.join(', ')+'\n';
-  if(d.obs_rapidas)txt+='Observações (durante): '+d.obs_rapidas+'\n';
+  if(d.alloc_atual&&Object.keys(d.alloc_atual).length){
+    var allocLabels=['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'];
+    var allocStr=Object.keys(d.alloc_atual).map(function(i){return allocLabels[i]+': '+d.alloc_atual[i]+'%';}).join(', ');
+    txt+='Alocação atual confirmada: '+allocStr+'\n';
+  }
+  if(d.gaps)txt+='Gaps / problemas confirmados: '+d.gaps+'\n';
+  if(d.ctx)txt+='Contexto da reunião: '+d.ctx+'\n';
+  // retrocompatibilidade com campo antigo obs_rapidas
+  if(d.obs_rapidas)txt+='Observações: '+d.obs_rapidas+'\n';
   if(dp.objecoes_texto)txt+='Detalhe das objeções: '+dp.objecoes_texto+'\n';
   if(dp.obs_gerais)txt+='Resumo da reunião: '+dp.obs_gerais+'\n';
   var respostas=dp.respostas_perguntas||notes.respostas_perguntas||[];
@@ -5074,7 +5107,7 @@ async function onToggleR1(checked){
   if(checked){
     // Validar bloco Validação antes de confirmar R1
     if(!isValidacaoPreenchida()){
-      showToast('Preencha a Validação (Nome, Perfil e Objetivo) antes de confirmar a R1.','error');
+      showToast('Preencha Perfil e Objetivo nas Anotações R1 antes de confirmar.','error');
       document.getElementById('toggleR1').checked=false;
       track.style.background='#444';
       thumb.style.transform='translateX(0)';
@@ -5431,11 +5464,15 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
-v5.9.1 — 2026-04-17
-- R1: header com outtag + nome na mesma linha (sem patrimônio)
-- R1: bloco "Validação" pós-R1 com todos os campos do sidebar pré-preenchidos
-- Toggle "R1 finalizada" exige Validação preenchida (Nome, Perfil, Objetivo)
-- R2: lê dados da Validação (não do sidebar)
+v5.9.2 — 2026-04-17
+- Anotações R1: bloco unificado (Durante + Depois + Transcrição)
+- Durante: perfil/sofisticação/patrimônio/profissão/idade/objetivo/horizonte/assessoria todos em grid compacto
+- Durante: objeções e produtos em checkboxes verticais
+- Durante: sliders de alocação atual (9 classes), pré-preenchidos do sidebar
+- Durante: gaps e contexto substituem "observações rápidas"
+- Toggle R1: valida Perfil e Objetivo (sem exigir Nome)
+- R2: usa sliders do Durante para alocação atual; fallback sidebar
+- R2: sofisticação impacta linguagem da proposta via buildR1NotesContext
 - R2: salva perfil_validado no prospect ao gerar
 - R1: salva perfil_inicial no prospect ao gerar
 - SQL: adicionar colunas perfil_inicial e perfil_validado (jsonb) na tabela prospects

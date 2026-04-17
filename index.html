@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.10.2</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.11.0</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -458,7 +458,21 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 .fadein{animation:fadein .35s ease forwards}
 @keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* PROSPECT DETAIL VIEW */
+/* PIPELINE FUNIL */
+.pipeline-wrap{display:flex;align-items:stretch;gap:0;margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.pipeline-stage{display:flex;flex-direction:column;align-items:center;position:relative;cursor:pointer;transition:opacity .15s;min-width:60px}
+.pipeline-stage:hover{opacity:.85}
+.pipeline-stage.active .pipeline-bar{outline:2px solid var(--white);outline-offset:1px}
+.pipeline-chevron{display:flex;align-items:center;color:var(--border2);font-size:.9rem;padding:0 2px;align-self:center;flex-shrink:0;margin-top:18px}
+.pipeline-conv{font-size:.6rem;color:var(--dim);text-align:center;margin-bottom:3px;height:14px;display:flex;align-items:center;justify-content:center}
+.pipeline-bar-wrap{width:100%;display:flex;justify-content:center}
+.pipeline-bar{border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#1a1a1a;min-height:28px;min-width:42px;width:100%;transition:all .2s;padding:4px 6px}
+.pipeline-label{font-size:.6rem;color:var(--muted);text-align:center;margin-top:4px;line-height:1.3;max-width:72px}
+.pipeline-count{font-size:.68rem;color:var(--dim);text-align:center;margin-top:2px}
+
+@media(max-width:780px){.pipeline-wrap{gap:0}}
+
+
 #prospectDetailView{background:var(--bg);min-height:calc(100vh - 54px)}
 .pd-container{max-width:980px;margin:0 auto;padding:24px 26px}
 .pd-topbar{display:flex;align-items:flex-start;gap:14px;margin-bottom:28px;flex-wrap:wrap}
@@ -565,7 +579,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.10.2</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.11.0</div>
     </div>
   </div>
 </div>
@@ -605,12 +619,12 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.10.2</div>
+      <div class="hver" id="hverEl">v5.11.0</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
         <button class="ntab active" onclick="showTab('prospects',this)">Prospects</button>
-        <button class="ntab" onclick="showTab('dash',this)">Dashboard</button>
+        <button class="ntab" onclick="showTab('dash',this)">Propostas</button>
         <button class="ntab" id="tabEquipe" onclick="showTab('team',this)" style="display:none">Equipe</button>
       </div>
     </div>
@@ -955,14 +969,21 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 
   <!-- DASHBOARD -->
   <div id="dashview">
-    <div class="dht">Dashboard de Propostas</div>
+    <div class="dht" id="dashTitle">Propostas</div>
     <div class="dhs" id="dashSubtitle">Carregando...</div>
+
+    <!-- KPIs -->
     <div class="kpirow">
       <div class="kpi" id="kpiTotal" onclick="dashKpiFilter('total')" title="Filtrar enviadas"><div class="kpiv" id="kTotal">—</div><div class="kpil">Total enviadas</div></div>
       <div class="kpi" id="kpiAceitas" onclick="dashKpiFilter('aceita')" title="Filtrar aceitas"><div class="kpiv" id="kAceitas">—</div><div class="kpil">Aceitas</div></div>
       <div class="kpi" id="kpiTaxa"><div class="kpiv" id="kTaxa">—</div><div class="kpil">Taxa de conversão</div></div>
       <div class="kpi" id="kpiPendentes" onclick="dashKpiFilter('pendentes')" title="Filtrar aguardando"><div class="kpiv" id="kPendentes">—</div><div class="kpil">Aguardando resposta</div></div>
     </div>
+
+    <!-- Pipeline visual -->
+    <div class="pipeline-wrap" id="dashPipeline"></div>
+
+    <!-- Tabela propostas -->
     <div class="block" style="margin-bottom:16px">
       <div class="blkhd" style="cursor:default">
         <div class="blkico">📋</div><div class="blktit">Propostas</div>
@@ -989,9 +1010,10 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       </div>
       <div class="blkbody open" style="padding:0">
         <table class="histtbl" id="dashTable">
-          <thead><tr>
+          <thead><tr id="dashTableHead">
             <th style="width:32px;padding:7px 8px"><input type="checkbox" class="dash-cb" id="dashSelectAll" onchange="dashToggleAll(this.checked)" title="Selecionar todos"></th>
             <th class="dash-th" onclick="dashSort('cliente_nome')">Cliente <span class="dash-sort" id="dsort-cliente_nome"></span></th>
+            <th class="dash-th assessor-col" style="display:none" onclick="dashSort('assessor_nome')">Assessor <span class="dash-sort" id="dsort-assessor_nome"></span></th>
             <th class="dash-th" onclick="dashSort('cliente_pat')">Patrimônio <span class="dash-sort" id="dsort-cliente_pat"></span></th>
             <th>Perfil</th>
             <th class="dash-th" onclick="dashSort('status')">Status <span class="dash-sort" id="dsort-status"></span></th>
@@ -1001,12 +1023,31 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
             <th class="dash-th" onclick="dashSort('feedback_rating')">⭐ <span class="dash-sort" id="dsort-feedback_rating"></span></th>
             <th></th>
           </tr></thead>
-          <tbody id="dashBody"><tr><td colspan="10" style="color:var(--dim);text-align:center;padding:24px 0">Carregando...</td></tr></tbody>
+          <tbody id="dashBody"><tr><td colspan="11" style="color:var(--dim);text-align:center;padding:24px 0">Carregando...</td></tr></tbody>
         </table>
         <div class="dash-page" id="dashPagination" style="display:none">
           <button class="dash-page-btn" id="dashPrevBtn" onclick="dashChangePage(-1)">← Anterior</button>
           <span id="AppState.dash.pageInfo" style="font-size:.74rem;color:var(--muted)"></span>
           <button class="dash-page-btn" id="dashNextBtn" onclick="dashChangePage(1)">Próxima →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ranking assessores (só PJ) -->
+    <div id="dashRankingWrap" style="display:none;margin-bottom:16px">
+      <div class="block">
+        <div class="blkhd" style="cursor:default">
+          <div class="blkico">🏆</div>
+          <div class="blktit">Ranking de Assessores</div>
+        </div>
+        <div style="padding:0 4px 8px">
+          <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;border-bottom:1px solid var(--border);padding:6px 12px;margin-bottom:4px">
+            <span style="font-size:.7rem;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.04em">Assessor</span>
+            <span style="font-size:.7rem;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.04em;text-align:center;width:90px">Enviadas</span>
+            <span style="font-size:.7rem;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.04em;text-align:center;width:80px">Aceitas</span>
+            <span style="font-size:.7rem;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.04em;text-align:center;width:80px">Conversão</span>
+          </div>
+          <div id="dashRankingList"></div>
         </div>
       </div>
     </div>
@@ -1081,7 +1122,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.10.2</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.11.0</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -2505,7 +2546,7 @@ function showTab(tab,btn){
   document.getElementById('prospectview').style.display=tab==='prospects'?'block':'none';
   document.getElementById('dashview').style.display=tab==='dash'?'block':'none';
   document.getElementById('teamview').style.display=tab==='team'?'block':'none';
-  if(tab==='dash'){updateDash();}
+  if(tab==='dash'){AppState.dash.firmProspects=null;updateDash();}
   if(tab==='team'){loadTeamView();}
   if(tab==='prospects'){loadProspects();}
 }
@@ -3306,6 +3347,8 @@ function renderLine(container,pat,perfil){
 var AppState = {
   dash: {
     proposals: [],
+    assessorMap: {},
+    firmProspects: null,
     sortCol: 'created_at',
     sortAsc: false,
     page: 1,
@@ -3325,13 +3368,53 @@ var AppState = {
 async function updateDash(){
   if(!supabaseUserId) return;
   document.getElementById('dashSubtitle').textContent = 'Carregando...';
-  var {data, error} = await sb.from('proposals').select('*').eq('user_id', supabaseUserId).order('created_at', {ascending: false});
-  if(error){ document.getElementById('dashSubtitle').textContent = 'Erro ao carregar propostas.'; return; }
-  AppState.dash.proposals = data || [];
 
-  var total    = AppState.dash.proposals.filter(function(p){ return p.status !== 'rascunho' && p.status !== 'arquivada'; }).length;
-  var aceitas  = AppState.dash.proposals.filter(function(p){ return p.status === 'aceita'; }).length;
-  var pendentes = AppState.dash.proposals.filter(function(p){ return p.status === 'enviada' || p.status === 'visualizada'; }).length;
+  var proposals = [];
+  var assessorMap = {}; // user_id → nome
+
+  if(currentUserIsManager && currentFirmId){
+    // PJ: busca propostas de todos os assessores da empresa
+    var {data:members} = await sb.from('firm_members')
+      .select('user_id, company_profiles(empresa_nome)')
+      .eq('firm_id', currentFirmId);
+    var memberIds = (members||[]).map(function(m){return m.user_id;});
+    // Também inclui o próprio manager
+    if(memberIds.indexOf(supabaseUserId)<0) memberIds.push(supabaseUserId);
+    // Monta mapa user_id → nome
+    (members||[]).forEach(function(m){
+      var nome = m.company_profiles && m.company_profiles.empresa_nome
+        ? m.company_profiles.empresa_nome
+        : m.user_id.substring(0,8);
+      assessorMap[m.user_id] = nome;
+    });
+    if(empresaData && empresaData.empresa_nome) assessorMap[supabaseUserId] = empresaData.empresa_nome;
+    if(memberIds.length){
+      var {data:pj} = await sb.from('proposals')
+        .select('*')
+        .in('user_id', memberIds)
+        .order('created_at',{ascending:false});
+      proposals = pj || [];
+    }
+    // Mostra coluna Assessor
+    document.querySelectorAll('.assessor-col').forEach(function(el){el.style.display='';});
+    document.getElementById('dashRankingWrap').style.display = 'block';
+    document.getElementById('dashTitle').textContent = (empresaData&&empresaData.empresa_nome ? empresaData.empresa_nome+' — ' : '') + 'Propostas';
+  } else {
+    // PF: só as próprias propostas
+    var {data:pf} = await sb.from('proposals')
+      .select('*').eq('user_id', supabaseUserId).order('created_at',{ascending:false});
+    proposals = pf || [];
+    document.querySelectorAll('.assessor-col').forEach(function(el){el.style.display='none';});
+    document.getElementById('dashRankingWrap').style.display = 'none';
+    document.getElementById('dashTitle').textContent = 'Propostas';
+  }
+
+  AppState.dash.proposals = proposals;
+  AppState.dash.assessorMap = assessorMap;
+
+  var total    = proposals.filter(function(p){ return p.status !== 'rascunho' && p.status !== 'arquivada'; }).length;
+  var aceitas  = proposals.filter(function(p){ return p.status === 'aceita'; }).length;
+  var pendentes = proposals.filter(function(p){ return p.status === 'enviada' || p.status === 'visualizada'; }).length;
   var taxa = total > 0 ? Math.round(aceitas/total*100) + '%' : '—';
 
   document.getElementById('kTotal').textContent = total || '—';
@@ -3339,7 +3422,117 @@ async function updateDash(){
   document.getElementById('kTaxa').textContent = taxa;
   document.getElementById('kPendentes').textContent = pendentes || '—';
   document.getElementById('dashSubtitle').textContent = total + ' proposta' + (total !== 1 ? 's' : '') + ' · atualizado agora';
+
+  // Pipeline (usa prospects + proposals)
+  await renderDashPipeline();
+
+  // Ranking PJ
+  if(currentUserIsManager && currentFirmId) renderDashRanking(proposals, assessorMap);
+
   renderDashTable();
+}
+
+async function renderDashPipeline(){
+  var container = document.getElementById('dashPipeline');
+  if(!container) return;
+
+  // Conta prospects por status
+  var prospects = AppState.prospects.all || [];
+  var proposals = AppState.dash.proposals || [];
+
+  // Se PJ, busca todos os prospects da empresa
+  var allProspects = prospects;
+  if(currentUserIsManager && currentFirmId && AppState.dash.firmProspects){
+    allProspects = AppState.dash.firmProspects;
+  } else if(currentUserIsManager && currentFirmId){
+    var {data:fp} = await sb.from('prospects')
+      .select('id,status')
+      .eq('firm_id', currentFirmId)
+      .not('status','in','(perdido_user,perdido_auto)');
+    allProspects = fp || [];
+    AppState.dash.firmProspects = allProspects;
+  }
+
+  var stages = [
+    {key:'prospect_criado', label:'Prospects', color:'rgba(168,194,58,.25)'},
+    {key:'r1_iniciada',     label:'R1 Iniciada', color:'rgba(168,194,58,.35)'},
+    {key:'r1_concluida',    label:'R1 Concluída', color:'rgba(168,194,58,.48)'},
+    {key:'r2_iniciada',     label:'R2 Iniciada', color:'rgba(168,194,58,.60)'},
+    {key:'enviada',         label:'Enviada', color:'rgba(168,194,58,.72)', fromProposals:true},
+    {key:'visualizada',     label:'Visualizada', color:'rgba(168,194,58,.84)', fromProposals:true},
+    {key:'aceita',          label:'Aceita', color:'#a8c23a', fromProposals:true}
+  ];
+
+  // Conta por estágio
+  stages.forEach(function(s){
+    if(s.fromProposals){
+      s.count = proposals.filter(function(p){return p.status===s.key;}).length;
+    } else {
+      s.count = allProspects.filter(function(p){return p.status===s.key;}).length;
+    }
+  });
+
+  var maxCount = Math.max.apply(null, stages.map(function(s){return s.count;})) || 1;
+  var activeFilter = document.getElementById('dashFilter') ? document.getElementById('dashFilter').value : '';
+
+  container.innerHTML = stages.map(function(s, i){
+    var prev = i > 0 ? stages[i-1].count : null;
+    var conv = (prev !== null && prev > 0) ? Math.round(s.count/prev*100)+'%' : '';
+    var barH = Math.max(28, Math.round((s.count / maxCount) * 56));
+    var isActive = activeFilter === s.key;
+    var chevron = i < stages.length-1
+      ? '<div class="pipeline-chevron">›</div>' : '';
+    return '<div class="pipeline-stage'+(isActive?' active':'')+'" onclick="dashPipelineFilter(\''+s.key+'\')">'
+      +'<div class="pipeline-conv">'+(conv?'<span style="color:var(--lime)">'+conv+'</span>':'')+'</div>'
+      +'<div class="pipeline-bar-wrap"><div class="pipeline-bar" style="background:'+s.color+';height:'+barH+'px">'+(s.count>0?s.count:'')+'</div></div>'
+      +'<div class="pipeline-label">'+s.label+'</div>'
+      +'</div>'
+      + chevron;
+  }).join('');
+}
+
+function dashPipelineFilter(key){
+  var filter = document.getElementById('dashFilter');
+  if(!filter) return;
+  // Toggle: clica no mesmo → limpa filtro
+  if(filter.value === key){ filter.value = ''; }
+  else { filter.value = key; }
+  dashResetPage();
+  renderDashTable();
+  renderDashPipeline();
+}
+
+function renderDashRanking(proposals, assessorMap){
+  var list = document.getElementById('dashRankingList');
+  if(!list) return;
+  // Agrupa por assessor
+  var byAssessor = {};
+  proposals.forEach(function(p){
+    if(p.status==='rascunho'||p.status==='arquivada') return;
+    var id = p.user_id;
+    if(!byAssessor[id]) byAssessor[id] = {enviadas:0, aceitas:0};
+    byAssessor[id].enviadas++;
+    if(p.status==='aceita') byAssessor[id].aceitas++;
+  });
+  var rows = Object.keys(byAssessor).map(function(id){
+    var d = byAssessor[id];
+    return {id:id, nome:assessorMap[id]||id.substring(0,8), enviadas:d.enviadas, aceitas:d.aceitas,
+      conv: d.enviadas>0 ? Math.round(d.aceitas/d.enviadas*100)+'%' : '—'};
+  });
+  rows.sort(function(a,b){return b.aceitas-a.aceitas;});
+  if(!rows.length){
+    list.innerHTML='<div style="padding:16px;text-align:center;color:var(--dim);font-size:.78rem">Nenhuma proposta enviada ainda.</div>';
+    return;
+  }
+  list.innerHTML = rows.map(function(r, i){
+    var medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    return '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;padding:8px 12px;border-bottom:1px solid var(--border2);align-items:center">'
+      +'<span style="font-size:.8rem;color:var(--text);font-weight:600">'+(medal?medal+' ':'')+(i+1)+'. '+r.nome+'</span>'
+      +'<span style="font-size:.8rem;color:var(--muted);text-align:center;width:90px">'+r.enviadas+'</span>'
+      +'<span style="font-size:.8rem;color:var(--lime);font-weight:700;text-align:center;width:80px">'+r.aceitas+'</span>'
+      +'<span style="font-size:.8rem;color:var(--muted);text-align:center;width:80px">'+r.conv+'</span>'
+      +'</div>';
+  }).join('');
 }
 
 function dashKpiFilter(type) {
@@ -3451,7 +3644,7 @@ function renderDashTable(){
   });
 
   if(!pageRows.length){
-    tb.innerHTML = '<tr><td colspan="10" style="color:var(--dim);text-align:center;padding:24px 0">Nenhuma proposta encontrada.</td></tr>';
+    tb.innerHTML = '<tr><td colspan="11" style="color:var(--dim);text-align:center;padding:24px 0">Nenhuma proposta encontrada.</td></tr>';
     document.getElementById('dashPagination').style.display = 'none';
     var allCb = document.getElementById('dashSelectAll');
     if(allCb) allCb.checked = false;
@@ -3459,6 +3652,8 @@ function renderDashTable(){
   }
 
   var baseUrl = (window.location.origin + window.location.pathname.replace(/index\.html$/, '').replace(/\/$/, ''));
+  var assessorMap = AppState.dash.assessorMap || {};
+  var showAssessor = currentUserIsManager && currentFirmId;
   tb.innerHTML = pageRows.map(function(p){
     var isExpired = new Date(p.expires_at) < now;
     var status = isExpired && p.status === 'enviada' ? 'expirada' : p.status;
@@ -3473,9 +3668,11 @@ function renderDashTable(){
       if(daysLeft<=3 && daysLeft>=0) expStr = '<span class="exp-soon">'+expStr+'</span>';
       else if(daysLeft<0) expStr = '<span style="color:var(--dim)">'+expStr+'</span>';
     }
+    var assessorNome = assessorMap[p.user_id] || '';
     return '<tr class="dash-tr" onclick="dashRowClick(event,\''+p.hash+'\',\''+propUrl+'\')">'
       +'<td style="padding:9px 8px" onclick="event.stopPropagation()"><input type="checkbox" class="dash-cb" id="dcb-'+p.hash+'" '+checked+' onchange="dashToggleRow(\''+p.hash+'\')"></td>'
       +'<td style="font-weight:600">'+escHtml(p.cliente_nome||'')+'</td>'
+      +(showAssessor?'<td class="assessor-col" style="color:var(--muted);font-size:.75rem">'+escHtml(assessorNome)+'</td>':'<td class="assessor-col" style="display:none"></td>')
       +'<td style="color:var(--muted)">'+patFmt(p.cliente_pat)+'</td>'
       +'<td><span class="badge bmuted">'+escHtml(p.cliente_perfil||'')+'</span></td>'
       +'<td><span class="dash-status ds-'+status+'">'+(statusLabels[status]||status)+'</span></td>'
@@ -5778,10 +5975,13 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
-v5.10.2 — 2026-04-17
-- Botões R1/R2 movidos para abaixo do formulário, alinhados à direita
-- Botão R2 só aparece quando R1 está concluída (não mais desabilitado visível)
-- Toggle "R1 finalizada" também só aparece quando R1 existe
+v5.11.0 — 2026-04-17
+- Tab "Dashboard" renomeada para "Propostas"
+- Pipeline visual de funil: 7 estágios com barras proporcionais + taxa de conversão entre estágios
+- Pipeline clicável — filtra tabela pelo estágio
+- PJ: busca propostas de todos os assessores da empresa; coluna "Assessor" na tabela
+- PJ: ranking de assessores (enviadas, aceitas, conversão)
+- PJ: título da tela inclui nome da empresa
 
 v5.10.0 — 2026-04-17
 - Home = lista de Prospects após login (tab Gerador removida)

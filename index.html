@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.10.0</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.10.1</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -565,7 +565,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.10.0</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.10.1</div>
     </div>
   </div>
 </div>
@@ -605,7 +605,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.10.0</div>
+      <div class="hver" id="hverEl">v5.10.1</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -733,7 +733,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         <!-- Esquerda: campos do perfil -->
         <div class="pd-panel">
           <div class="pd-panel-title">Perfil &nbsp;·&nbsp; <button type="button" onclick="fillExample()" style="background:none;border:none;color:var(--lime);font-size:.62rem;font-weight:700;cursor:pointer;padding:0;font-family:var(--f);text-decoration:underline;letter-spacing:.08em;text-transform:uppercase">usar exemplo</button></div>
-          <div class="fg"><label class="fl">Nome</label><input class="fi" id="pd_nome" placeholder="Ex: Ricardo Almeida" oninput="syncFormToSidebar()"></div>
+          <div class="fg"><label class="fl">Nome</label><input class="fi" id="pd_nome" placeholder="Ex: Ricardo Almeida" oninput="syncFormToSidebar();var d=document.getElementById('pdNomeDisplay');if(d&&(d.textContent==='Novo Prospect'||d.textContent==='—'))d.textContent=this.value||'Novo Prospect'"></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div class="fg"><label class="fl">Patrimônio</label><input class="fi" id="pd_pat" type="text" placeholder="R$ 0" oninput="maskPdPat(this);syncFormToSidebar()" autocomplete="off"></div>
             <div class="fg"><label class="fl">Perfil</label>
@@ -819,7 +819,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     <div class="dht">Prospects</div>
     <div class="dhs" id="prospectSubtitle">Carregando...</div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
-      <button onclick="openNewProspectModal()" style="padding:7px 16px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer">+ Novo prospect</button>
+      <button onclick="openNewProspectDetail()" style="padding:7px 16px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer">+ Novo prospect</button>
     </div>
     <div class="block">
       <div class="blkhd" style="cursor:default">
@@ -1077,7 +1077,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.10.0</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.10.1</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -5286,7 +5286,7 @@ function renderProspectTable(rows){
   if(!rows.length){
     tbody.innerHTML='<tr><td colspan="6" style="padding:32px;text-align:center">'
       +'<div style="color:var(--dim);font-size:.85rem;margin-bottom:12px">Nenhum prospect ainda.</div>'
-      +'<button onclick="openNewProspectModal()" style="padding:7px 16px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer;margin-right:8px">+ Cadastrar prospect</button>'
+      +'<button onclick="openNewProspectDetail()" style="padding:7px 16px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer;margin-right:8px">+ Cadastrar prospect</button>'
       +'<button onclick="fillExampleAndOpen()" style="padding:7px 16px;background:transparent;border:1px solid var(--lime);color:var(--lime);border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:600;cursor:pointer">Ver exemplo</button>'
       +'</td></tr>';
     return;
@@ -5610,6 +5610,36 @@ function fillExampleAndOpen(){
   updateAllButtonStates(null);
 }
 
+function openNewProspectDetail(){
+  AppState.prospects.currentId=null;
+  AppState.prospects.r1Generated=false;
+  // Limpa formulário pd_*
+  ['pd_nome','pd_pat','pd_prof','pd_idade','pd_perfil','pd_obj','pd_horizonte','pd_ass','pd_gaps','pd_ctx'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  resetPdSliders();
+  syncFormToSidebar();
+  // Limpa campos hidden sidebar
+  var sel=document.getElementById('fProspectSel');
+  if(sel)sel.value='';
+  // Mostra detail view
+  document.getElementById('prospectview').style.display='none';
+  document.getElementById('prospectDetailView').style.display='block';
+  document.getElementById('pdNomeDisplay').textContent='Novo Prospect';
+  document.getElementById('pdStatusBadge').innerHTML='';
+  document.getElementById('pdMetaExtra').textContent='';
+  document.getElementById('confirmR1Wrap').style.display='none';
+  document.getElementById('emptyState').style.display='flex';
+  document.getElementById('emptyState').querySelector('.emdesc').textContent='Preencha os campos acima e clique em "Gerar Roteiro R1" para começar.';
+  document.getElementById('outArea').style.display='none';
+  document.getElementById('outArea').innerHTML='';
+  document.getElementById('loadingState').style.display='none';
+  syncToggleR1(null);
+  updateAllButtonStates(null);
+  // Foca no campo nome
+  setTimeout(function(){var el=document.getElementById('pd_nome');if(el)el.focus();},100);
+}
+
 async function markPerdidoUser(id){
   showConfirmModal('Marcar como perdido','Este prospect será marcado como perdido. Você pode reverter isso manualmente.',async function(){
     await sb.from('prospects').update({status:'perdido_user'}).eq('id',id);
@@ -5741,24 +5771,22 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
+v5.10.1 — 2026-04-17
+- "Novo prospect" abre prospectDetailView (não mais o modal antigo)
+- openNewProspectDetail(): limpa formulário, foca no nome
+- pdNomeDisplay atualiza em tempo real ao digitar
+
 v5.10.0 — 2026-04-17
 - Home = lista de Prospects após login (tab Gerador removida)
-- Novo prospectDetailView: formulário full-screen 2 colunas (perfil + contexto/alocação)
+- Novo prospectDetailView: formulário full-screen 2 colunas
 - Botões R1/R2/toggle movidos para topo da página do prospect
 - Não-processados com indicador visual no topo da lista
 - Empty state na lista com CTA cadastrar + ver exemplo
 - Linha da lista clicável → abre detalhe do prospect
 - fetchProspects() como camada de abstração (Supabase hoje, CRM amanhã)
-- Sliders de alocação na detail view (pd_sl_*), sincronizados com sidebar hidden
+- Sliders de alocação na detail view, sincronizados com sidebar hidden
 - restoreR1Notes: restaura anotações R1 ao reabrir prospect com R1 gerada
-- fillExampleAndOpen: exemplo abre direto na detail view
-- saveProspect: navega para detalhe após criar prospect
-- collapseSidebar/expandSidebar: no-ops (sidebar não existe mais como UI)
-- R2: usa sliders do Durante para alocação atual; fallback sidebar
-- R2: sofisticação impacta linguagem da proposta via buildR1NotesContext
-- R2: salva perfil_validado no prospect ao gerar
-- R1: salva perfil_inicial no prospect ao gerar
-- SQL: adicionar colunas perfil_inicial e perfil_validado (jsonb) na tabela prospects
+- collapseSidebar/expandSidebar: no-ops
 
 v5.9.0 — 2026-04-17
 - Mobile: oculta painel esquerdo do login em telas pequenas

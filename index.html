@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.10.1</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.10.2</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -565,7 +565,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.10.1</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.10.2</div>
     </div>
   </div>
 </div>
@@ -605,7 +605,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.10.1</div>
+      <div class="hver" id="hverEl">v5.10.2</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -700,31 +700,6 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
           </div>
         </div>
         <div class="pd-topactions">
-          <!-- Toggle R1 finalizada -->
-          <div id="confirmR1Wrap" style="display:none;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:7px 12px">
-            <span style="font-size:.78rem;font-weight:600;color:var(--muted);font-family:var(--f)">R1 finalizada</span>
-            <label data-testid="toggle-r1" style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer;flex-shrink:0">
-              <input type="checkbox" id="toggleR1" onchange="onToggleR1(this.checked)" style="opacity:0;width:0;height:0;position:absolute">
-              <span id="toggleR1Track" style="position:absolute;top:0;left:0;right:0;bottom:0;background:#444;border-radius:22px;transition:background .2s"></span>
-              <span id="toggleR1Thumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)"></span>
-            </label>
-          </div>
-          <!-- Gerar R1 -->
-          <div style="position:relative" id="btnGenR1Wrap">
-            <button class="genbtn" id="btnGenR1" onclick="generateR1()" style="background:var(--bg3);border:1px solid var(--lime);color:var(--lime)" disabled>
-              <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 2a5 5 0 1 0 0 10A5 5 0 0 0 7 2zm0 1.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zm0 1.5a.75.75 0 0 0-.75.75v2c0 .2.08.38.22.52l1.25 1.25a.75.75 0 1 0 1.06-1.06L7.75 7.69V5.75A.75.75 0 0 0 7 5z" fill="currentColor"/></svg>
-              Gerar Roteiro R1
-            </button>
-            <div id="btnGenR1Tip" style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;font-size:.7rem;color:var(--muted);white-space:nowrap;z-index:10;pointer-events:none">Preencha os campos obrigatórios</div>
-          </div>
-          <!-- Gerar R2 -->
-          <div style="position:relative" id="btnGenWrap">
-            <button class="genbtn" id="btnGen" onclick="generate()" disabled style="opacity:0.45">
-              <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg>
-              Gerar Proposta R2
-            </button>
-            <div id="btnGenR2Tip" style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;font-size:.7rem;color:var(--muted);white-space:nowrap;z-index:10;pointer-events:none">Conclua a R1 antes de gerar a proposta</div>
-          </div>
         </div>
       </div>
 
@@ -788,6 +763,35 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
             <div id="pdAllocSliders"></div>
             <button type="button" onclick="resetPdSliders()" style="margin-top:6px;background:transparent;border:1px solid var(--border);border-radius:6px;padding:3px 9px;color:var(--dim);font-size:.67rem;cursor:pointer;font-family:var(--f)">↺ Limpar</button>
           </div>
+        </div>
+      </div>
+
+      <!-- Ações — abaixo do formulário, alinhado à direita -->
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+        <!-- Toggle R1 finalizada — só aparece quando R1 existe -->
+        <div id="confirmR1Wrap" style="display:none;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:7px 12px">
+          <span style="font-size:.78rem;font-weight:600;color:var(--muted);font-family:var(--f)">R1 finalizada</span>
+          <label data-testid="toggle-r1" style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer;flex-shrink:0">
+            <input type="checkbox" id="toggleR1" onchange="onToggleR1(this.checked)" style="opacity:0;width:0;height:0;position:absolute">
+            <span id="toggleR1Track" style="position:absolute;top:0;left:0;right:0;bottom:0;background:#444;border-radius:22px;transition:background .2s"></span>
+            <span id="toggleR1Thumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)"></span>
+          </label>
+        </div>
+        <!-- Gerar R2 — só aparece quando R1 finalizada -->
+        <div style="position:relative" id="btnGenWrap">
+          <button class="genbtn" id="btnGen" onclick="generate()" disabled style="opacity:0.45;display:none">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg>
+            Gerar Proposta R2
+          </button>
+          <div id="btnGenR2Tip" style="display:none;position:absolute;bottom:calc(100% + 6px);right:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;font-size:.7rem;color:var(--muted);white-space:nowrap;z-index:10;pointer-events:none">Conclua a R1 antes de gerar a proposta</div>
+        </div>
+        <!-- Gerar R1 — sempre visível -->
+        <div style="position:relative" id="btnGenR1Wrap">
+          <button class="genbtn" id="btnGenR1" onclick="generateR1()" style="background:var(--bg3);border:1px solid var(--lime);color:var(--lime)" disabled>
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 2a5 5 0 1 0 0 10A5 5 0 0 0 7 2zm0 1.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zm0 1.5a.75.75 0 0 0-.75.75v2c0 .2.08.38.22.52l1.25 1.25a.75.75 0 1 0 1.06-1.06L7.75 7.69V5.75A.75.75 0 0 0 7 5z" fill="currentColor"/></svg>
+            Gerar Roteiro R1
+          </button>
+          <div id="btnGenR1Tip" style="display:none;position:absolute;bottom:calc(100% + 6px);right:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;font-size:.7rem;color:var(--muted);white-space:nowrap;z-index:10;pointer-events:none">Preencha os campos obrigatórios</div>
         </div>
       </div>
 
@@ -1077,7 +1081,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.10.1</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.10.2</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -4432,11 +4436,15 @@ function updateAllButtonStates(status){
   }
 
   var filled=requiredFieldsFilled();
+  var r2Visible=R2_ALLOWED_STATUSES.indexOf(status)>=0;
 
-  // Sem prospect — R1 habilitada se campos preenchidos, R2 sempre bloqueada
+  // R2: só aparece quando status permite (R1 concluída ou além)
+  if(btnR2)btnR2.style.display=r2Visible?'':'none';
+  if(wrapR2)wrapR2.style.display=r2Visible?'':'none';
+
+  // Sem prospect — R1 habilitada se campos preenchidos, R2 oculta
   if(!AppState.prospects.currentId){
-    setBtn(btnR1,wrapR1,r1Tip,filled,filled?'':'Preencha os campos obrigatórios');
-    setBtn(btnR2,wrapR2,r2Tip,false,'Selecione um prospect para gerar a proposta R2');
+    setBtn(btnR1,wrapR1,r1Tip,filled,'Preencha os campos obrigatórios');
     return;
   }
 
@@ -4447,15 +4455,14 @@ function updateAllButtonStates(status){
     return;
   }
 
-  // Toggle R1 finalizada — se ON, R1 sempre bloqueada independente de qualquer outra lógica
   var toggleOn=document.getElementById('toggleR1')&&document.getElementById('toggleR1').checked;
 
-  // R1: habilitada se campos preenchidos, há prospect ativo e toggle OFF
+  // R1: habilitada se campos preenchidos e toggle OFF
   setBtn(btnR1,wrapR1,r1Tip,filled&&!toggleOn,toggleOn?'R1 já finalizada':'Preencha os campos obrigatórios');
 
   // R2: habilitada se campos preenchidos e status permite
-  var r2Allowed=filled&&R2_ALLOWED_STATUSES.indexOf(status)>=0;
-  setBtn(btnR2,wrapR2,r2Tip,r2Allowed,filled?'Conclua a R1 antes de gerar a proposta':'Preencha os campos obrigatórios');
+  var r2Allowed=filled&&r2Visible;
+  setBtn(btnR2,wrapR2,r2Tip,r2Allowed,'Preencha os campos obrigatórios');
 }
 
 // Alias para compatibilidade
@@ -5771,10 +5778,10 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
-v5.10.1 — 2026-04-17
-- "Novo prospect" abre prospectDetailView (não mais o modal antigo)
-- openNewProspectDetail(): limpa formulário, foca no nome
-- pdNomeDisplay atualiza em tempo real ao digitar
+v5.10.2 — 2026-04-17
+- Botões R1/R2 movidos para abaixo do formulário, alinhados à direita
+- Botão R2 só aparece quando R1 está concluída (não mais desabilitado visível)
+- Toggle "R1 finalizada" também só aparece quando R1 existe
 
 v5.10.0 — 2026-04-17
 - Home = lista de Prospects após login (tab Gerador removida)

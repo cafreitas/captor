@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.8.2</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.8.3</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -538,7 +538,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.8.2</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.8.3</div>
     </div>
   </div>
 </div>
@@ -578,7 +578,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.8.2</div>
+      <div class="hver" id="hverEl">v5.8.3</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -1034,7 +1034,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.8.2</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.8.3</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -1988,9 +1988,9 @@ async function extractFromSite(){
       body:JSON.stringify({url:url})
     });
     var scrapeData=await scrapeResp.json();
-    if(!scrapeResp.ok||scrapeData.error)throw new Error(scrapeData.error||'Erro ao acessar o site');
+    if(!scrapeResp.ok||scrapeData.error)throw new Error(scrapeData.error||'Site fora do ar. Tente novamente mais tarde.');
     var html=scrapeData.text;
-    if(!html||html.trim().length<100)throw new Error('O site não retornou conteúdo suficiente para extração.');
+    if(!html||html.trim().length<100)throw new Error('Não foi possível extrair informações deste site. Use o upload de PDF ou preencha manualmente.');
 
     // 2. Extract via AI
     btn.innerHTML='<span style="opacity:.7">Analisando com IA...</span>';
@@ -5268,6 +5268,10 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
+v5.8.3 — 2026-04-16
+- Mensagens de erro amigáveis na extração via site (403, 404, 5xx, timeout, conteúdo insuficiente)
+- Edge Function scrape-site atualizada com mensagens em português
+
 v5.8.2 — 2026-04-16
 - Edge Function scrape-site: busca HTML de sites externos (bypassa CORS)
 - Step 0: tab "Via site da empresa" funcional — extrai dados com IA e preenche Step 1

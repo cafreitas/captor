@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.11.4</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.11.5</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -579,7 +579,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.11.4</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.11.5</div>
     </div>
   </div>
 </div>
@@ -619,7 +619,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.11.4</div>
+      <div class="hver" id="hverEl">v5.11.5</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -1122,7 +1122,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.11.4</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.11.5</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -2831,7 +2831,7 @@ async function regenerate(){
 // ── SIDEBAR TOGGLE ──
 var sidebarVisible = true;
 
-// v5.11.4: collapse/expand agora esconde/mostra o formulário da detail view
+// v5.11.5: collapse/expand agora esconde/mostra o formulário da detail view
 var sidebarVisible=true;
 function collapseSidebar(){
   var form=document.getElementById('pdFormGrid');
@@ -5508,10 +5508,16 @@ async function upsertProspect(newStatus){
 // Trocar o corpo desta função para integrar com Salesforce ou outro CRM no futuro
 async function fetchProspects(){
   if(!supabaseUserId)return[];
-  var {data,error}=await sb.from('prospects')
-    .select('id,nome,perfil_risco,patrimonio_estimado,status,created_at,objetivo,profissao,idade,horizonte,roteiro_r1,r1_notes,email,telefone')
-    .eq('assessor_id',supabaseUserId)
-    .order('created_at',{ascending:false});
+  var fields='id,nome,perfil_risco,patrimonio_estimado,status,created_at,objetivo,profissao,idade,horizonte,roteiro_r1,r1_notes,email,telefone';
+  var query;
+  if(currentUserIsManager&&currentFirmId){
+    // PJ: busca todos os prospects da empresa pelo firm_id
+    query=sb.from('prospects').select(fields).eq('firm_id',currentFirmId);
+  } else {
+    // PF: só os próprios prospects
+    query=sb.from('prospects').select(fields).eq('assessor_id',supabaseUserId);
+  }
+  var {data,error}=await query.order('created_at',{ascending:false});
   if(error)return[];
   return data||[];
 }
@@ -6018,11 +6024,8 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
-v5.11.4 — 2026-04-17
-- Toggle "R1 finalizada": texto colado ao lado esquerdo do slider
-- Após marcar toggle: botão "Gerar Proposta R2" aparece abaixo no rodapé
-
-v5.11.0 — 2026-04-17
+v5.11.5 — 2026-04-18
+- Fix PJ: fetchProspects() busca por firm_id (antes buscava só por assessor_id do manager)
 - Tab "Dashboard" renomeada para "Propostas"
 - Pipeline visual de funil: 7 estágios com barras proporcionais + taxa de conversão
 - Pipeline clicável — filtra tabela pelo estágio

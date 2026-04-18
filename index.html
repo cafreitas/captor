@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.12.0</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.12.1</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -588,7 +588,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.12.0</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.12.1</div>
     </div>
   </div>
 </div>
@@ -628,7 +628,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.12.0</div>
+      <div class="hver" id="hverEl">v5.12.1</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -748,7 +748,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="pd-form-grid" id="pdFormGrid">
         <!-- Esquerda: campos do perfil -->
         <div class="pd-panel">
-          <div class="pd-panel-title">Perfil &nbsp;·&nbsp; <button type="button" onclick="fillExample()" style="background:none;border:none;color:var(--lime);font-size:.62rem;font-weight:700;cursor:pointer;padding:0;font-family:var(--f);text-decoration:underline;letter-spacing:.08em;text-transform:uppercase">usar exemplo</button></div>
+          <div class="pd-panel-title">Perfil &nbsp;·&nbsp; <button id="btnUsarExemplo" type="button" onclick="fillExample()" style="background:none;border:none;color:var(--lime);font-size:.62rem;font-weight:700;cursor:pointer;padding:0;font-family:var(--f);text-decoration:underline;letter-spacing:.08em;text-transform:uppercase">usar exemplo</button></div>
           <div class="fg"><label class="fl">Nome</label><input class="fi" id="pd_nome" placeholder="Ex: Ricardo Almeida" oninput="syncFormToSidebar();var d=document.getElementById('pdNomeDisplay');if(d&&(d.textContent==='Novo Prospect'||d.textContent==='—'))d.textContent=this.value||'Novo Prospect'"></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div class="fg"><label class="fl">Patrimônio</label><input class="fi" id="pd_pat" type="text" placeholder="R$ 0" oninput="maskPdPat(this);syncFormToSidebar()" autocomplete="off"></div>
@@ -861,11 +861,11 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 
   <!-- PROSPECTS -->
   <div id="prospectview" style="display:none;padding:24px 26px">
-    <div class="dht">Prospects</div>
-    <div class="dhs" id="prospectSubtitle">Carregando...</div>
-    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
-      <button onclick="openNewProspectDetail()" style="padding:7px 16px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer">+ Novo prospect</button>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px">
+      <div class="dht">Prospects</div>
+      <button id="btnNovoProspect" onclick="openNewProspectDetail()" style="padding:7px 16px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer;flex-shrink:0">+ Novo prospect</button>
     </div>
+    <div class="dhs" id="prospectSubtitle" style="margin-bottom:16px">Carregando...</div>
     <div class="block">
       <div class="blkhd" style="cursor:default">
         <div class="blkico">👥</div>
@@ -1168,7 +1168,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.12.0</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.12.1</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -1783,6 +1783,11 @@ async function enterApp(session){
   await loadEmpresaData();
   loadProspectsSelector();
   initOnboarding();
+  // 3.18: oculta botão Novo prospect para gestores
+  if(currentUserIsManager){
+    var btn=document.getElementById('btnNovoProspect');
+    if(btn)btn.style.display='none';
+  }
   // Home = Prospects
   var prospectsBtn=document.querySelector('.ntab[onclick*="prospects"]');
   if(prospectsBtn)showTab('prospects',prospectsBtn);
@@ -2877,7 +2882,7 @@ async function regenerate(){
 // ── SIDEBAR TOGGLE ──
 var sidebarVisible = true;
 
-// v5.12.0: collapse/expand agora esconde/mostra o formulário da detail view
+// v5.12.1: collapse/expand agora esconde/mostra o formulário da detail view
 var sidebarVisible=true;
 function collapseSidebar(){
   var form=document.getElementById('pdFormGrid');
@@ -5828,19 +5833,28 @@ async function openProspectDetail(id){
   // Barra manager
   var mgrBar=document.getElementById('pdManagerBar');
   var form=document.getElementById('pdFormGrid');
+  var btnExemplo=document.getElementById('btnUsarExemplo');
+  var btnNovo=document.getElementById('btnNovoProspect');
   if(isManager){
     mgrBar.style.display='flex';
     if(form)form.classList.add('pd-readonly');
-    // Mostra nome do assessor responsável
-    var assessorNome=AppState.dash.assessorMap&&AppState.dash.assessorMap[p.assessor_id]
-      ?AppState.dash.assessorMap[p.assessor_id]
-      :'assessor '+p.assessor_id.substring(0,8);
-    document.getElementById('pdManagerAssessorNome').textContent='Responsável: '+assessorNome;
-    // Oculta ações de geração
+    if(btnExemplo)btnExemplo.style.display='none';
+    if(btnNovo)btnNovo.style.display='none';
+    // 3.16: resolve nome real do assessor via firm_members
+    document.getElementById('pdManagerAssessorNome').textContent='Responsável: carregando...';
+    getFirmMembers().then(function(members){
+      var m=members.find(function(x){return x.user_id===p.assessor_id;});
+      var nome=m&&m.company_profiles&&m.company_profiles.empresa_nome
+        ?m.company_profiles.empresa_nome
+        :(m?'Assessor '+m.user_id.substring(0,8):'Assessor desconhecido');
+      document.getElementById('pdManagerAssessorNome').textContent='Responsável: '+nome;
+    });
     document.getElementById('pdActionsBar').style.display='none';
   } else {
     mgrBar.style.display='none';
     if(form)form.classList.remove('pd-readonly');
+    if(btnExemplo)btnExemplo.style.display='';
+    if(btnNovo)btnNovo.style.display='';
     document.getElementById('pdActionsBar').style.display='flex';
   }
 
@@ -6214,11 +6228,11 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
-v5.12.0 — 2026-04-18
-- Manager: tela de detalhe do prospect em modo leitura (formulário desabilitado, sem R1/R2)
-- Manager: barra dourada com nome do assessor responsável + botão Transferir
-- Manager: histórico de transferências colapsável (só visível para gestores)
-- Manager: anotações R1 visíveis em leitura (campos desabilitados após render)
+v5.12.1 — 2026-04-18
+- 3.15: botão "usar exemplo" oculto em modo visualização manager
+- 3.16: barra manager mostra nome real do assessor (via firm_members)
+- 3.17: botão "Novo prospect" alinhado horizontalmente com título
+- 3.18: botão "Novo prospect" oculto para conta gerente
 - Modal de transferência: select de assessores, motivo opcional, grava em transfer_logs
 - transfer_logs: tabela criada via SQL (ver plano v5.12)
 - PJ: busca propostas de todos os assessores; coluna "Assessor" na tabela

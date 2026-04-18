@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.11.5</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.12.0</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -458,6 +458,15 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 .fadein{animation:fadein .35s ease forwards}
 @keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
+/* MANAGER MODE */
+.pd-readonly .fi,.pd-readonly .fsel,.pd-readonly .fta{opacity:.6;pointer-events:none;cursor:default}
+.pd-manager-bar{background:rgba(224,184,64,.08);border:1px solid rgba(224,184,64,.2);border-radius:var(--r);padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pd-manager-bar-info{font-size:.78rem;color:var(--gold)}
+.pd-transfer-btn{padding:7px 16px;background:var(--gold);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s}
+.pd-transfer-btn:hover{background:#f0c840}
+.pd-history-item{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border2);font-size:.75rem;color:var(--muted)}
+.pd-history-arrow{color:var(--dim);flex-shrink:0}
+
 /* PIPELINE FUNIL */
 .pipeline-wrap{display:flex;align-items:stretch;gap:0;margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
 .pipeline-stage{display:flex;flex-direction:column;align-items:center;position:relative;cursor:pointer;transition:opacity .15s;min-width:60px}
@@ -579,7 +588,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.11.5</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.12.0</div>
     </div>
   </div>
 </div>
@@ -619,7 +628,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.11.5</div>
+      <div class="hver" id="hverEl">v5.12.0</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -714,6 +723,24 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
           </div>
         </div>
         <div class="pd-topactions">
+        </div>
+      </div>
+
+      <!-- Barra manager (só para gestores) -->
+      <div id="pdManagerBar" style="display:none" class="pd-manager-bar">
+        <span class="pd-manager-bar-info">👁 Modo visualização — <span id="pdManagerAssessorNome">assessor</span></span>
+        <button class="pd-transfer-btn" onclick="openTransferModal()">↔ Transferir prospect</button>
+      </div>
+
+      <!-- Histórico de transferências (só para gestores) -->
+      <div id="pdHistoricoWrap" style="display:none;margin-bottom:16px">
+        <div class="block">
+          <div class="blkhd" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.blkchev').classList.toggle('open')" style="cursor:pointer">
+            <div class="blkico">🔄</div>
+            <div class="blktit">Histórico de transferências</div>
+            <span class="blkchev">▾</span>
+          </div>
+          <div class="blkbody" id="pdHistoricoBody"></div>
         </div>
       </div>
 
@@ -1122,7 +1149,26 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.11.5</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <!-- MODAL TRANSFERIR PROSPECT -->
+  <div id="transferModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)closeTransferModal()">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);width:min(440px,100%);padding:24px">
+      <div style="font-size:.95rem;font-weight:700;color:var(--white);margin-bottom:4px">Transferir prospect</div>
+      <div style="font-size:.74rem;color:var(--muted);margin-bottom:20px">O novo assessor assume o prospect e seus créditos serão utilizados nas próximas gerações.</div>
+      <label class="ll2">Transferir para</label>
+      <select class="fsel" id="transferSelect" style="margin-bottom:12px">
+        <option value="">Selecione o assessor...</option>
+      </select>
+      <label class="ll2">Motivo <span style="font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
+      <textarea class="fta" id="transferMotivo" placeholder="Ex: assessor original saiu da empresa, redistribuição de carteira..." style="min-height:64px;margin-bottom:14px"></textarea>
+      <div id="transferError" style="display:none;background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:var(--r);padding:8px 12px;font-size:.75rem;color:#f08080;margin-bottom:10px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="closeTransferModal()" style="padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:var(--r);color:var(--muted);font-family:var(--f);font-size:.8rem;cursor:pointer">Cancelar</button>
+        <button onclick="confirmTransfer()" id="transferBtn" style="padding:8px 20px;background:var(--gold);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.8rem;font-weight:700;cursor:pointer">Confirmar transferência</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.12.0</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -2831,7 +2877,7 @@ async function regenerate(){
 // ── SIDEBAR TOGGLE ──
 var sidebarVisible = true;
 
-// v5.11.5: collapse/expand agora esconde/mostra o formulário da detail view
+// v5.12.0: collapse/expand agora esconde/mostra o formulário da detail view
 var sidebarVisible=true;
 function collapseSidebar(){
   var form=document.getElementById('pdFormGrid');
@@ -3375,6 +3421,7 @@ var AppState = {
     all: [],
     currentId: null,
     r1Generated: false,
+    viewingAsManager: false,
     sortCol: 'nome',
     sortDir: {nome:'asc',patrimonio:'desc',data:'desc'},
     r1AutoSaveTimer: null
@@ -5759,14 +5806,16 @@ async function openProspectDetail(id){
   var p=AppState.prospects.all.find(function(x){return x.id===id;});
   if(!p)return;
   AppState.prospects.currentId=id;
-  // Atualiza hidden sidebar selector
   var sel=document.getElementById('fProspectSel');
   if(sel)sel.value=id;
-  // Mostra formulário (caso viesse de uma tela com form colapsado)
   expandSidebar();
-  // Mostra detalhe, esconde lista
   document.getElementById('prospectview').style.display='none';
   document.getElementById('prospectDetailView').style.display='block';
+
+  // Detecta modo manager
+  var isManager=!!(currentUserIsManager&&currentFirmId&&p.assessor_id!==supabaseUserId);
+  AppState.prospects.viewingAsManager=isManager;
+
   // Top bar
   document.getElementById('pdNomeDisplay').textContent=p.nome;
   var stLabel=prospectStatusLabels[p.status]||p.status||'Criado';
@@ -5775,29 +5824,59 @@ async function openProspectDetail(id){
   if(p.perfil_risco)meta.push(p.perfil_risco);
   if(p.patrimonio_estimado)meta.push(new Intl.NumberFormat('pt-BR',{notation:'compact',maximumFractionDigits:1}).format(p.patrimonio_estimado));
   document.getElementById('pdMetaExtra').textContent=meta.join(' · ');
+
+  // Barra manager
+  var mgrBar=document.getElementById('pdManagerBar');
+  var form=document.getElementById('pdFormGrid');
+  if(isManager){
+    mgrBar.style.display='flex';
+    if(form)form.classList.add('pd-readonly');
+    // Mostra nome do assessor responsável
+    var assessorNome=AppState.dash.assessorMap&&AppState.dash.assessorMap[p.assessor_id]
+      ?AppState.dash.assessorMap[p.assessor_id]
+      :'assessor '+p.assessor_id.substring(0,8);
+    document.getElementById('pdManagerAssessorNome').textContent='Responsável: '+assessorNome;
+    // Oculta ações de geração
+    document.getElementById('pdActionsBar').style.display='none';
+  } else {
+    mgrBar.style.display='none';
+    if(form)form.classList.remove('pd-readonly');
+    document.getElementById('pdActionsBar').style.display='flex';
+  }
+
   // Popula formulário
   populatePdForm(p);
-  syncFormToSidebar();
-  // Toggle R1
+  if(!isManager)syncFormToSidebar();
+
+  // Toggle R1 (só para assessor dono)
   var showToggle=['r1_concluida','resumo_enviado','r1_aprovada','r2_iniciada','negocio_fechado'];
-  document.getElementById('confirmR1Wrap').style.display=(p.roteiro_r1||showToggle.indexOf(p.status)>=0)?'flex':'none';
+  document.getElementById('confirmR1Wrap').style.display=(!isManager&&(p.roteiro_r1||showToggle.indexOf(p.status)>=0))?'flex':'none';
   syncToggleR1(p.status);
-  updateAllButtonStates(p.status);
+  if(!isManager)updateAllButtonStates(p.status);
+
   // Reseta output
   document.getElementById('outArea').style.display='none';
   document.getElementById('outArea').innerHTML='';
   document.getElementById('loadingState').style.display='none';
   document.getElementById('emptyState').style.display='flex';
   AppState.prospects.r1Generated=false;
+
+  // Histórico de transferências (só manager)
+  var histWrap=document.getElementById('pdHistoricoWrap');
+  if(isManager){
+    histWrap.style.display='block';
+    loadTransferHistory(id);
+  } else {
+    histWrap.style.display='none';
+  }
+
   // Carrega R1 se disponível
   if(p.roteiro_r1){
     var patFmt=p.patrimonio_estimado
       ?new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(p.patrimonio_estimado)
       :'patrimônio a confirmar';
-    // Busca dados frescos incluindo r1_notes
     var {data:fresh}=await sb.from('prospects').select('*').eq('id',id).maybeSingle();
     if(fresh){
-      // Atualiza cache
       var idx=AppState.prospects.all.findIndex(function(x){return x.id===id;});
       if(idx>=0)Object.assign(AppState.prospects.all[idx],fresh);
       p=fresh;
@@ -5806,6 +5885,14 @@ async function openProspectDetail(id){
     AppState.prospects.r1Generated=true;
     renderR1Output(p.nome,patFmt,p.roteiro_r1);
     if(p.r1_notes){setTimeout(function(){restoreR1Notes(p.r1_notes);},300);}
+    // Em modo manager, torna anotações read-only após render
+    if(isManager){
+      setTimeout(function(){
+        document.querySelectorAll('#outArea input,#outArea textarea,#outArea select').forEach(function(el){
+          el.disabled=true;el.style.opacity='.6';
+        });
+      },400);
+    }
   }
 }
 
@@ -5962,6 +6049,109 @@ async function saveProspect(){
   openProspectDetail(data.id);
 }
 
+// ── TRANSFERÊNCIA DE PROSPECT ────────────────────────────────────────────────
+
+var _firmMembersCache = null;
+
+async function getFirmMembers(){
+  if(_firmMembersCache)return _firmMembersCache;
+  if(!currentFirmId)return[];
+  var {data}=await sb.from('firm_members')
+    .select('user_id,role,company_profiles(empresa_nome)')
+    .eq('firm_id',currentFirmId)
+    .not('joined_at','is',null);
+  _firmMembersCache=data||[];
+  return _firmMembersCache;
+}
+
+async function openTransferModal(){
+  var id=AppState.prospects.currentId;
+  if(!id)return;
+  var p=AppState.prospects.all.find(function(x){return x.id===id;});
+  if(!p)return;
+  // Popula select de assessores (exceto o atual)
+  var members=await getFirmMembers();
+  var sel=document.getElementById('transferSelect');
+  sel.innerHTML='<option value="">Selecione o assessor...</option>';
+  members.forEach(function(m){
+    if(m.user_id===p.assessor_id)return; // exclui o atual
+    var nome=m.company_profiles&&m.company_profiles.empresa_nome
+      ?m.company_profiles.empresa_nome
+      :m.user_id.substring(0,8);
+    var opt=document.createElement('option');
+    opt.value=m.user_id;
+    opt.textContent=nome+(m.role==='manager'?' (gestor)':'');
+    sel.appendChild(opt);
+  });
+  document.getElementById('transferMotivo').value='';
+  document.getElementById('transferError').style.display='none';
+  document.getElementById('transferModal').style.display='flex';
+}
+
+function closeTransferModal(){
+  document.getElementById('transferModal').style.display='none';
+}
+
+async function confirmTransfer(){
+  var toUserId=document.getElementById('transferSelect').value;
+  var motivo=document.getElementById('transferMotivo').value.trim();
+  var errEl=document.getElementById('transferError');
+  if(!toUserId){errEl.textContent='Selecione o assessor de destino.';errEl.style.display='block';return;}
+  var id=AppState.prospects.currentId;
+  if(!id)return;
+  var p=AppState.prospects.all.find(function(x){return x.id===id;});
+  if(!p)return;
+  var btn=document.getElementById('transferBtn');
+  btn.disabled=true;btn.textContent='Transferindo...';
+  // Atualiza assessor_id no prospect
+  var {error}=await sb.from('prospects').update({assessor_id:toUserId}).eq('id',id);
+  if(error){errEl.textContent='Erro: '+error.message;errEl.style.display='block';btn.disabled=false;btn.textContent='Confirmar transferência';return;}
+  // Registra no log
+  await sb.from('transfer_logs').insert({
+    prospect_id:id,
+    from_user_id:p.assessor_id,
+    to_user_id:toUserId,
+    transferred_by:supabaseUserId,
+    motivo:motivo||null
+  });
+  // Atualiza cache
+  p.assessor_id=toUserId;
+  closeTransferModal();
+  showToast('Prospect transferido com sucesso.','success');
+  // Recarrega histórico e barra
+  var members=await getFirmMembers();
+  var m=members.find(function(x){return x.user_id===toUserId;});
+  var novoNome=m&&m.company_profiles&&m.company_profiles.empresa_nome?m.company_profiles.empresa_nome:toUserId.substring(0,8);
+  document.getElementById('pdManagerAssessorNome').textContent='Responsável: '+novoNome;
+  loadTransferHistory(id);
+  btn.disabled=false;btn.textContent='Confirmar transferência';
+}
+
+async function loadTransferHistory(prospectId){
+  var body=document.getElementById('pdHistoricoBody');
+  if(!body)return;
+  body.innerHTML='<div style="padding:10px 16px;font-size:.75rem;color:var(--dim)">Carregando...</div>';
+  var {data,error}=await sb.from('transfer_logs')
+    .select('*').eq('prospect_id',prospectId).order('created_at',{ascending:false});
+  if(error||!data||!data.length){
+    body.innerHTML='<div style="padding:10px 16px;font-size:.75rem;color:var(--dim)">Nenhuma transferência registrada.</div>';
+    return;
+  }
+  var members=await getFirmMembers();
+  function getNome(uid){
+    var m=members.find(function(x){return x.user_id===uid;});
+    return m&&m.company_profiles&&m.company_profiles.empresa_nome?m.company_profiles.empresa_nome:uid.substring(0,8);
+  }
+  body.innerHTML='<div style="padding:4px 16px 8px">'+data.map(function(t){
+    var dt=new Date(t.created_at).toLocaleDateString('pt-BR');
+    return '<div class="pd-history-item">'
+      +'<span class="pd-history-arrow">↔</span>'
+      +'<div><div>'+getNome(t.from_user_id)+' → '+getNome(t.to_user_id)+'</div>'
+      +'<div class="pd-history-meta">'+dt+(t.motivo?' · '+t.motivo:'')+(t.transferred_by?' · por '+getNome(t.transferred_by):'')+'</div>'
+      +'</div></div>';
+  }).join('')+'</div>';
+}
+
 // ── SISTEMA DE ERROS ─────────────────────────────────────────────────────────
 var _toastTimer=null;
 function showToast(msg,tipo){
@@ -6024,11 +6214,13 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
-v5.11.5 — 2026-04-18
-- Fix PJ: fetchProspects() busca por firm_id (antes buscava só por assessor_id do manager)
-- Tab "Dashboard" renomeada para "Propostas"
-- Pipeline visual de funil: 7 estágios com barras proporcionais + taxa de conversão
-- Pipeline clicável — filtra tabela pelo estágio
+v5.12.0 — 2026-04-18
+- Manager: tela de detalhe do prospect em modo leitura (formulário desabilitado, sem R1/R2)
+- Manager: barra dourada com nome do assessor responsável + botão Transferir
+- Manager: histórico de transferências colapsável (só visível para gestores)
+- Manager: anotações R1 visíveis em leitura (campos desabilitados após render)
+- Modal de transferência: select de assessores, motivo opcional, grava em transfer_logs
+- transfer_logs: tabela criada via SQL (ver plano v5.12)
 - PJ: busca propostas de todos os assessores; coluna "Assessor" na tabela
 - PJ: ranking de assessores (enviadas, aceitas, conversão)
 - PJ: título da tela inclui nome da empresa

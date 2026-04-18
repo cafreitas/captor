@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.12.1</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.12.2</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -252,6 +252,22 @@ header{height:54px;display:flex;align-items:center;justify-content:space-between
 .bmuted{background:rgba(255,255,255,.06);color:var(--muted)}
 
 /* SLIDERS ALOCAÇÃO */
+/* Checkboxes customizados nas Anotações R1 (mais visíveis em fundo escuro) */
+input[type=checkbox].r1-cb{
+  -webkit-appearance:none;appearance:none;
+  width:15px;height:15px;border-radius:3px;
+  border:1.5px solid var(--border2);background:var(--bg3);
+  cursor:pointer;flex-shrink:0;position:relative;transition:all .15s;vertical-align:middle;
+}
+input[type=checkbox].r1-cb:checked{
+  background:var(--lime);border-color:var(--lime);
+}
+input[type=checkbox].r1-cb:checked::after{
+  content:'';position:absolute;left:4px;top:1px;
+  width:5px;height:9px;border:2px solid #1a1a1a;
+  border-top:none;border-left:none;transform:rotate(45deg);
+}
+
 .aslider-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .aslider-label{font-size:.7rem;color:var(--muted);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .aslider-wrap{flex:1;position:relative}
@@ -588,7 +604,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.12.1</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.12.2</div>
     </div>
   </div>
 </div>
@@ -628,7 +644,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.12.1</div>
+      <div class="hver" id="hverEl">v5.12.2</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -1101,7 +1117,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
       <div class="kpi" style="cursor:default">
         <div class="kpiv" id="teamTotalAssessores">—</div>
-        <div class="kpil">Assessores ativos</div>
+        <div class="kpil">Membros da equipe</div>
       </div>
       <div class="kpi" style="cursor:default">
         <div class="kpiv" id="teamCreditosMes">—</div>
@@ -1168,7 +1184,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.12.1</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.12.2</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -2673,6 +2689,13 @@ async function generate(){
   document.getElementById('outArea').style.display='none';
   collapseSidebar();
   document.getElementById('loadingState').style.display='flex';
+  var ldlabelEl=document.querySelector('.ldlabel');
+  if(ldlabelEl)ldlabelEl.textContent='Gerando proposta R2...';
+  var stepTexts=['Analisando diagnóstico R1','Construindo proposta personalizada','Montando slides','Calculando alocação ideal'];
+  ['ss1','ss2','ss3','ss4'].forEach(function(id,i){
+    var el=document.getElementById(id);
+    if(el){var dot=el.querySelector('.lddot');el.innerHTML='';if(dot)el.appendChild(dot);el.appendChild(document.createTextNode(stepTexts[i]));}
+  });
   document.getElementById('btnGen').disabled=true;
   proposalApproved = false;
   proposalDraftHash = null;
@@ -2882,7 +2905,7 @@ async function regenerate(){
 // ── SIDEBAR TOGGLE ──
 var sidebarVisible = true;
 
-// v5.12.1: collapse/expand agora esconde/mostra o formulário da detail view
+// v5.12.2: collapse/expand agora esconde/mostra o formulário da detail view
 var sidebarVisible=true;
 function collapseSidebar(){
   var form=document.getElementById('pdFormGrid');
@@ -4469,23 +4492,22 @@ async function loadTeamMembers(){
   var listEl=document.getElementById('teamMembersList');
   if(!listEl)return;
   var {data,error}=await sb.from('firm_members')
-    .select('user_id,role,credit_limit_monthly,joined_at')
+    .select('user_id,role,credit_limit_monthly,joined_at,company_profiles(empresa_nome)')
     .eq('firm_id',currentFirmId)
     .not('joined_at','is',null);
   if(error||!data||!data.length){
-    listEl.innerHTML='<div style="padding:16px;text-align:center;color:var(--dim);font-size:.78rem">Nenhum assessor vinculado ainda.</div>';
+    listEl.innerHTML='<div style="padding:16px;text-align:center;color:var(--dim);font-size:.78rem">Nenhum membro vinculado ainda.</div>';
     document.getElementById('teamTotalAssessores').textContent='0';
     return;
   }
-  // contar só advisors
-  var advisors=data.filter(function(m){return m.role==='advisor';});
-  document.getElementById('teamTotalAssessores').textContent=advisors.length;
-  // buscar propostas por user
+  // Conta todos os membros (gestor + assessores)
+  document.getElementById('teamTotalAssessores').textContent=data.length;
+  // Buscar propostas por user
   var userIds=data.map(function(m){return m.user_id;});
   var {data:props}=await sb.from('proposals').select('user_id').in('user_id',userIds);
   var propCount={};
   (props||[]).forEach(function(p){propCount[p.user_id]=(propCount[p.user_id]||0)+1;});
-  // buscar créditos usados no mês
+  // Buscar créditos usados no mês
   var mesInicio=new Date(); mesInicio.setDate(1); mesInicio.setHours(0,0,0,0);
   var {data:logs}=await sb.from('credit_logs')
     .select('user_id,consumo')
@@ -4496,14 +4518,17 @@ async function loadTeamMembers(){
   (logs||[]).forEach(function(l){totalMes+=Math.abs(l.consumo);});
   document.getElementById('teamCreditosMes').textContent=totalMes.toFixed(1)+' cr';
   listEl.innerHTML=data.map(function(m){
-    var label=m.user_id===supabaseUserId?'(você)':'';
-    var nome=m.user_id.slice(0,8)+'...';
+    var label=m.user_id===supabaseUserId?' (você)':'';
+    var nome=m.company_profiles&&m.company_profiles.empresa_nome
+      ?m.company_profiles.empresa_nome
+      :m.user_id.slice(0,8)+'...';
+    var inicial=nome.charAt(0).toUpperCase();
     var nProps=propCount[m.user_id]||0;
     var isGestor=m.role==='manager';
     return '<div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:0;padding:8px 12px;border-bottom:1px solid var(--border2)">'
       +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<div style="width:28px;height:28px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:'+(isGestor?'var(--gold)':'var(--lime)')+'">'+m.role.charAt(0).toUpperCase()+'</div>'
-      +'<div><div style="font-size:.78rem;color:var(--text);font-weight:600">'+nome+' '+label+'</div>'
+      +'<div style="width:28px;height:28px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:'+(isGestor?'var(--gold)':'var(--lime)')+'">'+inicial+'</div>'
+      +'<div><div style="font-size:.78rem;color:var(--text);font-weight:600">'+nome+label+'</div>'
       +'<div style="font-size:.68rem;color:var(--dim)">'+(isGestor?'Gestor':'Assessor')+'</div></div>'
       +'</div>'
       +'<div style="width:110px;text-align:center;font-size:.78rem;color:var(--muted)">'+nProps+' proposta'+(nProps!==1?'s':'')+'</div>'
@@ -5121,12 +5146,12 @@ function buildAnotacoesR1HTML(perguntas){
     +'<div><span style="'+lbl+'">Objeções levantadas</span>'
     +['Liquidez','Taxas','Risco','Timing','Já tem assessor','Outros'].map(function(o){
       return '<label style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:.78rem;color:var(--muted);cursor:pointer">'
-        +'<input type="checkbox" name="r1_objecao" value="'+o+'" style="accent-color:var(--lime)"> '+o+'</label>';
+        +'<input type="checkbox" class="r1-cb" name="r1_objecao" value="'+o+'"> '+o+'</label>';
     }).join('')+'</div>'
     +'<div><span style="'+lbl+'">Produtos que já possui</span>'
     +['CDB/RDB','Tesouro Direto','Ações','FIIs','Fundos','Previdência','Câmbio/Offshore','Outros'].map(function(p){
       return '<label style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:.78rem;color:var(--muted);cursor:pointer">'
-        +'<input type="checkbox" name="r1_produto" value="'+p+'" style="accent-color:var(--lime)"> '+p+'</label>';
+        +'<input type="checkbox" class="r1-cb" name="r1_produto" value="'+p+'"> '+p+'</label>';
     }).join('')+'</div>'
     +'</div>'
     // Sliders alocação atual
@@ -6228,11 +6253,11 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
-v5.12.1 — 2026-04-18
-- 3.15: botão "usar exemplo" oculto em modo visualização manager
-- 3.16: barra manager mostra nome real do assessor (via firm_members)
-- 3.17: botão "Novo prospect" alinhado horizontalmente com título
-- 3.18: botão "Novo prospect" oculto para conta gerente
+v5.12.2 — 2026-04-18
+- Equipe: nome real dos membros (join company_profiles), avatar com inicial do nome
+- Equipe: KPI renomeado para "Membros da equipe" (inclui gestor na contagem)
+- 3.14: loader R2 com label e steps corretos ("Gerando proposta R2...")
+- 3.19: checkboxes objeções e produtos mais escuros (CSS customizado lime sólido)
 - Modal de transferência: select de assessores, motivo opcional, grava em transfer_logs
 - transfer_logs: tabela criada via SQL (ver plano v5.12)
 - PJ: busca propostas de todos os assessores; coluna "Assessor" na tabela

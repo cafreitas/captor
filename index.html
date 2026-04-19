@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.12.2</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.13.0</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -182,7 +182,20 @@ header{height:54px;display:flex;align-items:center;justify-content:space-between
 #dashview{display:none;padding:24px 26px}
 .dht{font-size:1.1rem;font-weight:800;color:var(--white);letter-spacing:-.02em}
 .dhs{font-size:.73rem;color:var(--muted);margin-top:3px;margin-bottom:16px}
-.kpirow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.kpirow{display:flex;align-items:stretch;gap:0;margin-bottom:16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden}
+.kpi{flex:1;padding:12px 16px;border-right:1px solid var(--border);position:relative;transition:background .15s}
+.kpi:last-child{border-right:none}
+.kpiv{font-size:1.4rem;font-weight:800;color:var(--lime);letter-spacing:-.02em;line-height:1.1}
+.kpil{font-size:.62rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;font-weight:600}
+/* Filtro de período */
+.dash-period-bar{display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.dash-period-btn{padding:5px 12px;background:transparent;border:1px solid var(--border);border-radius:var(--r);color:var(--muted);font-family:var(--f);font-size:.73rem;cursor:pointer;transition:all .15s}
+.dash-period-btn:hover{border-color:var(--lime);color:var(--lime)}
+.dash-period-btn.active{background:var(--lime);color:#1a1a1a;border-color:var(--lime);font-weight:700}
+.dash-period-custom{display:none;gap:6px;align-items:center}
+.dash-period-custom input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--f);font-size:.73rem;padding:4px 8px;cursor:pointer}
+/* Destaque melhor assessor PJ */
+.dash-best-assessor{display:none;background:rgba(224,184,64,.07);border:1px solid rgba(224,184,64,.2);border-radius:var(--r);padding:8px 14px;margin-bottom:14px;font-size:.78rem;color:var(--gold)}
 .kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px}
 .kpiv{font-size:1.6rem;font-weight:800;color:var(--lime);letter-spacing:-.03em}
 .kpil{font-size:.64rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
@@ -520,7 +533,8 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
   /* Login: oculta painel esquerdo de stats em mobile */
   .ll{display:none}.lr{width:100%}
   .main{grid-template-columns:1fr}.sb{border-right:none;border-bottom:1px solid var(--border)}
-  .kpirow{grid-template-columns:1fr 1fr}.chartsgrid,.dashgrid{grid-template-columns:1fr}
+  .kpirow{flex-wrap:wrap}
+  .kpi{min-width:calc(50% - 1px);border-bottom:1px solid var(--border)}
   header{padding:0 12px}.hsub,.hver{display:none}
   /* Config button: só ícone em mobile */
   .hcfg .hcfg-label{display:none}
@@ -604,7 +618,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.12.2</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.13.0</div>
     </div>
   </div>
 </div>
@@ -644,7 +658,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.12.2</div>
+      <div class="hver" id="hverEl">v5.13.0</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -1015,12 +1029,31 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     <div class="dht" id="dashTitle">Propostas</div>
     <div class="dhs" id="dashSubtitle">Carregando...</div>
 
-    <!-- KPIs -->
+    <!-- Filtro de período -->
+    <div class="dash-period-bar">
+      <button class="dash-period-btn" onclick="dashSetPeriod('today',this)">Hoje</button>
+      <button class="dash-period-btn" onclick="dashSetPeriod('week',this)">Esta semana</button>
+      <button class="dash-period-btn active" onclick="dashSetPeriod('month',this)">Este mês</button>
+      <button class="dash-period-btn" onclick="dashSetPeriod('all',this)">Tudo</button>
+      <button class="dash-period-btn" onclick="dashSetPeriod('custom',this)">Personalizado</button>
+      <div class="dash-period-custom" id="dashCustomRange">
+        <input type="date" id="dashDateFrom" onchange="dashApplyCustomPeriod()">
+        <span style="color:var(--dim);font-size:.72rem">até</span>
+        <input type="date" id="dashDateTo" onchange="dashApplyCustomPeriod()">
+      </div>
+    </div>
+
+    <!-- Destaque melhor assessor (só PJ) -->
+    <div class="dash-best-assessor" id="dashBestAssessor"></div>
+
+    <!-- KPIs — barra horizontal -->
     <div class="kpirow">
-      <div class="kpi" id="kpiTotal" onclick="dashKpiFilter('total')" title="Filtrar enviadas"><div class="kpiv" id="kTotal">—</div><div class="kpil">Total enviadas</div></div>
-      <div class="kpi" id="kpiAceitas" onclick="dashKpiFilter('aceita')" title="Filtrar aceitas"><div class="kpiv" id="kAceitas">—</div><div class="kpil">Aceitas</div></div>
-      <div class="kpi" id="kpiTaxa"><div class="kpiv" id="kTaxa">—</div><div class="kpil">Taxa de conversão</div></div>
-      <div class="kpi" id="kpiPendentes" onclick="dashKpiFilter('pendentes')" title="Filtrar aguardando"><div class="kpiv" id="kPendentes">—</div><div class="kpil">Aguardando resposta</div></div>
+      <div class="kpi" id="kpiTotal" onclick="dashKpiFilter('total')" style="cursor:pointer" title="Filtrar enviadas"><div class="kpiv" id="kTotal">—</div><div class="kpil">Enviadas</div></div>
+      <div class="kpi" id="kpiAceitas" onclick="dashKpiFilter('aceita')" style="cursor:pointer" title="Filtrar aceitas"><div class="kpiv" id="kAceitas">—</div><div class="kpil">Aceitas</div></div>
+      <div class="kpi"><div class="kpiv" id="kTaxa">—</div><div class="kpil">Conversão</div></div>
+      <div class="kpi" id="kpiPendentes" onclick="dashKpiFilter('pendentes')" style="cursor:pointer" title="Filtrar aguardando"><div class="kpiv" id="kPendentes">—</div><div class="kpil">Aguardando</div></div>
+      <div class="kpi" id="kpiExpirando" onclick="dashKpiFilter('expirando')" style="cursor:pointer" title="Filtrar expirando"><div class="kpiv" id="kExpirando">—</div><div class="kpil">Expirando (7d)</div></div>
+      <div class="kpi"><div class="kpiv" id="kTempoResp">—</div><div class="kpil">Tempo médio resp.</div></div>
     </div>
 
     <!-- Pipeline visual -->
@@ -1184,7 +1217,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.12.2</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.13.0</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -2905,7 +2938,7 @@ async function regenerate(){
 // ── SIDEBAR TOGGLE ──
 var sidebarVisible = true;
 
-// v5.12.2: collapse/expand agora esconde/mostra o formulário da detail view
+// v5.13.0: collapse/expand agora esconde/mostra o formulário da detail view
 var sidebarVisible=true;
 function collapseSidebar(){
   var form=document.getElementById('pdFormGrid');
@@ -3443,7 +3476,10 @@ var AppState = {
     sortAsc: false,
     page: 1,
     pageSize: 20,
-    selected: {}
+    selected: {},
+    period: 'month',
+    dateFrom: null,
+    dateTo: null
   },
   prospects: {
     all: [],
@@ -3456,12 +3492,124 @@ var AppState = {
   }
 };
 
+// Retorna {from, to} para o período selecionado
+function dashGetPeriodRange(){
+  var now = new Date();
+  var p = AppState.dash.period;
+  if(p === 'today'){
+    var s = new Date(now); s.setHours(0,0,0,0);
+    var e = new Date(now); e.setHours(23,59,59,999);
+    return {from:s, to:e};
+  }
+  if(p === 'week'){
+    var s = new Date(now); s.setDate(now.getDate()-now.getDay()); s.setHours(0,0,0,0);
+    var e = new Date(now); e.setHours(23,59,59,999);
+    return {from:s, to:e};
+  }
+  if(p === 'month'){
+    var s = new Date(now.getFullYear(), now.getMonth(), 1);
+    var e = new Date(now); e.setHours(23,59,59,999);
+    return {from:s, to:e};
+  }
+  if(p === 'custom' && AppState.dash.dateFrom && AppState.dash.dateTo){
+    return {from:new Date(AppState.dash.dateFrom+'T00:00:00'), to:new Date(AppState.dash.dateTo+'T23:59:59')};
+  }
+  return null; // 'all'
+}
+
+function dashFilterByPeriod(proposals){
+  var range = dashGetPeriodRange();
+  if(!range) return proposals;
+  return proposals.filter(function(p){
+    var d = p.created_at ? new Date(p.created_at) : null;
+    return d && d >= range.from && d <= range.to;
+  });
+}
+
+function dashSetPeriod(period, btn){
+  AppState.dash.period = period;
+  document.querySelectorAll('.dash-period-btn').forEach(function(b){b.classList.remove('active');});
+  if(btn) btn.classList.add('active');
+  var customEl = document.getElementById('dashCustomRange');
+  if(customEl) customEl.style.display = period === 'custom' ? 'flex' : 'none';
+  if(period !== 'custom') dashRefreshKpisAndTable();
+}
+
+function dashApplyCustomPeriod(){
+  var f = document.getElementById('dashDateFrom').value;
+  var t = document.getElementById('dashDateTo').value;
+  if(f && t){ AppState.dash.dateFrom=f; AppState.dash.dateTo=t; dashRefreshKpisAndTable(); }
+}
+
+function dashRefreshKpisAndTable(){
+  var proposals = AppState.dash.proposals || [];
+  var filtered = dashFilterByPeriod(proposals);
+  var now = new Date();
+  var in7 = new Date(now.getTime() + 7*86400000);
+
+  var total    = filtered.filter(function(p){ return p.status !== 'rascunho' && p.status !== 'arquivada'; }).length;
+  var aceitas  = filtered.filter(function(p){ return p.status === 'aceita'; }).length;
+  var pendentes = filtered.filter(function(p){ return p.status === 'enviada' || p.status === 'visualizada'; }).length;
+  var expirando = filtered.filter(function(p){
+    return (p.status==='enviada'||p.status==='visualizada') && p.expires_at && new Date(p.expires_at)>=now && new Date(p.expires_at)<=in7;
+  }).length;
+  var taxa = total > 0 ? Math.round(aceitas/total*100) + '%' : '—';
+
+  var respostas = filtered.filter(function(p){ return p.respondido_em && p.created_at; });
+  var tempoMedio = '—';
+  if(respostas.length){
+    var totalDias = respostas.reduce(function(acc,p){
+      return acc + (new Date(p.respondido_em)-new Date(p.created_at))/86400000;
+    },0);
+    var med = Math.round(totalDias/respostas.length);
+    tempoMedio = med === 1 ? '1 dia' : med + ' dias';
+  }
+
+  document.getElementById('kTotal').textContent = total || '—';
+  document.getElementById('kAceitas').textContent = aceitas || '—';
+  document.getElementById('kTaxa').textContent = taxa;
+  document.getElementById('kPendentes').textContent = pendentes || '—';
+  document.getElementById('kExpirando').textContent = expirando || '—';
+  document.getElementById('kTempoResp').textContent = tempoMedio;
+
+  var bestEl = document.getElementById('dashBestAssessor');
+  if(bestEl && currentUserIsManager && currentFirmId){
+    var assessorMap = AppState.dash.assessorMap || {};
+    var byAssessor = {};
+    filtered.forEach(function(p){
+      if(p.status==='rascunho'||p.status==='arquivada') return;
+      if(!byAssessor[p.user_id]) byAssessor[p.user_id]={enviadas:0,aceitas:0};
+      byAssessor[p.user_id].enviadas++;
+      if(p.status==='aceita') byAssessor[p.user_id].aceitas++;
+    });
+    var best = null;
+    Object.keys(byAssessor).forEach(function(id){
+      var d=byAssessor[id];
+      var conv=d.enviadas>0?d.aceitas/d.enviadas:0;
+      if(!best||conv>best.conv||(conv===best.conv&&d.aceitas>best.aceitas))
+        best={id:id,nome:assessorMap[id]||id.substring(0,8),aceitas:d.aceitas,enviadas:d.enviadas,conv:conv};
+    });
+    if(best && best.enviadas > 0){
+      var convPct = Math.round(best.conv*100)+'%';
+      bestEl.style.display='block';
+      bestEl.innerHTML='🏆 Melhor do período: <strong>'+escHtml(best.nome)+'</strong> · '+best.aceitas+' aceitas · '+convPct+' conversão';
+    } else {
+      bestEl.style.display='none';
+    }
+  }
+
+  var sub = document.getElementById('dashSubtitle');
+  if(sub) sub.textContent = total + ' proposta' + (total !== 1 ? 's' : '') + ' · atualizado agora';
+  dashResetPage();
+  renderDashTable();
+}
+
 async function updateDash(){
   if(!supabaseUserId) return;
   document.getElementById('dashSubtitle').textContent = 'Carregando...';
 
   var proposals = [];
-  var assessorMap = {}; // user_id → nome
+  var assessorMap = {};
 
   if(currentUserIsManager && currentFirmId){
     // PJ: busca propostas de todos os assessores da empresa
@@ -3503,24 +3651,13 @@ async function updateDash(){
   AppState.dash.proposals = proposals;
   AppState.dash.assessorMap = assessorMap;
 
-  var total    = proposals.filter(function(p){ return p.status !== 'rascunho' && p.status !== 'arquivada'; }).length;
-  var aceitas  = proposals.filter(function(p){ return p.status === 'aceita'; }).length;
-  var pendentes = proposals.filter(function(p){ return p.status === 'enviada' || p.status === 'visualizada'; }).length;
-  var taxa = total > 0 ? Math.round(aceitas/total*100) + '%' : '—';
-
-  document.getElementById('kTotal').textContent = total || '—';
-  document.getElementById('kAceitas').textContent = aceitas || '—';
-  document.getElementById('kTaxa').textContent = taxa;
-  document.getElementById('kPendentes').textContent = pendentes || '—';
-  document.getElementById('dashSubtitle').textContent = total + ' proposta' + (total !== 1 ? 's' : '') + ' · atualizado agora';
+  dashRefreshKpisAndTable();
 
   // Pipeline (usa prospects + proposals)
   await renderDashPipeline();
 
   // Ranking PJ
   if(currentUserIsManager && currentFirmId) renderDashRanking(proposals, assessorMap);
-
-  renderDashTable();
 }
 
 async function renderDashPipeline(){
@@ -3628,12 +3765,13 @@ function renderDashRanking(proposals, assessorMap){
 
 function dashKpiFilter(type) {
   var filter = document.getElementById('dashFilter');
-  ['kpiTotal','kpiAceitas','kpiTaxa','kpiPendentes'].forEach(function(k){
-    document.getElementById(k).classList.remove('active');
+  ['kpiTotal','kpiAceitas','kpiPendentes','kpiExpirando'].forEach(function(k){
+    var el=document.getElementById(k); if(el)el.classList.remove('active');
   });
-  if(type === 'total')      { filter.value = '';        document.getElementById('kpiTotal').classList.add('active'); }
-  else if(type === 'aceita'){ filter.value = 'aceita';  document.getElementById('kpiAceitas').classList.add('active'); }
+  if(type === 'total')         { filter.value = '';        document.getElementById('kpiTotal').classList.add('active'); }
+  else if(type === 'aceita')   { filter.value = 'aceita';  document.getElementById('kpiAceitas').classList.add('active'); }
   else if(type === 'pendentes'){ filter.value = 'enviada'; document.getElementById('kpiPendentes').classList.add('active'); }
+  else if(type === 'expirando'){ filter.value = 'enviada'; document.getElementById('kpiExpirando').classList.add('active'); }
   dashResetPage(); renderDashTable();
 }
 
@@ -6253,11 +6391,11 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
-v5.12.2 — 2026-04-18
-- Equipe: nome real dos membros (join company_profiles), avatar com inicial do nome
-- Equipe: KPI renomeado para "Membros da equipe" (inclui gestor na contagem)
-- 3.14: loader R2 com label e steps corretos ("Gerando proposta R2...")
-- 3.19: checkboxes objeções e produtos mais escuros (CSS customizado lime sólido)
+v5.13.0 — 2026-04-18
+- Propostas: KPIs em barra horizontal (6 métricas: enviadas, aceitas, conversão, aguardando, expirando 7d, tempo médio)
+- Propostas: filtro de período (Hoje / Esta semana / Este mês / Tudo / Personalizado com date picker)
+- Propostas: KPIs e tabela filtrados pelo período selecionado
+- Propostas PJ: destaque "Melhor assessor do período" acima dos KPIs
 - Modal de transferência: select de assessores, motivo opcional, grava em transfer_logs
 - transfer_logs: tabela criada via SQL (ver plano v5.12)
 - PJ: busca propostas de todos os assessores; coluna "Assessor" na tabela

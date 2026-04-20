@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.13.4</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.13.5</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -611,7 +611,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.13.4</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.13.5</div>
     </div>
   </div>
 </div>
@@ -651,7 +651,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.13.4</div>
+      <div class="hver" id="hverEl">v5.13.5</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -1211,7 +1211,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.13.4</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.13.5</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -2932,7 +2932,7 @@ async function regenerate(){
 // ── SIDEBAR TOGGLE ──
 var sidebarVisible = true;
 
-// v5.13.4: collapse/expand agora esconde/mostra o formulário da detail view
+// v5.13.5: collapse/expand agora esconde/mostra o formulário da detail view
 var sidebarVisible=true;
 function collapseSidebar(){
   var form=document.getElementById('pdFormGrid');
@@ -3612,19 +3612,25 @@ async function updateDash(){
   var assessorMap = {};
 
   if(currentUserIsManager && currentFirmId){
-    // PJ: busca propostas de todos os assessores da empresa
+    // PJ: busca membros da empresa
     var {data:members} = await sb.from('firm_members')
-      .select('user_id, company_profiles(empresa_nome)')
+      .select('user_id')
       .eq('firm_id', currentFirmId);
     var memberIds = (members||[]).map(function(m){return m.user_id;});
     // Também inclui o próprio manager
     if(memberIds.indexOf(supabaseUserId)<0) memberIds.push(supabaseUserId);
-    // Monta mapa user_id → nome
-    (members||[]).forEach(function(m){
-      var nome = m.company_profiles && m.company_profiles.empresa_nome
-        ? m.company_profiles.empresa_nome
-        : m.user_id.substring(0,8);
-      assessorMap[m.user_id] = nome;
+    // Busca nomes separadamente (sem join FK)
+    if(memberIds.length){
+      var {data:profiles} = await sb.from('company_profiles')
+        .select('user_id, empresa_nome')
+        .in('user_id', memberIds);
+      (profiles||[]).forEach(function(p){
+        if(p.empresa_nome) assessorMap[p.user_id] = p.empresa_nome;
+      });
+    }
+    // Fallback para IDs sem perfil
+    memberIds.forEach(function(id){
+      if(!assessorMap[id]) assessorMap[id] = id.substring(0,8);
     });
     if(empresaData && empresaData.empresa_nome) assessorMap[supabaseUserId] = empresaData.empresa_nome;
     if(memberIds.length){
@@ -4638,7 +4644,7 @@ async function loadTeamMembers(){
   var listEl=document.getElementById('teamMembersList');
   if(!listEl)return;
   var {data,error}=await sb.from('firm_members')
-    .select('user_id,role,credit_limit_monthly,joined_at,company_profiles(empresa_nome)')
+    .select('user_id,role,credit_limit_monthly,joined_at')
     .eq('firm_id',currentFirmId)
     .not('joined_at','is',null);
   if(error||!data||!data.length){
@@ -4646,10 +4652,14 @@ async function loadTeamMembers(){
     document.getElementById('teamTotalAssessores').textContent='0';
     return;
   }
-  // Conta todos os membros (gestor + assessores)
+  // Busca nomes separadamente (sem join FK)
+  var userIds=data.map(function(m){return m.user_id;});
+  var {data:profiles}=await sb.from('company_profiles').select('user_id,empresa_nome').in('user_id',userIds);
+  var nomeMap={};
+  (profiles||[]).forEach(function(p){if(p.empresa_nome)nomeMap[p.user_id]=p.empresa_nome;});
+  // Conta todos os membros
   document.getElementById('teamTotalAssessores').textContent=data.length;
   // Buscar propostas por user
-  var userIds=data.map(function(m){return m.user_id;});
   var {data:props}=await sb.from('proposals').select('user_id').in('user_id',userIds);
   var propCount={};
   (props||[]).forEach(function(p){propCount[p.user_id]=(propCount[p.user_id]||0)+1;});
@@ -4665,9 +4675,7 @@ async function loadTeamMembers(){
   document.getElementById('teamCreditosMes').textContent=totalMes.toFixed(1)+' cr';
   listEl.innerHTML=data.map(function(m){
     var label=m.user_id===supabaseUserId?' (você)':'';
-    var nome=m.company_profiles&&m.company_profiles.empresa_nome
-      ?m.company_profiles.empresa_nome
-      :m.user_id.slice(0,8)+'...';
+    var nome=nomeMap[m.user_id]||m.user_id.slice(0,8)+'...';
     var inicial=nome.charAt(0).toUpperCase();
     var nProps=propCount[m.user_id]||0;
     var isGestor=m.role==='manager';
@@ -6242,10 +6250,21 @@ async function getFirmMembers(){
   if(_firmMembersCache)return _firmMembersCache;
   if(!currentFirmId)return[];
   var {data}=await sb.from('firm_members')
-    .select('user_id,role,company_profiles(empresa_nome)')
+    .select('user_id,role')
     .eq('firm_id',currentFirmId)
     .not('joined_at','is',null);
-  _firmMembersCache=data||[];
+  var members=data||[];
+  // Busca nomes separadamente
+  if(members.length){
+    var ids=members.map(function(m){return m.user_id;});
+    var {data:profiles}=await sb.from('company_profiles').select('user_id,empresa_nome').in('user_id',ids);
+    var nomeMap={};
+    (profiles||[]).forEach(function(p){if(p.empresa_nome)nomeMap[p.user_id]=p.empresa_nome;});
+    members=members.map(function(m){
+      return Object.assign({},m,{company_profiles:{empresa_nome:nomeMap[m.user_id]||null}});
+    });
+  }
+  _firmMembersCache=members;
   return _firmMembersCache;
 }
 
@@ -6399,9 +6418,9 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
-v5.13.4 — 2026-04-20
-- Fix cadastro PJ: firm_id agora é gravado em company_profiles ao criar/detectar empresa
-- Fix: contas de gestor existentes com firm_id null são corrigidas automaticamente no login
+v5.13.5 — 2026-04-20
+- Fix: queries de firm_members não usam mais join automático com company_profiles (sem FK declarada)
+- loadTeamMembers, updateDash e getFirmMembers agora buscam nomes em query separada
 
 v5.10.0 — 2026-04-17
 - Home = lista de Prospects após login (tab Gerador removida)

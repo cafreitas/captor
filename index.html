@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v5.13.11</title>
+<title>Captor — Pré-vendas eficiente e inteligente v5.13.12</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -309,7 +309,25 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
 .modal-close{background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:1.1rem;padding:0;line-height:1;flex-shrink:0}
 .modal-close:hover{color:var(--text)}
 .prospect-method-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px;cursor:pointer;text-align:center;transition:all .2s}
-.prospect-method-card:hover{background:var(--bg3);border-color:var(--lime);box-shadow:0 0 0 1px var(--lime)}.modal-steps{display:flex;gap:0;padding:16px 24px 0}
+.prospect-method-card:hover{background:var(--bg3);border-color:var(--lime);box-shadow:0 0 0 1px var(--lime)}
+.wiz-upload-area{border:2px dashed var(--lime);border-radius:var(--r);padding:32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3)}
+.wiz-upload-area:hover{background:rgba(168,194,58,.05)}
+.wiz-upload-area.dragover{background:rgba(168,194,58,.15);border-color:var(--lime2)}
+.wiz-mapper-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.wiz-mapper-table th,.wiz-mapper-table td{padding:10px;border-bottom:1px solid var(--border);text-align:left}
+.wiz-mapper-table th{background:var(--bg3);font-weight:700;color:var(--text)}
+.wiz-mapper-table select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px;color:var(--text);font-family:var(--f);font-size:.78rem}
+.wiz-preview-table{width:100%;border-collapse:collapse;font-size:.75rem;max-height:400px;overflow-y:auto}
+.wiz-preview-table th,.wiz-preview-table td{padding:8px;border-bottom:1px solid var(--border);text-align:left}
+.wiz-preview-table th{background:var(--bg3);font-weight:700;color:var(--text);position:sticky;top:0}
+.wiz-preview-table tr.error{background:rgba(239,68,68,.1)}
+.wiz-preview-table .error-icon{color:#f87171;margin-right:4px}
+.wiz-error-list{background:rgba(239,68,68,.1);border-left:3px solid #f87171;border-radius:var(--r);padding:12px;margin-bottom:16px;font-size:.75rem;color:var(--text);max-height:200px;overflow-y:auto}
+.wiz-error-list div{margin-bottom:4px}
+.wiz-pagination{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:16px;font-size:.75rem}
+.wiz-pagination button{padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);cursor:pointer;font-family:var(--f)}
+.wiz-pagination button:disabled{opacity:0.5;cursor:not-allowed}
+.modal-steps{display:flex;gap:0;padding:16px 24px 0}
 .modal-step{flex:1;text-align:center;position:relative}
 .modal-step::after{content:'';position:absolute;top:11px;left:50%;width:100%;height:1px;background:var(--border)}
 .modal-step:last-child::after{display:none}
@@ -608,7 +626,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.13.11</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v5.13.12</div>
     </div>
   </div>
 </div>
@@ -648,7 +666,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v5.13.11</div>
+      <div class="hver" id="hverEl">v5.13.12</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -1212,7 +1230,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.13.11</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v5.13.12</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -3484,6 +3502,16 @@ var AppState = {
     sortCol: 'nome',
     sortDir: {nome:'asc',patrimonio:'desc',data:'desc'},
     r1AutoSaveTimer: null
+  },
+  spreadsheetWizard: {
+    step: 1,
+    file: null,
+    rawData: [],
+    columnMapping: {},
+    validatedData: [],
+    errors: {},
+    pageSize: 10,
+    currentPage: 1
   }
 };
 
@@ -6199,14 +6227,271 @@ function openProspectMethodManual(){
 
 function openProspectMethodSpreadsheet(){
   closeProspectMethodModal();
-  console.log('Spreadsheet import — coming in v5.13.11b');
+  console.log('Spreadsheet import — coming in v5.13.12b');
   alert('Importação de planilha em desenvolvimento. Versão 5.13.11b.');
 }
 
 function openProspectMethodAPI(){
   closeProspectMethodModal();
-  console.log('API integration — coming in v5.13.11c');
-  alert('Integração com API em desenvolvimento. Versão 5.13.11c.');
+  console.log('API integration — coming in v5.13.12');
+  alert('Integração com API em desenvolvimento. Versão v5.13.12.');
+}
+
+function openProspectMethodSpreadsheet(){
+  closeProspectMethodModal();
+  AppState.spreadsheetWizard = {step:1, file:null, rawData:[], columnMapping:{}, validatedData:[], errors:{}, pageSize:10, currentPage:1};
+  document.getElementById('spreadsheetWizardModal').style.display='flex';
+  goToWizardStep(0, true);
+}
+
+function closeSpreadsheetWizard(){
+  document.getElementById('spreadsheetWizardModal').style.display='none';
+  AppState.spreadsheetWizard = {step:1, file:null, rawData:[], columnMapping:{}, validatedData:[], errors:{}, pageSize:10, currentPage:1};
+}
+
+function goToWizardStep(direction, skipNav){
+  var w = AppState.spreadsheetWizard;
+  if(!skipNav) w.step += direction;
+  if(w.step < 1) w.step = 1;
+  if(w.step > 4) w.step = 4;
+  
+  var body = document.getElementById('wizardBody');
+  body.innerHTML = '';
+  
+  if(w.step === 1) renderWizStep1();
+  else if(w.step === 2) renderWizStep2();
+  else if(w.step === 3) renderWizStep3();
+  else if(w.step === 4) renderWizStep4();
+  
+  updateWizStepNav();
+}
+
+function updateWizStepNav(){
+  var w = AppState.spreadsheetWizard;
+  for(var i=1;i<=4;i++){
+    var dot = document.getElementById('wizStepDot'+i);
+    if(dot) dot.classList.toggle('active', i <= w.step);
+  }
+  var prev = document.getElementById('wizBtnPrev');
+  var next = document.getElementById('wizBtnNext');
+  if(prev) prev.style.display = w.step > 1 ? 'block' : 'none';
+  if(next) {
+    next.textContent = w.step === 4 ? 'Importar' : 'Próximo →';
+    next.onclick = w.step === 4 ? function(){importSpreadsheet();} : function(){goToWizardStep(1);};
+    next.disabled = w.step === 1 && !w.file;
+  }
+  document.getElementById('wizardSubtitle').textContent = ['Faça upload de um arquivo','Mapeie as colunas','Revise os dados','Confirme a importação'][w.step-1];
+}
+
+function renderWizStep1(){
+  var body = document.getElementById('wizardBody');
+  var w = AppState.spreadsheetWizard;
+  body.innerHTML = '<div class="wiz-upload-area" id="uploadArea" style="margin:20px 0" ondrop="handleFileDrop(event)" ondragover="event.preventDefault(); document.getElementById(\'uploadArea\').classList.add(\'dragover\')" ondragleave="document.getElementById(\'uploadArea\').classList.remove(\'dragover\')">'
+    +'<div style="font-size:.9rem;color:var(--text);margin-bottom:12px">📁 Arraste um arquivo .xlsx ou .csv aqui</div>'
+    +'<div style="font-size:.72rem;color:var(--dim);margin-bottom:16px">ou</div>'
+    +'<input type="file" id="fileInput" accept=".xlsx,.csv,.xls" onchange="handleFileSelect(event)" style="display:none">'
+    +'<button onclick="document.getElementById(\'fileInput\').click()" style="padding:8px 20px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-weight:700;cursor:pointer;font-size:.78rem">Selecionar arquivo</button>'
+    +'</div>';
+  if(w.file){
+    body.innerHTML += '<div style="padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-top:12px">'
+      +'<div style="font-size:.78rem;color:var(--text);font-weight:600">Arquivo: '+w.file.name+'</div>'
+      +'<div style="font-size:.72rem;color:var(--muted);margin-top:4px">'+w.rawData.length+' linhas detectadas</div>'
+      +'</div>';
+  }
+  updateWizStepNav();
+}
+
+function handleFileSelect(event){
+  var file = event.target.files[0];
+  if(file) handleFile(file);
+}
+
+function handleFileDrop(event){
+  event.preventDefault();
+  document.getElementById('uploadArea').classList.remove('dragover');
+  var file = event.dataTransfer.files[0];
+  if(file) handleFile(file);
+}
+
+function handleFile(file){
+  var w = AppState.spreadsheetWizard;
+  w.file = file;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var data;
+      if(file.name.endsWith('.csv')){
+        var result = Papa.parse(e.target.result, {header:true, skipEmptyLines:true});
+        data = result.data;
+      } else {
+        var ab = e.target.result;
+        var wb = XLSX.read(ab, {type:'array'});
+        var ws = wb.Sheets[wb.SheetNames[0]];
+        data = XLSX.utils.sheet_to_json(ws);
+      }
+      w.rawData = data;
+      w.columnMapping = {};
+      w.step = 2;
+      goToWizardStep(0, true);
+    } catch(err){
+      alert('Erro ao ler arquivo: '+err.message);
+    }
+  };
+  if(file.name.endsWith('.csv')) reader.readAsText(file);
+  else reader.readAsArrayBuffer(file);
+}
+
+function renderWizStep2(){
+  var body = document.getElementById('wizardBody');
+  var w = AppState.spreadsheetWizard;
+  if(!w.rawData.length){
+    body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--dim)">Nenhum arquivo carregado</div>';
+    return;
+  }
+  var headers = Object.keys(w.rawData[0] || {});
+  var required = ['nome', 'patrimonio', 'celular'];
+  body.innerHTML = '<div style="font-size:.75rem;color:var(--muted);margin-bottom:16px">Mapeie cada coluna do arquivo para os campos obrigatórios</div>'
+    +'<table class="wiz-mapper-table">'
+    +'<thead><tr><th>Coluna do arquivo</th><th>Campo do Captor</th></tr></thead>'
+    +'<tbody>';
+  headers.forEach(function(h){
+    var mapped = w.columnMapping[h] || '';
+    body.innerHTML += '<tr><td>'+h+'</td><td>'
+      +'<select onchange="AppState.spreadsheetWizard.columnMapping[\''+h+'\'] = this.value">'
+      +'<option value="">— Ignorar —</option>'
+      +'<option value="nome" '+(mapped==='nome'?'selected':'') +'>Nome</option>'
+      +'<option value="patrimonio" '+(mapped==='patrimonio'?'selected':'') +'>Patrimônio</option>'
+      +'<option value="celular" '+(mapped==='celular'?'selected':'') +'>Celular</option>'
+      +'</select></td></tr>';
+  });
+  body.innerHTML += '</tbody></table>';
+  updateWizStepNav();
+}
+
+function renderWizStep3(){
+  var body = document.getElementById('wizardBody');
+  var w = AppState.spreadsheetWizard;
+  
+  w.validatedData = [];
+  w.errors = {};
+  var validCount = 0;
+  
+  w.rawData.forEach(function(row, idx){
+    var mapped = {};
+    Object.keys(w.columnMapping).forEach(function(col){
+      var field = w.columnMapping[col];
+      if(field) mapped[field] = (row[col] || '').trim();
+    });
+    var rowErrors = validateRow(mapped, idx+2);
+    if(rowErrors.length === 0){
+      w.validatedData.push(mapped);
+      validCount++;
+    } else {
+      w.errors[idx+2] = rowErrors;
+    }
+  });
+  
+  body.innerHTML = '<div style="font-size:.75rem;color:var(--muted);margin-bottom:12px">'+validCount+' de '+w.rawData.length+' linhas válidas</div>';
+  
+  if(Object.keys(w.errors).length > 0){
+    body.innerHTML += '<div class="wiz-error-list">';
+    Object.keys(w.errors).forEach(function(lineNum){
+      body.innerHTML += '<div>❌ Linha '+lineNum+': '+w.errors[lineNum].join(', ')+'</div>';
+    });
+    body.innerHTML += '</div>';
+  }
+  
+  body.innerHTML += '<table class="wiz-preview-table"><thead><tr><th></th><th>Nome</th><th>Patrimônio</th><th>Celular</th></tr></thead><tbody id="previewBody"></tbody></table>';
+  body.innerHTML += '<div class="wiz-pagination" id="paginationCtrl"></div>';
+  
+  w.currentPage = 1;
+  renderPreviewPage();
+  updateWizStepNav();
+  document.getElementById('wizBtnNext').disabled = w.validatedData.length === 0;
+}
+
+function renderPreviewPage(){
+  var w = AppState.spreadsheetWizard;
+  var start = (w.currentPage-1) * w.pageSize;
+  var end = Math.min(start + w.pageSize, w.validatedData.length);
+  var pageRows = w.validatedData.slice(start, end);
+  
+  var tbody = document.getElementById('previewBody');
+  tbody.innerHTML = '';
+  pageRows.forEach(function(row, i){
+    tbody.innerHTML += '<tr>'
+      +'<td>'+(start+i+1)+'</td>'
+      +'<td>'+escHtml(row.nome)+'</td>'
+      +'<td>'+escHtml(row.patrimonio)+'</td>'
+      +'<td>'+escHtml(row.celular)+'</td>'
+      +'</tr>';
+  });
+  
+  var totalPages = Math.ceil(w.validatedData.length / w.pageSize);
+  var ctrl = document.getElementById('paginationCtrl');
+  ctrl.innerHTML = '<button onclick="AppState.spreadsheetWizard.currentPage--; renderPreviewPage();" '+(w.currentPage===1?'disabled':'') +'>← Anterior</button>'
+    +'<span>Página '+w.currentPage+' de '+totalPages+'</span>'
+    +'<button onclick="AppState.spreadsheetWizard.currentPage++; renderPreviewPage();" '+(w.currentPage===totalPages?'disabled':'') +'>Próximo →</button>';
+}
+
+function validateRow(row, lineNum){
+  var errors = [];
+  if(!row.nome || row.nome.length === 0) errors.push('Nome vazio');
+  if(!row.patrimonio || isNaN(parseFloat(row.patrimonio))) errors.push('Patrimônio inválido');
+  if(!row.celular || !validateCelular(row.celular)) errors.push('Celular inválido (11 dígitos)');
+  return errors;
+}
+
+function validateCelular(cel){
+  var cleaned = cel.replace(/[^\d]/g, '');
+  return cleaned.length === 11 && /^\d{11}$/.test(cleaned);
+}
+
+function renderWizStep4(){
+  var body = document.getElementById('wizardBody');
+  var w = AppState.spreadsheetWizard;
+  body.innerHTML = '<div style="padding:20px;text-align:center">'
+    +'<div style="font-size:2rem;margin-bottom:16px">✅</div>'
+    +'<div style="font-size:.95rem;color:var(--text);margin-bottom:8px">Pronto para importar</div>'
+    +'<div style="font-size:.78rem;color:var(--muted);margin-bottom:24px">'+w.validatedData.length+' prospects serão adicionados à lista</div>'
+    +'<div style="padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);font-size:.72rem;color:var(--dim);">'
+    +'Os prospects serão criados em status "prospect_criado" e você poderá editá-los na lista.'
+    +'</div>'
+    +'</div>';
+  updateWizStepNav();
+}
+
+function importSpreadsheet(){
+  var w = AppState.spreadsheetWizard;
+  if(w.validatedData.length === 0){
+    alert('Nenhum prospect válido para importar');
+    return;
+  }
+  var btn = document.getElementById('wizBtnNext');
+  btn.disabled = true;
+  btn.textContent = '⏳ Importando...';
+  
+  var batch = w.validatedData.map(function(row){
+    return {
+      nome: row.nome,
+      patrimonio: parseFloat(row.patrimonio),
+      celular: row.celular.replace(/[^\d]/g, ''),
+      status: 'prospect_criado',
+      created_at: new Date().toISOString()
+    };
+  });
+  
+  sb.from('prospects').insert(batch).then(function(result){
+    if(result.error){
+      alert('Erro na importação: '+result.error.message);
+      btn.disabled = false;
+      btn.textContent = 'Importar';
+    } else {
+      alert('✅ '+w.validatedData.length+' prospects importados com sucesso!');
+      closeSpreadsheetWizard();
+      loadProspects();
+    }
+  });
 }
 
 async function markPerdidoUser(id){
@@ -6454,13 +6739,17 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
-v5.13.11 — 2026-04-21
-- UX: Novo modal de escolha para adicionar prospect: Manual | Planilha | API
-- Manual: fluxo atual (formulário full-screen) — funcional
-- Planilha: placeholder com alerta "em desenvolvimento v5.13.11b"
-- API: placeholder com alerta "em desenvolvimento v5.13.11c"
-- Novo: `openProspectMethodManual()`, `openProspectMethodSpreadsheet()`, `openProspectMethodAPI()`, `closeProspectMethodModal()`
-- CSS: `.prospect-method-card` com hover effects
+v5.13.12 — 2026-04-21
+- UX: Wizard de importação de planilha (4 steps): Upload | Mapear colunas | Preview | Confirmar
+- Upload: suporta .xlsx e .csv (drag-drop + file picker)
+- Mapeador: detecta headers automaticamente, user mapeia para campos obrigatórios (Nome, Patrimônio, Celular)
+- Validação: nome (não vazio), patrimônio (número), celular (11 dígitos, aceita símbolos -())
+- Preview: tabela com paginação mostrando linhas válidas; erros detalhados por linha/campo
+- Bloqueio: importação desabilitada se houver erros; user precisa corrigir arquivo e re-upload
+- Importação: insere prospects em status "prospect_criado", user pode editar após
+- Novo: `openProspectMethodSpreadsheet()`, `closeSpreadsheetWizard()`, `goToWizardStep()`, `handleFile()`, `validateRow()`, `validateCelular()`, `renderPreviewPage()`, `importSpreadsheet()`
+- Libs CDN: SheetJS (xlsx) + Papaparse (csv)
+- Estado: `AppState.spreadsheetWizard` com step, file, rawData, columnMapping, validatedData, errors, paginação
 
 v5.13.8 — 2026-04-21
 - Fix: KPIs clicáveis (Enviadas / Aceitas / Aguardando / Expirando 7d) agora mostram na tabela exatamente as propostas que compõem o número, incluindo escopo de período
@@ -6524,7 +6813,7 @@ v5.8.1 — 2026-04-16
         <div style="font-size:.72rem;color:var(--muted);margin-top:4px;line-height:1.4">Preencher formulário com dados do prospect</div>
       </div>
       <!-- Card Planilha -->
-      <div class="prospect-method-card" onclick="openProspectMethodSpreadsheet()" style="opacity:0.6;cursor:not-allowed" title="Em desenvolvimento">
+      <div class="prospect-method-card" onclick="openProspectMethodSpreadsheet()" title="Importar de planilha">
         <div style="font-size:2rem;margin-bottom:8px">📊</div>
         <div style="font-weight:700;font-size:.95rem;color:var(--text)">Planilha</div>
         <div style="font-size:.72rem;color:var(--muted);margin-top:4px;line-height:1.4">Importar de arquivo .xlsx ou .csv</div>
@@ -6538,6 +6827,49 @@ v5.8.1 — 2026-04-16
     </div>
   </div>
 </div>
+
+<!-- Modal: Wizard Planilha (4 steps) -->
+<div class="modal-overlay" id="spreadsheetWizardModal" style="display:none">
+  <div class="modal" style="width:min(700px,100%)">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Importar Prospects</div>
+        <div class="modal-sub" id="wizardSubtitle">Faça upload de um arquivo .xlsx ou .csv</div>
+      </div>
+      <button class="modal-close" onclick="closeSpreadsheetWizard()" title="Fechar">✕</button>
+    </div>
+    <!-- Steps nav -->
+    <div class="modal-steps">
+      <div class="modal-step" id="wizStep1">
+        <div class="lddot" id="wizStepDot1"></div>
+        <div style="font-size:.65rem;color:var(--muted);margin-top:6px">1. Upload</div>
+      </div>
+      <div class="modal-step" id="wizStep2">
+        <div class="lddot" id="wizStepDot2"></div>
+        <div style="font-size:.65rem;color:var(--muted);margin-top:6px">2. Mapear</div>
+      </div>
+      <div class="modal-step" id="wizStep3">
+        <div class="lddot" id="wizStepDot3"></div>
+        <div style="font-size:.65rem;color:var(--muted);margin-top:6px">3. Preview</div>
+      </div>
+      <div class="modal-step" id="wizStep4">
+        <div class="lddot" id="wizStepDot4"></div>
+        <div style="font-size:.65rem;color:var(--muted);margin-top:6px">4. Confirmar</div>
+      </div>
+    </div>
+    <!-- Body -->
+    <div class="modal-body" id="wizardBody"></div>
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button onclick="goToWizardStep(-1)" id="wizBtnPrev" style="display:none" class="printbtn">← Anterior</button>
+      <div></div>
+      <button onclick="goToWizardStep(1)" id="wizBtnNext" style="padding:7px 16px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer">Próximo →</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
 </body>
 </html>

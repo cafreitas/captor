@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<title>Captor — Pré-vendas eficiente e inteligente v6.0.4</title>
+<title>Captor — Pré-vendas eficiente e inteligente v6.0.5</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── ZERO dependências externas. Abre com duplo-clique. ── */
@@ -627,7 +627,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v6.0.4</div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo v6.0.5</div>
     </div>
   </div>
 </div>
@@ -667,7 +667,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v6.0.4</div>
+      <div class="hver" id="hverEl">v6.0.5</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -788,22 +788,22 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         <!-- Esquerda: campos do perfil -->
         <div class="pd-panel">
           <div class="pd-panel-title">Perfil &nbsp;·&nbsp; <button id="btnUsarExemplo" type="button" onclick="fillExample()" style="background:none;border:none;color:var(--lime);font-size:.62rem;font-weight:700;cursor:pointer;padding:0;font-family:var(--f);text-decoration:underline;letter-spacing:.08em;text-transform:uppercase">usar exemplo</button></div>
-          <div class="fg"><label class="fl">Nome</label><input class="fi" id="pd_nome" placeholder="Ex: Ricardo Almeida" oninput="var d=document.getElementById('pdNomeDisplay');if(d&&(d.textContent==='Novo Prospect'||d.textContent==='—'))d.textContent=this.value||'Novo Prospect'"></div>
+          <div class="fg"><label class="fl">Nome</label><input class="fi" id="pd_nome" placeholder="Ex: Ricardo Almeida" oninput="onFieldChange();var d=document.getElementById('pdNomeDisplay');if(d&&(d.textContent==='Novo Prospect'||d.textContent==='—'))d.textContent=this.value||'Novo Prospect'"></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="fg"><label class="fl">Patrimônio</label><input class="fi" id="pd_pat" type="text" placeholder="R$ 0" oninput="maskPdPat(this)" autocomplete="off"></div>
+            <div class="fg"><label class="fl">Patrimônio</label><input class="fi" id="pd_pat" type="text" placeholder="R$ 0" oninput="maskPdPat(this);onFieldChange()" autocomplete="off"></div>
             <div class="fg"><label class="fl">Perfil</label>
-              <select class="fsel" id="pd_perfil">
+              <select class="fsel" id="pd_perfil" onchange="onFieldChange()">
                 <option value="">Selecione...</option>
                 <option>Conservador</option><option>Moderado</option><option>Arrojado</option><option>Agressivo</option>
               </select>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 80px;gap:8px">
-            <div class="fg"><label class="fl">Profissão</label><input class="fi" id="pd_prof" placeholder="Ex: Empresário" oninput=""></div>
-            <div class="fg"><label class="fl">Idade</label><input class="fi" id="pd_idade" type="number" placeholder="45" min="18" max="90"></div>
+            <div class="fg"><label class="fl">Profissão</label><input class="fi" id="pd_prof" placeholder="Ex: Empresário" oninput="onFieldChange()"></div>
+            <div class="fg"><label class="fl">Idade</label><input class="fi" id="pd_idade" type="number" placeholder="45" min="18" max="90" oninput="onFieldChange()"></div>
           </div>
           <div class="fg"><label class="fl">Objetivo</label>
-            <select class="fsel" id="pd_obj">
+            <select class="fsel" id="pd_obj" onchange="onFieldChange()">
               <option value="">Selecione...</option>
               <option>Aposentadoria / Independência financeira</option>
               <option>Sucessão patrimonial / família</option>
@@ -816,12 +816,12 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div class="fg"><label class="fl">Horizonte</label>
-              <select class="fsel" id="pd_horizonte">
+              <select class="fsel" id="pd_horizonte" onchange="onFieldChange()">
                 <option value="">Selecione...</option>
                 <option>Até 2 anos</option><option>3 a 5 anos</option><option>5 a 10 anos</option><option>Mais de 10 anos</option>
               </select>
             </div>
-            <div class="fg"><label class="fl">Assessoria atual</label><input class="fi" id="pd_ass" placeholder="Ex: XP, BTG..."></div>
+            <div class="fg"><label class="fl">Assessoria atual</label><input class="fi" id="pd_ass" placeholder="Ex: XP, BTG..." oninput="onFieldChange()"></div>
           </div>
         </div>
 
@@ -829,10 +829,10 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
         <div class="pd-panel">
           <div class="pd-panel-title">Contexto e Alocação</div>
           <div class="fg"><label class="fl">Gaps / problemas <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
-            <textarea class="fta" id="pd_gaps" placeholder="Ex: carteira 100% CDB banco, sem proteção cambial..." style="min-height:60px"></textarea>
+            <textarea class="fta" id="pd_gaps" placeholder="Ex: carteira 100% CDB banco, sem proteção cambial..." style="min-height:60px" oninput="onFieldChange()"></textarea>
           </div>
           <div class="fg"><label class="fl">Contexto <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
-            <textarea class="fta" id="pd_ctx" placeholder="Ex: veio por indicação, tem empresa..." style="min-height:50px"></textarea>
+            <textarea class="fta" id="pd_ctx" placeholder="Ex: veio por indicação, tem empresa..." style="min-height:50px" oninput="onFieldChange()"></textarea>
           </div>
           <div class="fdiv"></div>
           <div>
@@ -1231,7 +1231,7 @@ input[type=range].aslider:disabled::-webkit-slider-thumb{cursor:not-allowed}
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v6.0.4</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong>v6.0.5</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -6007,7 +6007,7 @@ function resetPdSliders(){
 }
 
 function syncFormToSidebar(){
-  // DEPRECATED: Removido na v6.0.4
+  // DEPRECATED: Removido na v6.0.5
   // Antes sincronizava pd_* → f* mas agora generateR1/generateR2 leem diretamente da view ativa via getActiveFormValues()
 }
 
@@ -6227,14 +6227,14 @@ function openProspectMethodManual(){
 
 function openProspectMethodSpreadsheet(){
   closeProspectMethodModal();
-  console.log('Spreadsheet import — coming in v6.0.4b');
+  console.log('Spreadsheet import — coming in v6.0.5b');
   alert('Importação de planilha em desenvolvimento. Versão 5.13.11b.');
 }
 
 function openProspectMethodAPI(){
   closeProspectMethodModal();
-  console.log('API integration — coming in v6.0.4');
-  alert('Integração com API em desenvolvimento. Versão v6.0.4.');
+  console.log('API integration — coming in v6.0.5');
+  alert('Integração com API em desenvolvimento. Versão v6.0.5.');
 }
 
 function openProspectMethodSpreadsheet(){
@@ -6787,13 +6787,19 @@ function captorConfirmCancel(){
   </div>
 </div>
 <!-- CHANGELOG
+v6.0.5 — 2026-04-22 — Fix: Botão R1 não se habilita no prospectDetailView
+- Fix: Botão "Gerar Roteiro R1" permanecia desabilitado mesmo com todos os campos preenchidos
+- Causa: onFieldChange() não era chamado quando usuário preenchia pd_nome, pd_perfil, pd_obj, etc
+- Solução: Adicionado onchange/oninput="onFieldChange()" em 10 campos críticos do prospectDetailView
+- Campos corrigidos: pd_nome, pd_pat, pd_perfil, pd_prof, pd_idade, pd_obj, pd_horizonte, pd_ass, pd_gaps, pd_ctx
+- Benefício: Botão agora se habilita em tempo real conforme usuário preenche campos obrigatórios
+
 v6.0.4 — 2026-04-22 — Fix: Erro null reference + Refactor arquitetura de formulários
 - Fix: "Cannot read properties of null" em updateSliders() quando syncFormToSidebar() chamava updateSliders(-1)
 - Refactor: Removida dependência de sincronização entre prospectDetailView (pd_*) e sidebar (f_*)
 - Refactor: Criada função getActiveFormValues() que detecta qual view está ativa e retorna valores corretos
 - Refactor: generateR1(), getValidacaoData(), requiredFieldsFilled() agora leem da view ativa via getActiveFormValues()
 - Refactor: syncFormToSidebar() deprecada e desabilitada (agora função vazia)
-- Benefício: Eliminada arquitetura frágil de sincronização entre duas views mutuamente exclusivas
 - Benefício: Gerar R1 agora funciona corretamente quando prospect é aberto a partir da lista importada
 
 v6.0.3 — 2026-04-21 — Design System: Status Colors Centralizados

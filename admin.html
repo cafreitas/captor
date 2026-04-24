@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Captor Admin — Dashboard de Custos IA</title>
+  <style>
+    :root{
+      --bg:#1e1e1e;--bg2:#272727;--bg3:#2e2e2e;--surface:#333;
+      --border:#404040;--border2:#4a4a4a;
+      --lime:#a8c23a;--lime2:#c0d85a;
+      --lime-dim:rgba(168,194,58,.13);--lime-glow:rgba(168,194,58,.22);
+      --text:#f0f0f0;--muted:#a0a0a0;--dim:#606060;
+      --white:#fff;--gold:#e0b840;--gold-dim:rgba(224,184,64,.15);
+      --r:8px;--rl:14px;
+      --f:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+      --status-created:#c0c0c0;--status-r1-initiated:#fbbf24;--status-r1-concluded:#86efac;--status-r2-scheduled:#60a5fa;--status-lost-user:#f87171;--status-lost-auto:#a78bfa;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:var(--bg);color:var(--text);font-family:var(--f);line-height:1.5}
+    
+    .login-container{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .login-box{width:100%;max-width:380px;background:var(--bg2);padding:32px;border:1px solid var(--border);border-radius:var(--r)}
+    .login-box h1{font-size:24px;margin-bottom:24px;color:var(--lime)}
+    .login-box input{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--f);border-radius:4px;margin-bottom:12px;font-size:14px}
+    .login-box input:focus{outline:none;border-color:var(--lime)}
+    .login-box button{width:100%;padding:12px;background:var(--lime);color:var(--bg);font-weight:700;border:none;border-radius:4px;cursor:pointer;font-family:var(--f);margin-top:12px}
+    .login-box button:hover{background:var(--lime2)}
+    .error{color:#f87171;font-size:12px;margin-top:8px;display:none}
+    
+    .admin-container{display:none;padding:24px}
+    .admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+    .admin-header h1{font-size:28px;color:var(--lime)}
+    .logout-btn{padding:8px 16px;background:var(--border);border:none;color:var(--text);cursor:pointer;border-radius:4px;font-size:12px}
+    .logout-btn:hover{background:var(--border2)}
+    
+    .filters{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;margin-bottom:20px}
+    .filters input,.filters select{padding:8px;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:4px;font-family:var(--f);font-size:12px}
+    .filters input:focus,.filters select:focus{outline:none;border-color:var(--lime)}
+    .filter-btn{padding:8px 16px;background:var(--lime);color:var(--bg);border:none;border-radius:4px;cursor:pointer;font-weight:700;font-size:12px}
+    .filter-btn:hover{background:var(--lime2)}
+    
+    .kpis{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px}
+    .kpi{background:var(--bg2);padding:16px;border:1px solid var(--border);border-radius:var(--r)}
+    .kpi-label{font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase}
+    .kpi-value{font-size:24px;font-weight:700;color:var(--lime)}
+    .kpi.secondary .kpi-value{color:var(--gold)}
+    
+    .table-container{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    table thead{background:var(--bg3);border-bottom:1px solid var(--border)}
+    table th{padding:12px;text-align:left;color:var(--muted);font-weight:600}
+    table td{padding:12px;border-bottom:1px solid var(--border)}
+    table tbody tr:hover{background:var(--bg3)}
+    .status-success{color:var(--lime)}
+    .status-error{color:#f87171}
+    
+    .pagination{display:flex;gap:8px;margin-top:16px;justify-content:center;font-size:12px}
+    .pagination button{padding:6px 12px;background:var(--border);color:var(--text);border:none;border-radius:4px;cursor:pointer}
+    .pagination button.active{background:var(--lime);color:var(--bg)}
+    .pagination button:disabled{opacity:.5;cursor:not-allowed}
+    
+    .loading{text-align:center;color:var(--muted);padding:40px}
+    .toast{position:fixed;bottom:20px;right:20px;padding:12px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;max-width:300px;z-index:1000}
+  </style>
+</head>
+<body>
+  <!-- Login -->
+  <div id="loginScreen" class="login-container">
+    <div class="login-box">
+      <h1>🔐 Captor Admin</h1>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Dashboard de Custos IA</p>
+      <input type="email" id="loginEmail" placeholder="Email" />
+      <input type="password" id="loginPassword" placeholder="Senha" />
+      <button onclick="adminLogin()">Entrar</button>
+      <div id="loginError" class="error"></div>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="adminScreen" class="admin-container">
+    <div class="admin-header">
+      <h1>💰 Custos IA — Dashboard Admin</h1>
+      <button class="logout-btn" onclick="adminLogout()">Sair</button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters">
+      <input type="date" id="filterFrom" placeholder="De" />
+      <input type="date" id="filterTo" placeholder="Até" />
+      <select id="filterUser">
+        <option value="">Todos os usuários</option>
+      </select>
+      <select id="filterAction">
+        <option value="">Todas as ações</option>
+        <option value="extrair_empresa">Extrair Empresa</option>
+        <option value="gerar_r1">Gerar R1</option>
+        <option value="regen_r1">Regen R1</option>
+        <option value="atualizar_proposta">Atualizar Proposta</option>
+        <option value="gerar_r2">Gerar R2</option>
+        <option value="extrair_transcricao">Extrair Transcrição</option>
+      </select>
+      <button class="filter-btn" onclick="loadCustosReport()">Filtrar</button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="kpi">
+        <div class="kpi-label">Custo Total (USD)</div>
+        <div class="kpi-value" id="kpi-custo-usd">$0.00</div>
+      </div>
+      <div class="kpi secondary">
+        <div class="kpi-label">Custo Total (BRL)</div>
+        <div class="kpi-value" id="kpi-custo-brl">R$ 0,00</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Total Chamadas</div>
+        <div class="kpi-value" id="kpi-chamadas">0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Custo Médio</div>
+        <div class="kpi-value" id="kpi-custo-medio">$0.00</div>
+      </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Ação</th>
+            <th>Usuário</th>
+            <th>Modelo</th>
+            <th>Tokens (in/out)</th>
+            <th>Custo (USD)</th>
+            <th>Custo (BRL)</th>
+            <th>Status</th>
+            <th>Data/Hora</th>
+          </tr>
+        </thead>
+        <tbody id="custosTableBody">
+          <tr><td colspan="8" style="text-align:center;color:var(--muted)">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginação -->
+    <div class="pagination" id="paginationContainer"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    var SUPABASE_URL='https://fllkczocfcbrfsyhxelg.supabase.co';
+    var SUPABASE_KEY='sb_publishable_U2pVXIhyNH3s085cUjAmrA_PkeNP4P7';
+    var sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    
+    var adminState={
+      session:null,
+      isSuperuser:false,
+      allLogs:[],
+      currentPage:1,
+      pageSize:25,
+      allUsers:[]
+    };
+
+    async function adminLogin(){
+      var email=document.getElementById('loginEmail').value.trim();
+      var password=document.getElementById('loginPassword').value.trim();
+      var errEl=document.getElementById('loginError');
+      
+      if(!email||!password){
+        errEl.textContent='Email e senha são obrigatórios';
+        errEl.style.display='block';
+        return;
+      }
+      
+      try{
+        var {data,error}=await sb.auth.signInWithPassword({email:email,password:password});
+        if(error)throw new Error(error.message);
+        
+        adminState.session=data.session;
+        
+        // Verificar se é superuser
+        var {data:roleData}=await sb.from('user_roles').select('role').eq('user_id',data.user.id).single();
+        
+        if(!roleData || roleData.role !== 'superuser'){
+          errEl.textContent='Acesso negado. Apenas superusers podem acessar este painel.';
+          errEl.style.display='block';
+          await sb.auth.signOut();
+          adminState.session=null;
+          return;
+        }
+        
+        adminState.isSuperuser=true;
+        
+        // Mostrar dashboard
+        document.getElementById('loginScreen').style.display='none';
+        document.getElementById('adminScreen').style.display='block';
+        
+        // Carregar dados
+        await loadAllUsers();
+        await loadCustosReport();
+      }catch(e){
+        errEl.textContent='Erro: '+e.message;
+        errEl.style.display='block';
+      }
+    }
+
+    async function loadAllUsers(){
+      try{
+        var {data,error}=await sb.from('company_profiles').select('user_id,empresa_nome').order('empresa_nome');
+        if(error)throw error;
+        
+        adminState.allUsers=data||[];
+        
+        var select=document.getElementById('filterUser');
+        adminState.allUsers.forEach(function(u){
+          var opt=document.createElement('option');
+          opt.value=u.user_id;
+          opt.textContent=(u.empresa_nome||'Sem nome')+' ('+u.user_id.substring(0,8)+')';
+          select.appendChild(opt);
+        });
+      }catch(e){
+        console.error('Erro ao carregar usuários:',e);
+      }
+    }
+
+    async function loadCustosReport(){
+      var from=document.getElementById('filterFrom').value||'';
+      var to=document.getElementById('filterTo').value||'';
+      var userId=document.getElementById('filterUser').value||'';
+      var action=document.getElementById('filterAction').value||'';
+      
+      try{
+        var query=sb.from('ai_usage_logs').select('*');
+        
+        if(from)query=query.gte('timestamp',from+'T00:00:00Z');
+        if(to)query=query.lte('timestamp',to+'T23:59:59Z');
+        if(userId)query=query.eq('user_id',userId);
+        if(action)query=query.eq('action_type',action);
+        
+        var {data,error}=await query.order('timestamp',{ascending:false});
+        if(error)throw error;
+        
+        adminState.allLogs=data||[];
+        adminState.currentPage=1;
+        
+        renderKpis();
+        renderTable();
+        renderPagination();
+      }catch(e){
+        showToast('Erro: '+e.message,'error');
+      }
+    }
+
+    function renderKpis(){
+      var total_usd=0;
+      var total_chamadas=adminState.allLogs.length;
+      
+      adminState.allLogs.forEach(function(log){
+        total_usd+=(log.custo_usd||0);
+      });
+      
+      var custo_medio=total_chamadas>0?total_usd/total_chamadas:0;
+      var total_brl=total_usd*5; // Aprox 1 USD = 5 BRL
+      
+      document.getElementById('kpi-custo-usd').textContent='$'+total_usd.toFixed(2);
+      document.getElementById('kpi-custo-brl').textContent='R$ '+total_brl.toFixed(2);
+      document.getElementById('kpi-chamadas').textContent=total_chamadas;
+      document.getElementById('kpi-custo-medio').textContent='$'+custo_medio.toFixed(4);
+    }
+
+    function renderTable(){
+      var start=(adminState.currentPage-1)*adminState.pageSize;
+      var end=start+adminState.pageSize;
+      var paged=adminState.allLogs.slice(start,end);
+      
+      var html=paged.map(function(log){
+        var userName='';
+        var user=adminState.allUsers.find(function(u){return u.user_id===log.user_id;});
+        if(user)userName=user.empresa_nome||'';
+        if(!userName)userName=log.user_id.substring(0,8);
+        
+        var modelShort=log.model.includes('sonnet')?'Sonnet':(log.model.includes('opus')?'Opus':'Haiku');
+        var custo_brl=log.custo_usd*5;
+        var statusClass=log.status==='success'?'status-success':'status-error';
+        var dateStr=new Date(log.timestamp).toLocaleString('pt-BR');
+        
+        return '<tr>'+
+          '<td>'+log.action_type+'</td>'+
+          '<td style="max-width:150px;overflow:hidden;text-overflow:ellipsis">'+userName+'</td>'+
+          '<td>'+modelShort+'</td>'+
+          '<td>'+(log.tokens_input+log.tokens_output)+'</td>'+
+          '<td>$'+log.custo_usd.toFixed(4)+'</td>'+
+          '<td>R$ '+custo_brl.toFixed(2)+'</td>'+
+          '<td class="'+statusClass+'">'+log.status+'</td>'+
+          '<td style="font-size:11px;color:var(--muted)">'+dateStr+'</td>'+
+          '</tr>';
+      }).join('');
+      
+      document.getElementById('custosTableBody').innerHTML=html||'<tr><td colspan="8" style="text-align:center;color:var(--muted)">Sem registros</td></tr>';
+    }
+
+    function renderPagination(){
+      var totalPages=Math.ceil(adminState.allLogs.length/adminState.pageSize);
+      var container=document.getElementById('paginationContainer');
+      var html='';
+      
+      for(var i=1;i<=totalPages;i++){
+        var active=i===adminState.currentPage?' active':'';
+        html+='<button class="'+active+'" onclick="goToPage('+i+')"'+
+          (i===adminState.currentPage?' disabled':'')+'>'+i+'</button>';
+      }
+      
+      container.innerHTML=html;
+    }
+
+    function goToPage(page){
+      adminState.currentPage=page;
+      renderTable();
+      renderPagination();
+    }
+
+    async function adminLogout(){
+      await sb.auth.signOut();
+      adminState.session=null;
+      adminState.isSuperuser=false;
+      document.getElementById('loginScreen').style.display='flex';
+      document.getElementById('adminScreen').style.display='none';
+      document.getElementById('loginEmail').value='';
+      document.getElementById('loginPassword').value='';
+      document.getElementById('loginError').style.display='none';
+    }
+
+    function showToast(msg,type){
+      var el=document.createElement('div');
+      el.className='toast';
+      el.textContent=msg;
+      if(type==='error')el.style.borderColor='#f87171';
+      document.body.appendChild(el);
+      setTimeout(function(){el.remove();},3000);
+    }
+
+    // Check if already logged in
+    (async function(){
+      var {data}=await sb.auth.getSession();
+      if(data.session){
+        var {data:roleData}=await sb.from('user_roles').select('role').eq('user_id',data.session.user.id).single();
+        if(roleData && roleData.role==='superuser'){
+          adminState.session=data.session;
+          adminState.isSuperuser=true;
+          document.getElementById('loginScreen').style.display='none';
+          document.getElementById('adminScreen').style.display='block';
+          await loadAllUsers();
+          await loadCustosReport();
+        }else{
+          await sb.auth.signOut();
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

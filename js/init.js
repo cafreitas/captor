@@ -179,6 +179,20 @@ function closeTermsModal(){
   document.getElementById('termsModal').style.display = 'none';
 }
 
+function initSliders(){
+  var wrap = document.getElementById('allocSliders');
+  wrap.innerHTML = '';
+  ALLOC_CATS.forEach(function(cat, i){
+    wrap.innerHTML += '<div class="aslider-row">'
+      +'<span class="aslider-label" title="'+cat+'">'+cat+'</span>'
+      +'<div class="aslider-wrap">'
+      +'<input type="range" class="aslider" id="asl_'+i+'" min="0" max="100" value="0" step="1" oninput="updateSliders('+i+')">'
+      +'</div>'
+      +'<span class="aslider-val" id="asv_'+i+'">0%</span>'
+      +'</div>';
+  });
+}
+
 function updateSliders(changed){
   var total = 0;
   ALLOC_CATS.forEach(function(_, i){
@@ -237,8 +251,8 @@ function getSliderAlloc(){
 var PROXY_URL='https://fllkczocfcbrfsyhxelg.supabase.co/functions/v1/anthropic-proxy';
 var SUPABASE_URL='https://fllkczocfcbrfsyhxelg.supabase.co';
 var SUPABASE_KEY='sb_publishable_U2pVXIhyNH3s085cUjAmrA_PkeNP4P7';
-var sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-var CAPTOR_VERSION='v6.0.6';
+
+
 
 var hist=JSON.parse(localStorage.getItem('captor_hist')||'[]');
 

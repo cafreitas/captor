@@ -136,6 +136,7 @@ function clearProspectForm() {
   syncToggleR1(null);
   updateR2ButtonState(null);
   resetSliders();
+  updateAllButtonStates(null);
 }
 
 // ── CARREGAR LISTA DE PROSPECTS ──

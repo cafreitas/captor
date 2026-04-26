@@ -10,6 +10,7 @@
 <script src="js/auth.js"></script>
 <script src="js/prospects.js"></script>
 <script src="js/generators.js"></script>
+<script src="js/utils.js"></script>
 </head>
 <body>
 
@@ -1131,46 +1132,6 @@ function closeTermsModal(){
   document.getElementById('termsModal').style.display = 'none';
 }
 
-function clearFieldError(el){
-  el.style.borderColor='';
-  el.classList.remove('field-error');
-}
-
-// ── MÁSCARA PATRIMÔNIO ──
-function maskPat(el){
-  var raw=el.value.replace(/\D/g,'');
-  if(!raw){el.value='';return;}
-  var num=parseInt(raw,10);
-  el.value='R$ '+num.toLocaleString('pt-BR');
-}
-function maskAum(el){
-  var raw=el.value.replace(/\D/g,'');
-  if(!raw){el.value='';return;}
-  var num=parseInt(raw,10);
-  el.value='R$ '+num.toLocaleString('pt-BR');
-}
-function getRawPat(){
-  var v=document.getElementById('fPat').value.replace(/\D/g,'');
-  return v?parseInt(v,10):0;
-}
-
-// ── SLIDERS ALOCAÇÃO ATUAL ──
-var ALLOC_CATS = ['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'];
-
-function initSliders(){
-  var wrap = document.getElementById('allocSliders');
-  wrap.innerHTML = '';
-  ALLOC_CATS.forEach(function(cat, i){
-    wrap.innerHTML += '<div class="aslider-row">'
-      +'<span class="aslider-label" title="'+cat+'">'+cat+'</span>'
-      +'<div class="aslider-wrap">'
-      +'<input type="range" class="aslider" id="asl_'+i+'" min="0" max="100" value="0" step="1" oninput="updateSliders('+i+')">'
-      +'</div>'
-      +'<span class="aslider-val" id="asv_'+i+'">0%</span>'
-      +'</div>';
-  });
-}
-
 function updateSliders(changed){
   var total = 0;
   ALLOC_CATS.forEach(function(_, i){
@@ -2173,8 +2134,6 @@ function updateAllocSliders(changedIdx){
   // Trava sliders zerados quando total = 100
   for(var i=0;i<n;i++){
     var sl = document.getElementById('pi_aloc_'+i);
-    var vl = document.getElementById('pi_alocv_'+i);
-    if(sl) sl.disabled = (remaining===0 && vals[i]===0);
     if(vl) vl.textContent = vals[i]+'%';
   }
 
@@ -3482,11 +3441,6 @@ async function pixSimulatePayment() {
 
   if (error || (data && data.error)) {
     btn.disabled = false;
-    btn.textContent = '🧪 Simular pagamento (dev mode)';
-    var msg = document.getElementById('pixStatusMsg');
-    msg.innerHTML = '<div style="font-size:.74rem;color:#f08080;text-align:center">Erro ao simular: ' + ((data && data.error) || 'tente novamente') + '</div>';
-    msg.style.display = 'block';
-    return;
   }
 
   // Aguarda o polling detectar
@@ -3958,33 +3912,6 @@ async function loadTransferHistory(prospectId){
       +'<span class="pd-history-arrow">↔</span>'
       +'<div><div>'+getNome(t.from_user_id)+' → '+getNome(t.to_user_id)+'</div>'
       +'<div class="pd-history-meta">'+dt+(t.motivo?' · '+t.motivo:'')+(t.transferred_by?' · por '+getNome(t.transferred_by):'')+'</div>'
-      +'</div></div>';
-  }).join('')+'</div>';
-}
-
-// ── SISTEMA DE ERROS ─────────────────────────────────────────────────────────
-var _toastTimer=null;
-function showToast(msg,tipo){
-  var el=document.getElementById('captor-toast');
-  if(!el)return;
-  clearTimeout(_toastTimer);
-  el.textContent=msg;
-  el.className='t-'+(tipo||'info');
-  // force reflow
-  void el.offsetWidth;
-  el.classList.add('show');
-  _toastTimer=setTimeout(function(){el.classList.remove('show');},4000);
-}
-
-function showInlineError(containerId,msg){
-  var el=document.getElementById(containerId);
-  if(!el)return;
-  el.textContent=msg;
-  el.style.display='block';
-}
-
-function clearInlineError(containerId){
-  var el=document.getElementById(containerId);
   if(el)el.style.display='none';
 }
 

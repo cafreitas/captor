@@ -290,10 +290,67 @@ async function openProspectDetail(id) {
   
   // Preencher view detalhado
   document.getElementById('prospectDetailView').style.display = 'block';
+  
+  // Helper para preencher campos pd_*
+  function spd(fieldId, value) {
+    var el = document.getElementById(fieldId);
+    if (el) el.value = value || '';
+  }
+  
+  // Preencher nome no display
   var pdName = document.getElementById('pdName');
   if (pdName) pdName.textContent = prospect.nome || '(sem nome)';
   
-  // ... (mais preenchimentos aqui)
+  // Preencher formulário com dados disponíveis
+  spd('pd_nome', prospect.nome);
+  
+  // Patrimônio: formatar se disponível
+  if (prospect.patrimonio_estimado && prospect.patrimonio_estimado > 0) {
+    var fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(prospect.patrimonio_estimado);
+    spd('pd_pat', fmt);
+  }
+  
+  spd('pd_prof', prospect.profissao);
+  spd('pd_idade', prospect.idade);
+  spd('pd_perfil', prospect.perfil_risco);
+  spd('pd_obj', prospect.objetivo);
+  spd('pd_horizonte', prospect.horizonte);
+  
+  // Status badge
+  var pdStatus = document.getElementById('pdStatusBadge');
+  if (pdStatus && prospect.status) {
+    pdStatus.innerHTML = '<span class="ds ps-' + prospect.status + '" style="font-size:.68rem;padding:2px 8px;border-radius:4px">' + (prospectStatusLabels[prospect.status] || prospect.status) + '</span>';
+  }
+  
+  // Sincronizar toggle R1 com status
+  syncToggleR1(prospect.status);
+  
+  // Sincronizar botões R2
+  updateR2ButtonState(prospect.status);
+  
+  // Se há dados de alocação em r1_notes, carregar nos sliders
+  if (prospect.r1_notes && prospect.r1_notes.alocacao) {
+    var alloc = prospect.r1_notes.alocacao;
+    for (var i = 0; i < 9; i++) {
+      var pdSl = document.getElementById('pd_sl_' + i);
+      if (pdSl) pdSl.value = alloc[i] || 0;
+      var pdVal = document.getElementById('pd_sl_' + i + '_v');
+      if (pdVal) pdVal.textContent = (alloc[i] || 0) + '%';
+    }
+    updatePdAllocTotal();
+  } else {
+    // Resetar sliders se não há alocação
+    for (var i = 0; i < 9; i++) {
+      var pdSl = document.getElementById('pd_sl_' + i);
+      if (pdSl) pdSl.value = 0;
+      var pdVal = document.getElementById('pd_sl_' + i + '_v');
+      if (pdVal) pdVal.textContent = '0%';
+    }
+    updatePdAllocTotal();
+  }
+  
+  // Sincronizar estado de botões
+  updateAllButtonStates(prospect.status);
 }
 
 // ── FECHAR DETALHE DO PROSPECT ──

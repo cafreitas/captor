@@ -193,6 +193,73 @@ function initSliders(){
   });
 }
 
+function initPdSliders(){
+  var labels=['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'];
+  var container=document.getElementById('pdAllocSliders');
+  if(!container)return;
+  container.innerHTML='';
+  for(var i=0;i<9;i++){
+    (function(idx,lb){
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:5px';
+      var lbl=document.createElement('span');
+      lbl.style.cssText='font-size:.68rem;color:var(--muted);width:108px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+      lbl.textContent=lb;
+      var sl=document.createElement('input');
+      sl.type='range';sl.min=0;sl.max=100;sl.value=0;
+      sl.className='aslider';sl.id='pd_sl_'+idx;sl.style.flex='1';
+      var val=document.createElement('span');
+      val.id='pd_sl_'+idx+'_v';
+      val.style.cssText='font-size:.7rem;font-weight:700;color:var(--lime);width:30px;text-align:right;flex-shrink:0';
+      val.textContent='0%';
+      sl.oninput=function(){
+        val.textContent=sl.value+'%';
+        updatePdAllocTotal();
+        syncFormToSidebar();
+      };
+      row.appendChild(lbl);row.appendChild(sl);row.appendChild(val);
+      container.appendChild(row);
+    })(i,labels[i]);
+  }
+}
+
+function updatePdAllocTotal(){
+  var total=0;
+  for(var i=0;i<9;i++){var sl=document.getElementById('pd_sl_'+i);if(sl)total+=parseInt(sl.value)||0;}
+  var tot=document.getElementById('pdAllocTotal');
+  if(tot){tot.textContent=total+'%';tot.style.color=total>100?'var(--gold)':'var(--lime)';}
+}
+
+function resetPdSliders(){
+  for(var i=0;i<9;i++){
+    var sl=document.getElementById('pd_sl_'+i);
+    var vl=document.getElementById('pd_sl_'+i+'_v');
+    if(sl){sl.value=0;if(vl)vl.textContent='0%';}
+  }
+  updatePdAllocTotal();
+  syncFormToSidebar();
+}
+
+function syncFormToSidebar(){
+  var map={pd_nome:'fNome',pd_prof:'fProf',pd_idade:'fIdade',pd_perfil:'fPerfil',
+           pd_obj:'fObj',pd_horizonte:'fHorizonte',pd_ass:'fAss',pd_gaps:'fGaps',pd_ctx:'fCtx'};
+  Object.keys(map).forEach(function(src){
+    var srcEl=document.getElementById(src);
+    var dstEl=document.getElementById(map[src]);
+    if(srcEl&&dstEl)dstEl.value=srcEl.value;
+  });
+  var pdPat=document.getElementById('pd_pat');
+  var fPat=document.getElementById('fPat');
+  if(pdPat&&fPat)fPat.value=pdPat.value;
+  for(var i=0;i<9;i++){
+    var pdSl=document.getElementById('pd_sl_'+i);
+    var fSl=document.getElementById('asl_'+i);
+    if(pdSl&&fSl)fSl.value=pdSl.value;
+  }
+  updateSliders(-1);
+  onFieldChange();
+}
+
 function updateSliders(changed){
   var total = 0;
   ALLOC_CATS.forEach(function(_, i){
@@ -2990,5 +3057,16 @@ function captorConfirmCancel(){
   document.getElementById('captorConfirmModal').style.display='none';
   _confirmCallback=null;
 }
+
+// ── ATUALIZAR VERSÃO NA UI ──────────────────────────────────────────────────────
+(function(){
+  if(typeof CAPTOR_VERSION !== 'undefined'){
+    var els=['hverEl','footerLoginVersion','footerMainVersion'];
+    els.forEach(function(id){
+      var el=document.getElementById(id);
+      if(el)el.textContent=CAPTOR_VERSION;
+    });
+  }
+})();
 
 // ── FIM CAPTOR TEAMS ──────────────────────────────────────────────────────────

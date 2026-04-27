@@ -84,6 +84,15 @@ function updateR2ButtonState(status){
 }
 
 /**
+ * Atualizar estado dos botões quando campos mudam
+ * Chamada por syncFormToSidebar() e outros handlers
+ */
+function onFieldChange(){
+  var p=AppState.prospects.currentId?AppState.prospects.all.find(function(x){return x.id===AppState.prospects.currentId;}):null;
+  updateAllButtonStates(p?p.status:null);
+}
+
+/**
  * Chamar updateAllButtonStates() quando campos mudam
  */
 function initButtonStateListeners(){

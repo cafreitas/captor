@@ -350,6 +350,7 @@ async function openProspectDetail(id) {
   }
   
   // Sincronizar estado de botões
+  syncFormToSidebar();
   updateAllButtonStates(prospect.status);
 }
 

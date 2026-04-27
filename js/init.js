@@ -2640,6 +2640,9 @@ async function loadFirmRole(){
   if(firm){
     currentUserIsManager=true;
     currentFirmId=firm.id;
+    // Esconder botão "Novo prospect" para contas PJ
+    var btnNovoProspect=document.getElementById('btnNovoProspect');
+    if(btnNovoProspect)btnNovoProspect.style.display='none';
     // Garante firm_id no company_profiles (corrige contas antigas)
     await sb.from('company_profiles').update({firm_id:firm.id}).eq('user_id',supabaseUserId).is('firm_id',null);
     // mostrar tab Equipe

@@ -196,7 +196,7 @@ function renderProspectTable(rows) {
     
     return '<tr class="dash-tr" onclick="openProspectDetail(\'' + escHtml(p.id) + '\')" style="border-bottom:1px solid var(--border2);cursor:pointer' + (isNew ? ';background:rgba(168,194,58,.025)' : '') + '">' +
       '<td style="padding:9px 12px;color:var(--text);font-weight:600">' + (isNew ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--lime);margin-right:7px;vertical-align:middle;flex-shrink:0"></span>' : '') + escHtml(p.nome || '(sem nome)') + '</td>' +
-      '<td style="padding:9px 12px;color:var(--muted)">' + escHtml(p.perfil_risco || '—') + '</td>' +
+      '<td style="padding:9px 12px;color:var(--muted)">' + escHtml(p.profissao || '—') + '</td>' +
       '<td style="padding:9px 12px;color:var(--muted)">' + patFmt + '</td>' +
       '<td style="padding:9px 12px"><span class="ds ps-' + p.status + '" style="font-size:.65rem;padding:2px 8px;border-radius:4px;white-space:nowrap">' + st + '</span></td>' +
       '<td style="padding:9px 12px;color:var(--dim)">' + dt + '</td>' +
@@ -224,16 +224,15 @@ function onProspectNomeSearch(val) {
     return (p.nome || '').toLowerCase().indexOf(searchVal) >= 0;
   });
   
-  var ac = document.getElementById('pthNomeAc');
+  var ac = document.getElementById('prospectNomeAC');
   if (!ac) return;
   
   if (!searchVal) {
     ac.style.display = 'none';
-    applyProspectFilters();
     return;
   }
   
-  ac.innerHTML = results.slice(0, 8).map(function(p) {
+  ac.innerHTML = results.slice(0, 5).map(function(p) {
     return '<div class="ac-item" onclick="selectProspectNomeSearch(\'' + escHtml(p.id) + '\')">' + escHtml(p.nome) + '</div>';
   }).join('');
   ac.style.display = results.length > 0 ? 'block' : 'none';
@@ -249,15 +248,15 @@ function selectProspectNomeSearch(id) {
 
 // ── APLICAR FILTROS ──
 function applyProspectFilters() {
-  var nome = document.getElementById('pthNomeSearch')?.value.toLowerCase() || '';
-  var status = document.getElementById('pthStatusFilter')?.value || '';
-  var perfil = document.getElementById('pthPerfilFilter')?.value || '';
+  var nome = document.getElementById('filterProspectNome')?.value.toLowerCase() || '';
+  var status = document.getElementById('filterProspectStatus')?.value || '';
+  var profissao = document.getElementById('filterProspectProfissao')?.value || '';
   
   var filtered = AppState.prospects.all.filter(function(p) {
     return (
       (nome === '' || (p.nome || '').toLowerCase().indexOf(nome) >= 0) &&
       (status === '' || p.status === status) &&
-      (perfil === '' || p.perfil_risco === perfil)
+      (profissao === '' || (p.profissao || '').indexOf(profissao) >= 0)
     );
   });
   
@@ -350,8 +349,27 @@ async function openProspectDetail(id) {
     updatePdAllocTotal();
   }
   
-  // Sincronizar estado de botões
-  syncFormToSidebar();
+  // ── VERIFICAR SE É MANAGER VENDO PROSPECT DE OUTRO ASSESSOR ──
+  var isManager = !!(currentUserIsManager && currentFirmId && prospect.assessor_id !== supabaseUserId);
+  AppState.prospects.viewingAsManager = isManager;
+  
+  var form = document.getElementById('pdFormGrid');
+  var actionsBar = document.getElementById('pdActionsBar');
+  
+  if(isManager){
+    // MANAGER vendo prospect de OUTRO assessor: readonly + sem botões
+    if(form) form.classList.add('pd-readonly');
+    if(actionsBar) actionsBar.style.display = 'none';
+    // NÃO chamar syncFormToSidebar (evita habilitar botões)
+  } else {
+    // ASSESSOR vendo seu próprio prospect: editável + com botões
+    if(form) form.classList.remove('pd-readonly');
+    if(actionsBar) actionsBar.style.display = 'flex';
+    
+    // Sincronizar estado de botões
+    syncFormToSidebar();
+  }
+  
   updateAllButtonStates(prospect.status);
 }
 

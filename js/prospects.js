@@ -172,22 +172,39 @@ function renderProspectTable(rows) {
   if (!tbody) return;
   
   if (!rows || !rows.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Nenhum prospect encontrado</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:32px;text-align:center">' +
+      '<div style="color:var(--dim);font-size:.85rem;margin-bottom:12px">Nenhum prospect ainda.</div>' +
+      '<button onclick="fillExampleAndOpen()" style="padding:7px 16px;background:var(--lime);color:#1a1a1a;border:none;border-radius:var(--r);font-family:var(--f);font-size:.78rem;font-weight:700;cursor:pointer">Experimente com um exemplo</button>' +
+      '</td></tr>';
     return;
   }
   
-  tbody.innerHTML = rows.map(function(p) {
-    var statusClass = 'ps-' + (p.status || 'prospect_criado');
-    var patrimonio = p.patrimonio_estimado ? 'R$ ' + (p.patrimonio_estimado / 1000).toFixed(0) + 'k' : '—';
-    var dataCriacao = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '—';
+  var UNPROCESSED = ['prospect_criado', 'r1_iniciada'];
+  var sorted = rows.slice().sort(function(a, b) {
+    var aUp = UNPROCESSED.indexOf(a.status) >= 0 ? 0 : 1;
+    var bUp = UNPROCESSED.indexOf(b.status) >= 0 ? 0 : 1;
+    return aUp - bUp;
+  });
+  
+  tbody.innerHTML = sorted.map(function(p) {
+    var patFmt = p.patrimonio_estimado
+      ? new Intl.NumberFormat('pt-BR', {notation: 'compact', maximumFractionDigits: 1}).format(p.patrimonio_estimado)
+      : '—';
+    var dt = new Date(p.created_at).toLocaleDateString('pt-BR');
+    var st = prospectStatusLabels[p.status] || p.status;
+    var isNew = UNPROCESSED.indexOf(p.status) >= 0;
     
-    return '<tr style="cursor:pointer" onclick="loadProspectIntoSidebar(\'' + escHtml(p.id) + '\')">' +
-      '<td><strong>' + escHtml(p.nome || '(sem nome)') + '</strong></td>' +
-      '<td>' + escHtml(p.profissao || '—') + '</td>' +
-      '<td>' + patrimonio + '</td>' +
-      '<td><span class="ds ' + statusClass + '">' + (prospectStatusLabels[p.status] || p.status) + '</span></td>' +
-      '<td>' + dataCriacao + '</td>' +
-      '</tr>';
+    return '<tr class="dash-tr" onclick="openProspectDetail(\'' + escHtml(p.id) + '\')" style="border-bottom:1px solid var(--border2);cursor:pointer' + (isNew ? ';background:rgba(168,194,58,.025)' : '') + '">' +
+      '<td style="padding:9px 12px;color:var(--text);font-weight:600">' + (isNew ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--lime);margin-right:7px;vertical-align:middle;flex-shrink:0"></span>' : '') + escHtml(p.nome || '(sem nome)') + '</td>' +
+      '<td style="padding:9px 12px;color:var(--muted)">' + escHtml(p.profissao || '—') + '</td>' +
+      '<td style="padding:9px 12px;color:var(--muted)">' + patFmt + '</td>' +
+      '<td style="padding:9px 12px"><span class="ds ps-' + p.status + '" style="font-size:.65rem;padding:2px 8px;border-radius:4px;white-space:nowrap">' + st + '</span></td>' +
+      '<td style="padding:9px 12px;color:var(--dim)">' + dt + '</td>' +
+      '<td style="padding:9px 12px" onclick="event.stopPropagation()">' +
+      (p.status !== 'perdido_user' && p.status !== 'perdido_auto' && p.status !== 'negocio_fechado'
+        ? '<button onclick="markPerdidoUser(\'' + escHtml(p.id) + '\')" class="dash-link" style="color:var(--status-lost-user);border-color:rgba(239,68,68,.3)">Perdido</button>'
+        : '') +
+      '</td></tr>';
   }).join('');
 }
 
@@ -292,6 +309,121 @@ function openNewProspectDetail() {
 }
 
 // ── HELPER: ESCAPAR HTML ──
+function syncToggleR1(status){
+  var toggle=document.getElementById('toggleR1');
+  var track=document.getElementById('toggleR1Track');
+  var thumb=document.getElementById('toggleR1Thumb');
+  if(!toggle)return;
+  var on=status&&['r1_concluida','resumo_enviado','r1_aprovada','r2_iniciada','negocio_fechado'].indexOf(status)>=0;
+  toggle.checked=on;
+  track.style.background=on?'var(--lime)':'#444';
+  thumb.style.transform=on?'translateX(18px)':'translateX(0)';
+  var tb=document.getElementById('toggleR1b');
+  var tbT=document.getElementById('toggleR1bTrack');
+  var tbTh=document.getElementById('toggleR1bThumb');
+  if(tb){tb.checked=on;if(tbT)tbT.style.background=on?'var(--lime)':'#444';if(tbTh)tbTh.style.transform=on?'translateX(18px)':'translateX(0)';}
+  var r2w=document.getElementById('btnR2BottomWrap');
+  if(r2w)r2w.style.display=on?'block':'none';
+}
+
+async function onToggleR1(checked){
+  var track=document.getElementById('toggleR1Track');
+  var thumb=document.getElementById('toggleR1Thumb');
+  var tb=document.getElementById('toggleR1b');
+  var tbT=document.getElementById('toggleR1bTrack');
+  var tbTh=document.getElementById('toggleR1bThumb');
+  function syncBottom(on){
+    if(tb){tb.checked=on;if(tbT)tbT.style.background=on?'var(--lime)':'#444';if(tbTh)tbTh.style.transform=on?'translateX(18px)':'translateX(0)';}
+    var r2w=document.getElementById('btnR2BottomWrap');
+    if(r2w)r2w.style.display=on?'block':'none';
+  }
+  if(checked){
+    if(!isValidacaoPreenchida()){
+      showToast('Preencha Perfil e Objetivo nas Anotações R1 antes de confirmar.','error');
+      document.getElementById('toggleR1').checked=false;
+      track.style.background='#444';
+      thumb.style.transform='translateX(0)';
+      syncBottom(false);
+      var bv=document.getElementById('validacaoBloco');
+      if(bv){
+        var bvBody=bv.querySelector('.blkbody');
+        if(bvBody&&!bvBody.classList.contains('open')){var bvHd=bv.querySelector('.blkhd');if(bvHd)bvHd.click();}
+        bv.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+      return;
+    }
+    track.style.background='var(--lime)';
+    thumb.style.transform='translateX(18px)';
+    syncBottom(true);
+    if(!AppState.prospects.currentId){
+      showToast('Salve o prospect antes de confirmar a R1.','error');
+      document.getElementById('toggleR1').checked=false;
+      track.style.background='#444';
+      thumb.style.transform='translateX(0)';
+      syncBottom(false);
+      return;
+    }
+    var activeTab=document.querySelector('.r1tab-btn.active');
+    var mode=activeTab?activeTab.dataset.tab:'depois';
+    var notes=collectR1Notes();
+    var {error}=await sb.from('prospects').update({
+      status:'r1_concluida',
+      r1_mode:mode,
+      r1_notes:notes
+    }).eq('id',AppState.prospects.currentId);
+    if(error){
+      showToast('Erro ao confirmar R1: '+error.message,'error');
+      document.getElementById('toggleR1').checked=false;
+      track.style.background='#444';
+      thumb.style.transform='translateX(0)';
+      syncBottom(false);
+      return;
+    }
+    syncBottom(true);
+    var opt=document.querySelector('#fProspectSel option[value="'+AppState.prospects.currentId+'"]');
+    if(opt)opt.textContent=opt.textContent.replace(/·.*$/,'· R1 Concluída');
+    var st=document.getElementById('fProspectStatus');
+    if(st)st.innerHTML='<span class="ds ps-r1_concluida" style="font-size:.68rem;padding:2px 8px;border-radius:20px">R1 Concluída</span>';
+    var badge=document.getElementById('pdStatusBadge');
+    if(badge)badge.innerHTML='<span class="ds ps-r1_concluida" style="font-size:.68rem;padding:2px 8px;border-radius:4px">R1 Concluída</span>';
+    var p=AppState.prospects.all.find(function(x){return x.id===AppState.prospects.currentId;});
+    if(p){p.status='r1_concluida';p.r1_notes=notes;}
+    updateR2ButtonState('r1_concluida');
+  } else {
+    track.style.background='#444';
+    thumb.style.transform='translateX(0)';
+    syncBottom(false);
+    var p=AppState.prospects.currentId?AppState.prospects.all.find(function(x){return x.id===AppState.prospects.currentId;}):null;
+    updateAllButtonStates(p?p.status:null);
+  }
+}
+
+function fillExampleAndOpen(){
+  fillExample();
+  AppState.prospects.currentId=null;
+  document.getElementById('prospectview').style.display='none';
+  document.getElementById('prospectDetailView').style.display='block';
+  document.getElementById('pdFormGrid').style.display='grid';
+  document.getElementById('pdNomeDisplay').textContent=document.getElementById('pd_nome').value||'Prospect de Exemplo';
+  document.getElementById('pdStatusBadge').innerHTML='<span class="ds ps-prospect_criado" style="font-size:.68rem;padding:2px 8px;border-radius:4px">Exemplo</span>';
+  document.getElementById('pdMetaExtra').textContent='';
+  document.getElementById('confirmR1Wrap').style.display='none';
+  document.getElementById('emptyState').style.display='flex';
+  document.getElementById('outArea').style.display='none';
+  document.getElementById('outArea').innerHTML='';
+  syncToggleR1(null);
+  updateAllButtonStates(null);
+}
+
+async function markPerdidoUser(id){
+  showConfirmModal('Marcar como perdido','Este prospect será marcado como perdido. Você pode reverter isso manualmente.',async function(){
+    await sb.from('prospects').update({status:'perdido_user'}).eq('id',id);
+    var p=AppState.prospects.all.find(function(x){return x.id===id;});
+    if(p)p.status='perdido_user';
+    loadProspects();
+  },'Marcar como perdido');
+}
+
 function escHtml(text) {
   if (!text) return '';
   return String(text)

@@ -86,12 +86,16 @@ async function enterApp(session) {
   user = user.charAt(0).toUpperCase() + user.slice(1);
   
   // Mostrar app, ocultar login
-  document.getElementById('login').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
+  var loginEl = document.getElementById('login');
+  if (loginEl) loginEl.style.display = 'none';
+  var appEl = document.getElementById('app');
+  if (appEl) appEl.style.display = 'block';
   
   // Atualizar UI com nome do usuário
-  document.getElementById('unEl').textContent = user;
-  document.getElementById('avEl').textContent = user.charAt(0).toUpperCase();
+  var unEl = document.getElementById('unEl');
+  if (unEl) unEl.textContent = user;
+  var avEl = document.getElementById('avEl');
+  if (avEl) avEl.textContent = user.charAt(0).toUpperCase();
   
   // Inicializar componentes
   initSliders();

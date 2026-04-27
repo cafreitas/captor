@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Proposta de Investimento — Captor v5.3.1</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/globals.js"></script>
 <style>
 :root{
   --bg:#f5f6f8;--bg2:#fff;--bg3:#f0f2f5;--border:#e2e5ea;
@@ -360,9 +361,6 @@ body{font-family:var(--f);background:var(--bg);color:var(--text);-webkit-font-sm
   </div>
 </div>
 <script>
-var SUPABASE_URL='https://fllkczocfcbrfsyhxelg.supabase.co';
-var SUPABASE_KEY='sb_publishable_U2pVXIhyNH3s085cUjAmrA_PkeNP4P7';
-var sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 var proposal=null,currentAction=null,isExpired=false,isSdr=false;
 window.addEventListener('scroll',function(){var h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('readProgress').style.width=(h>0?(window.scrollY/h*100):0)+'%';});
 var statusLabels={rascunho:'Rascunho',enviada:'Enviada',visualizada:'Visualizada',aceita:'Aceita',em_discussao:'Em discussão',detalhes_solicitados:'Detalhes solicitados',aprovado_sdr:'Aprovado'};

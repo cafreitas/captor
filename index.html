@@ -1164,5 +1164,31 @@ v5.8.1 — 2026-04-16
 <script src="https://cdn.jsdelivr.net/npm/xlsx@latest/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
+<script>
+(function(){
+  // Aguardar até que CAPTOR_VERSION esteja disponível
+  var attempts = 0;
+  var checkVersion = function(){
+    if(typeof CAPTOR_VERSION !== 'undefined'){
+      var v = CAPTOR_VERSION;
+      // Atualizar <title>
+      document.title = 'Captor ' + v + ' — Pré-vendas eficiente e inteligente';
+      // Atualizar 3 elementos de versão
+      var el1 = document.getElementById('hverEl');
+      var el2 = document.getElementById('footerLoginVersion');
+      var el3 = document.getElementById('footerMainVersion');
+      if(el1) el1.textContent = v;
+      if(el2) el2.textContent = v;
+      if(el3) el3.textContent = v;
+    } else if(attempts < 10){
+      // Retry em 50ms
+      attempts++;
+      setTimeout(checkVersion, 50);
+    }
+  };
+  checkVersion();
+})();
+</script>
+
 </body>
 </html>

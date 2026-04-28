@@ -249,7 +249,16 @@
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 80px;gap:8px">
-            <div class="fg"><label class="fl">Profissão</label><input class="fi" id="pd_prof" placeholder="Ex: Empresário" oninput="syncFormToSidebar()"></div>
+            <div class="fg"><label class="fl">Profissão</label>
+              <div style="position:relative">
+                <input class="fi" id="pd_prof" placeholder="Ex: Empresário" autocomplete="off"
+                  oninput="acFilter();syncFormToSidebar()"
+                  onfocus="acFilter()"
+                  onblur="setTimeout(acHide,180)"
+                  onkeydown="acKey(event)">
+                <div class="ac-drop" id="acDrop"></div>
+              </div>
+            </div>
             <div class="fg"><label class="fl">Idade</label><input class="fi" id="pd_idade" type="number" placeholder="45" min="18" max="90" oninput="syncFormToSidebar()"></div>
           </div>
           <div class="fg"><label class="fl">Objetivo</label>

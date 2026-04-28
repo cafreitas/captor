@@ -89,8 +89,9 @@ var acVisible = [];
 function acNorm(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
 
 function acFilter(){
-  var q = acNorm(document.getElementById('fProf').value.trim());
+  var q = acNorm((document.getElementById('pd_prof')||{value:''}).value.trim());
   var drop = document.getElementById('acDrop');
+  if (!drop) return;
   acIdx = -1; acVisible = [];
   var html = '';
 
@@ -117,12 +118,15 @@ function acSelect(val){
 }
 
 function acHide(){
-  document.getElementById('acDrop').classList.remove('open');
+  var drop = document.getElementById('acDrop');
+  if (drop) drop.classList.remove('open');
   acIdx = -1;
 }
 
 function acKey(e){
-  var items = document.getElementById('acDrop').querySelectorAll('.ac-item');
+  var drop = document.getElementById('acDrop');
+  if (!drop) return;
+  var items = drop.querySelectorAll('.ac-item');
   if(e.key === 'ArrowDown'){ e.preventDefault(); acIdx = Math.min(acIdx+1, items.length-1); acHighlight(items); }
   else if(e.key === 'ArrowUp'){ e.preventDefault(); acIdx = Math.max(acIdx-1, 0); acHighlight(items); }
   else if(e.key === 'Enter' && acIdx >= 0){ e.preventDefault(); if(acVisible[acIdx]) acSelect(acVisible[acIdx]); }

@@ -5,13 +5,12 @@
  * Usado por updateAllButtonStates() para habilitar/desabilitar botões
  */
 function requiredFieldsFilled(){
-  var nome = document.getElementById('fNome').value.trim();
-  var pat = getRawPat();
-  var prof = document.getElementById('fProf').value.trim();
-  var idade = document.getElementById('fIdade').value;
-  var perfil = document.getElementById('fPerfil').value;
-  var obj = document.getElementById('fObj').value;
-  return !!(nome && pat && prof && idade && perfil && obj);
+  var nome = (document.getElementById('pd_nome')||{}).value||'';
+  var prof = (document.getElementById('pd_prof')||{}).value||'';
+  var idade = (document.getElementById('pd_idade')||{}).value||'';
+  var perfil = (document.getElementById('pd_perfil')||{}).value||'';
+  var obj = (document.getElementById('pd_obj')||{}).value||'';
+  return !!(nome.trim() && prof.trim() && idade && perfil && obj);
 }
 
 /**
@@ -96,7 +95,7 @@ function onFieldChange(){
  * Chamar updateAllButtonStates() quando campos mudam
  */
 function initButtonStateListeners(){
-  var fields = ['fNome', 'fPat', 'fProf', 'fIdade', 'fPerfil', 'fObj'];
+  var fields = ['pd_nome', 'pd_pat', 'pd_prof', 'pd_idade', 'pd_perfil', 'pd_obj'];
   
   fields.forEach(function(fieldId){
     var el = document.getElementById(fieldId);

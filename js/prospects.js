@@ -301,8 +301,8 @@ async function openProspectDetail(id) {
   }
   
   // Preencher nome no display
-  var pdName = document.getElementById('pdName');
-  if (pdName) pdName.textContent = prospect.nome || '(sem nome)';
+  var pdNomeDisp = document.getElementById('pdNomeDisplay');
+  if (pdNomeDisp) pdNomeDisp.textContent = prospect.nome || '(sem nome)';
   
   // Preencher formulário com dados disponíveis
   spd('pd_nome', prospect.nome);
@@ -385,7 +385,13 @@ async function openProspectDetail(id) {
 }
 
 // ── FECHAR DETALHE DO PROSPECT ──
-function closeProspectDetail() {
+async function closeProspectDetail() {
+  // Salvar dados se há prospect ativo com nome preenchido
+  var nome = document.getElementById('pd_nome') ? document.getElementById('pd_nome').value.trim() : '';
+  if (nome) {
+    try { await upsertProspect(null); } catch(e) { console.warn('closeProspectDetail save:', e); }
+    await fetchProspects();
+  }
   document.getElementById('prospectDetailView').style.display = 'none';
   document.getElementById('prospectview').style.display = 'block';
 }
@@ -408,7 +414,7 @@ function openProspectMethodManual() {
   document.getElementById('outArea').style.display = 'none';
   document.getElementById('outArea').innerHTML = '';
   document.getElementById('emptyState').style.display = 'flex';
-  var pdName = document.getElementById('pdName');
+  var pdName = document.getElementById('pdNomeDisplay');
   if (pdName) pdName.textContent = 'Novo prospect';
   expandSidebar();
   updateAllButtonStates(null);

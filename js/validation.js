@@ -101,6 +101,11 @@ function initButtonStateListeners(){
     var el = document.getElementById(fieldId);
     if(el){
       el.addEventListener('input', function(){
+        // Atualizar nome no display em tempo real
+        if (fieldId === 'pd_nome') {
+          var disp = document.getElementById('pdNomeDisplay');
+          if (disp) disp.textContent = el.value.trim() || 'Novo prospect';
+        }
         // Atualizar estado com status atual (ou null se sem prospect)
         var status = null;
         if(AppState.prospects.currentId){

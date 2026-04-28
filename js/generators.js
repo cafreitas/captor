@@ -113,8 +113,8 @@ async function generateR1() {
     sb.from('prospects').update({perfil_inicial: perfilInicial}).eq('id', AppState.prospects.currentId).then(function(){});
   }
   
-  var ctx = document.getElementById('fCtx').value.trim();
-  var gaps = document.getElementById('fGaps').value.trim();
+  var ctx = document.getElementById('pd_ctx').value.trim();
+  var gaps = document.getElementById('pd_gaps').value.trim();
   var empresaCtx = buildEmpresaPrompt() || '';
   
   var prompt = 'Você é um especialista em vendas consultivas de investimentos.\n\n'

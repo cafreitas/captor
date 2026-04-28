@@ -157,6 +157,7 @@ async function generateR1() {
     renderR1Output(nome, patFmt, r1data);
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('outArea').style.display = 'block';
+    collapseSidebar();
     AppState.prospects.r1Generated = true;
     
     // Salvar roteiro no prospect

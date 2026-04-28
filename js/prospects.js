@@ -291,6 +291,9 @@ async function openProspectDetail(id) {
   // Preencher view detalhado
   document.getElementById('prospectview').style.display = 'none';
   document.getElementById('prospectDetailView').style.display = 'block';
+  expandSidebar();
+  document.getElementById('outArea').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'flex';
   
   // Helper para preencher campos pd_*
   function spd(fieldId, value) {
@@ -505,29 +508,39 @@ function getRawPat() {
 
 // ── SALVAR/ATUALIZAR PROSPECT COM STATUS ──
 async function upsertProspect(status) {
-  if (!AppState.prospects.currentId) {
-    var nome = document.getElementById('pd_nome').value.trim();
-    if (!nome) return;
-    var newProspect = {
-      user_id: supabaseUserId,
-      nome: nome,
-      status: status || 'novo',
-      created_at: new Date().toISOString()
-    };
+  if (!supabaseUserId) return;
+  var nome = document.getElementById('pd_nome').value.trim();
+  if (!nome) return;
+  var pat = getRawPat();
+  var payload = {
+    assessor_id: supabaseUserId,
+    firm_id: typeof currentFirmId !== 'undefined' ? currentFirmId || null : null,
+    nome: nome,
+    profissao: document.getElementById('pd_prof').value || null,
+    idade: parseInt(document.getElementById('pd_idade').value) || null,
+    patrimonio_estimado: pat ? parseInt(String(pat).replace(/\D/g,'')) || null : null,
+    perfil_risco: document.getElementById('pd_perfil').value || null,
+    objetivo: document.getElementById('pd_obj').value || null,
+    horizonte: document.getElementById('pd_horizonte').value || null,
+    updated_at: new Date().toISOString()
+  };
+  if (AppState.prospects.currentId) {
+    if (status) payload.status = status;
     try {
-      var res = await sb.from('prospects').insert([newProspect]).select();
-      if (res.data && res.data[0]) {
-        AppState.prospects.currentId = res.data[0].id;
+      await sb.from('prospects').update(payload).eq('id', AppState.prospects.currentId);
+    } catch (e) {
+      console.error('upsertProspect (update) erro:', e);
+    }
+  } else {
+    payload.status = status || 'prospect_criado';
+    try {
+      var res = await sb.from('prospects').insert([payload]).select().maybeSingle();
+      if (res.data) {
+        AppState.prospects.currentId = res.data.id;
+        AppState.prospects.all.unshift(res.data);
       }
     } catch (e) {
       console.error('upsertProspect (insert) erro:', e);
-    }
-  } else {
-    // Atualizar existente
-    try {
-      await sb.from('prospects').update({status: status}).eq('id', AppState.prospects.currentId);
-    } catch (e) {
-      console.error('upsertProspect (update) erro:', e);
     }
   }
 }

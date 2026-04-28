@@ -77,7 +77,7 @@
       <div id="lForgotWrap" style="text-align:center;margin-top:8px">
         <button type="button" onclick="openForgotPassword()" style="background:transparent;border:none;color:var(--dim);font-size:.68rem;cursor:pointer;font-family:var(--f);text-decoration:underline">Esqueci minha senha</button>
       </div>
-      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo <span id="footerLoginVersion">v6.0.7</span></div>
+      <div class="lnote">Plataforma de uso interno Captor<br>Protótipo <span id="footerLoginVersion">v6.1.0</span></div>
     </div>
   </div>
 </div>
@@ -117,7 +117,7 @@
       <div class="hlogo">captor<span>.</span></div>
       <div class="hpipe"></div>
       <div class="hsub">Assessoria Consultiva</div>
-      <div class="hver" id="hverEl">v6.0.7</div>
+      <div class="hver" id="hverEl">v6.1.0</div>
     </div>
     <div class="hcenter">
       <div class="ntabs">
@@ -681,7 +681,7 @@
     </div>
   </div>
 
-  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong id="footerMainVersion">v6.0.7</strong> &nbsp;·&nbsp; Uso interno</footer>
+  <footer class="footer">captor. Pré-vendas eficiente e inteligente &nbsp;·&nbsp; <strong id="footerMainVersion">v6.1.0</strong> &nbsp;·&nbsp; Uso interno</footer>
 
   <!-- MODAL EMPRESA -->
   <div id="modalEmpresa" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEmpresaModal()">
@@ -977,6 +977,19 @@
   </div>
 </div>
 <!-- CHANGELOG
+v6.1.0 — 2026-04-28 — MVP: Geração R1 (Roteiro de Diagnóstico)
+- Feature: `generateR1()` — gera roteiro estruturado para reunião de diagnóstico (R1)
+- Validação: verifica campos obrigatórios (nome, profissão, idade, perfil, objetivo)
+- Prompt: contextualiza com dados da empresa + perfil do prospect + problemas identificados
+- Output: JSON estruturado com abertura, perguntas (6-8), sinais de alerta, encerramento
+- Renderização: blocos visuais (mkBlock) com ícones — abertura, perguntas, sinais, encerramento
+- Perguntas: inclui categoria, pergunta, motivo (tooltip), aprofundamento (followup)
+- Banco de dados: salva `roteiro_r1` e `perfil_inicial` em prospects table
+- Suporte: `buildEmpresaPrompt()`, `getRawPat()`, `upsertProspect()`, `renderR1Output()`
+- Logging: chamada registrada como `gerar_r1` com tokens input/output
+- Status: ao gerar, prospect recebe status `r1_iniciada`
+- Próximas versões: v6.1.1 (refinements UI), v6.2.0 (anotações R1 + validação + fluxo R1→R2)
+
 v6.0.6 — 2026-04-25 — Double Bugfix Release
 - Fix: fillExampleAndOpen() agora mostra formulário preenchido (pdFormGrid visível)
 - Fix: Versão desincronizada entre header (v6.0.5) e footer (v6.0.3) — agora ambos v6.0.6

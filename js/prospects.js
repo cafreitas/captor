@@ -492,3 +492,41 @@ function escHtml(text) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+
+// ── EXTRAIR VALOR NUMÉRICO DE PATRIMÔNIO ──
+function getRawPat() {
+  var patStr = document.getElementById('fPat').value || '';
+  if (!patStr) return null;
+  var nums = String(patStr).replace(/\D/g, '');
+  return nums ? parseInt(nums) : null;
+}
+
+// ── SALVAR/ATUALIZAR PROSPECT COM STATUS ──
+async function upsertProspect(status) {
+  if (!AppState.prospects.currentId) {
+    // Criar novo prospect
+    var nome = document.getElementById('fNome').value.trim();
+    if (!nome) return;
+    var newProspect = {
+      user_id: supabaseUserId,
+      nome: nome,
+      status: status || 'novo',
+      created_at: new Date().toISOString()
+    };
+    try {
+      var res = await sb.from('prospects').insert([newProspect]).select();
+      if (res.data && res.data[0]) {
+        AppState.prospects.currentId = res.data[0].id;
+      }
+    } catch (e) {
+      console.error('upsertProspect (insert) erro:', e);
+    }
+  } else {
+    // Atualizar existente
+    try {
+      await sb.from('prospects').update({status: status}).eq('id', AppState.prospects.currentId);
+    } catch (e) {
+      console.error('upsertProspect (update) erro:', e);
+    }
+  }
+}

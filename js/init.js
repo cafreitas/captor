@@ -1158,6 +1158,85 @@ function tog(id){
   if(b)b.classList.toggle('open');if(c)c.classList.toggle('open');
 }
 
+// ── RENDERIZAR OUTPUT R1 (ROTEIRO DIAGNÓSTICO) ──
+function renderR1Output(nome, patFmt, data) {
+  var area = document.getElementById('outArea');
+  area.innerHTML = '';
+  
+  // HEADER com nome
+  var hdr = document.createElement('div');
+  hdr.className = 'outhead fadein';
+  hdr.innerHTML = '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+    + '<div class="outtag" style="background:rgba(59,130,246,.2);color:#60a5fa">Roteiro R1 — Diagnóstico</div>'
+    + '<div class="outname" style="margin:0">' + escHtml(nome) + '</div>'
+    + '</div>';
+  area.appendChild(hdr);
+  
+  // ABERTURA
+  if (data.abertura) {
+    var b0 = mkBlock('🎯', 'Abertura da Reunião', false);
+    b0.body.innerHTML = '<div style="margin-bottom:8px">'
+      + '<span style="font-size:.72rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Objetivo</span>'
+      + '<p style="margin:4px 0 0;font-size:.83rem;color:var(--text)">' + escHtml(data.abertura.objetivo) + '</p>'
+      + '</div>'
+      + '<div>'
+      + '<span style="font-size:.72rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Dica</span>'
+      + '<p style="margin:4px 0 0;font-size:.83rem;color:var(--muted)">' + escHtml(data.abertura.dica) + '</p>'
+      + '</div>';
+    area.appendChild(b0.el);
+  }
+  
+  // PERGUNTAS
+  if (data.perguntas && data.perguntas.length) {
+    var b1 = mkBlock('❓', 'Perguntas de Diagnóstico', false);
+    b1.body.innerHTML = data.perguntas.map(function(q, i) {
+      var motivoHtml = q.motivo
+        ? '<div class="r1q-motivo" style="margin-top:4px;padding:6px;background:rgba(240,240,240,.04);border-left:2px solid var(--lime);font-size:.75rem;color:var(--muted)">💡 <strong>Motivo:</strong> ' + escHtml(q.motivo) + '</div>'
+        : '';
+      var followupHtml = q.followup
+        ? '<div class="r1q-followup" style="margin-top:4px;font-size:.75rem;color:var(--lime)"><strong>⬇ Aprofunde:</strong> ' + escHtml(q.followup) + '</div>'
+        : '';
+      return '<div class="rotitem" style="margin-bottom:12px;padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r)">'
+        + '<div style="display:flex;gap:10px">'
+        + '<div class="rotnum" style="font-weight:700;color:var(--lime);flex-shrink:0">' + (i+1) + '.</div>'
+        + '<div class="rotcont" style="flex:1">'
+        + '<div style="font-size:.65rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">' + escHtml(q.categoria) + '</div>'
+        + '<strong style="font-size:.85rem">' + escHtml(q.pergunta) + '</strong>'
+        + motivoHtml
+        + followupHtml
+        + '</div>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+    area.appendChild(b1.el);
+  }
+  
+  // SINAIS DE ALERTA
+  if (data.sinais_alerta && data.sinais_alerta.length) {
+    var b2 = mkBlock('⚠', 'Sinais de Alerta', false);
+    b2.body.innerHTML = '<div style="display:flex;flex-direction:column;gap:6px">'
+      + data.sinais_alerta.map(function(s) {
+        return '<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:var(--r);padding:8px 12px;font-size:.81rem;color:var(--muted)">⚠ ' + escHtml(s) + '</div>';
+      }).join('')
+      + '</div>';
+    area.appendChild(b2.el);
+  }
+  
+  // ENCERRAMENTO
+  if (data.encerramento) {
+    var b3 = mkBlock('🏁', 'Encerramento', false);
+    b3.body.innerHTML = '<div style="margin-bottom:8px">'
+      + '<span style="font-size:.72rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Objetivo</span>'
+      + '<p style="margin:4px 0 0;font-size:.83rem;color:var(--text)">' + escHtml(data.encerramento.objetivo) + '</p>'
+      + '</div>'
+      + '<div>'
+      + '<span style="font-size:.72rem;color:var(--lime);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Próximo Passo</span>'
+      + '<p style="margin:4px 0 0;font-size:.83rem;color:var(--muted)">' + escHtml(data.encerramento.proximo_passo) + '</p>'
+      + '</div>';
+    area.appendChild(b3.el);
+  }
+}
+
 // ── PREP E PRINT ──
 function prepAndPrint(){
   // Abre todos os blocos fechados

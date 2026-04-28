@@ -262,9 +262,11 @@ function syncFormToSidebar(){
 }
 
 function updateSliders(changed){
+  if (!document.getElementById('asl_0')) return;
   var total = 0;
   ALLOC_CATS.forEach(function(_, i){
-    total += parseInt(document.getElementById('asl_'+i).value);
+    var el = document.getElementById('asl_'+i);
+    total += el ? parseInt(el.value) || 0 : 0;
   });
 
   // Se passou de 100, reduz o slider que acabou de mudar
@@ -1816,7 +1818,8 @@ function dashRefreshKpisAndTable(){
 
 async function updateDash(){
   if(!supabaseUserId) return;
-  document.getElementById('dashSubtitle').textContent = 'Carregando...';
+  var dashSub = document.getElementById('dashSubtitle');
+  if(dashSub) dashSub.textContent = 'Carregando...';
 
   var proposals = [];
   var assessorMap = {};

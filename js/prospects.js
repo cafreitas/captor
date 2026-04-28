@@ -196,7 +196,7 @@ function renderProspectTable(rows) {
     
     return '<tr class="dash-tr" onclick="openProspectDetail(\'' + escHtml(p.id) + '\')" style="border-bottom:1px solid var(--border2);cursor:pointer' + (isNew ? ';background:rgba(168,194,58,.025)' : '') + '">' +
       '<td style="padding:9px 12px;color:var(--text);font-weight:600">' + (isNew ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--lime);margin-right:7px;vertical-align:middle;flex-shrink:0"></span>' : '') + escHtml(p.nome || '(sem nome)') + '</td>' +
-      '<td style="padding:9px 12px;color:var(--muted)">' + escHtml(p.profissao || '—') + '</td>' +
+      '<td style="padding:9px 12px;color:var(--muted)">' + escHtml(p.perfil_risco || '—') + '</td>' +
       '<td style="padding:9px 12px;color:var(--muted)">' + patFmt + '</td>' +
       '<td style="padding:9px 12px"><span class="ds ps-' + p.status + '" style="font-size:.65rem;padding:2px 8px;border-radius:4px;white-space:nowrap">' + st + '</span></td>' +
       '<td style="padding:9px 12px;color:var(--dim)">' + dt + '</td>' +
@@ -275,11 +275,14 @@ async function openProspectDetail(id) {
     return;
   }
   
-  var prospect = AppState.prospects.all.find(function(p) { return p.id === id; });
-  if (!prospect) {
-    var { data } = await sb.from('prospects').select('*').eq('id', id).maybeSingle();
-    prospect = data;
+  // Sempre buscar dados frescos do banco (garante campos atualizados após upsert)
+  var { data: fresh } = await sb.from('prospects').select('*').eq('id', id).maybeSingle();
+  if (fresh) {
+    var idx = AppState.prospects.all.findIndex(function(x) { return x.id === id; });
+    if (idx >= 0) Object.assign(AppState.prospects.all[idx], fresh);
+    else AppState.prospects.all.unshift(fresh);
   }
+  var prospect = fresh || AppState.prospects.all.find(function(p) { return p.id === id; });
   
   if (!prospect) {
     console.error('Prospect não encontrado');

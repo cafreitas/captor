@@ -386,14 +386,16 @@ async function openProspectDetail(id) {
 
 // ── FECHAR DETALHE DO PROSPECT ──
 async function closeProspectDetail() {
-  // Salvar dados se há prospect ativo com nome preenchido
-  var nome = document.getElementById('pd_nome') ? document.getElementById('pd_nome').value.trim() : '';
+  // Salvar dados se há nome preenchido
+  var nomeEl = document.getElementById('pd_nome');
+  var nome = nomeEl ? nomeEl.value.trim() : '';
   if (nome) {
     try { await upsertProspect(null); } catch(e) { console.warn('closeProspectDetail save:', e); }
-    await fetchProspects();
   }
   document.getElementById('prospectDetailView').style.display = 'none';
   document.getElementById('prospectview').style.display = 'block';
+  // Recarregar lista para refletir mudanças (nome, status, perfil)
+  await loadProspects();
 }
 
 // ── ABRIR NOVO PROSPECT — abre modal de método ──

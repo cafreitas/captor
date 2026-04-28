@@ -85,7 +85,8 @@ async function generateR1() {
     ? new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL', maximumFractionDigits:0}).format(parseInt(String(pat).replace(/\D/g, '')))
     : 'patrimônio a confirmar';
   
-  // Mostrar loader
+  // Mostrar loader — colapsar sidebar para que fique visível
+  collapseSidebar();
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('outArea').style.display = 'none';
   document.getElementById('loadingState').style.display = 'flex';

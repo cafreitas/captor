@@ -495,7 +495,7 @@ function escHtml(text) {
 
 // ── EXTRAIR VALOR NUMÉRICO DE PATRIMÔNIO ──
 function getRawPat() {
-  var patStr = document.getElementById('fPat').value || '';
+  var patStr = document.getElementById('pd_pat').value || '';
   if (!patStr) return null;
   var nums = String(patStr).replace(/\D/g, '');
   return nums ? parseInt(nums) : null;

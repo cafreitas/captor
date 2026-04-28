@@ -61,13 +61,13 @@ function buildEmpresaPrompt() {
 
 // ── GERAR ROTEIRO R1 (DIAGNÓSTICO) ──
 async function generateR1() {
-  var nome = document.getElementById('fNome').value.trim();
+  var nome = document.getElementById('pd_nome').value.trim();
   var pat = getRawPat();
-  var prof = document.getElementById('fProf').value.trim();
-  var idade = document.getElementById('fIdade').value;
-  var perfil = document.getElementById('fPerfil').value;
-  var obj = document.getElementById('fObj').value;
-  var horizonte = document.getElementById('fHorizonte').value;
+  var prof = document.getElementById('pd_prof').value.trim();
+  var idade = document.getElementById('pd_idade').value;
+  var perfil = document.getElementById('pd_perfil').value;
+  var obj = document.getElementById('pd_obj').value;
+  var horizonte = document.getElementById('pd_horizonte').value;
   
   // Validação
   if (!nome || !prof || !idade || !perfil || !obj) {
@@ -99,16 +99,16 @@ async function generateR1() {
   // Snapshot do perfil
   if (AppState.prospects.currentId) {
     var perfilInicial = {
-      nome: document.getElementById('fNome').value.trim(),
-      pat: document.getElementById('fPat').value,
-      prof: document.getElementById('fProf').value,
-      idade: document.getElementById('fIdade').value,
-      perfil: document.getElementById('fPerfil').value,
-      obj: document.getElementById('fObj').value,
-      horizonte: document.getElementById('fHorizonte').value,
-      ass: document.getElementById('fAss').value,
-      gaps: document.getElementById('fGaps').value.trim(),
-      ctx: document.getElementById('fCtx').value.trim()
+      nome: document.getElementById('pd_nome').value.trim(),
+      pat: document.getElementById('pd_pat').value,
+      prof: document.getElementById('pd_prof').value,
+      idade: document.getElementById('pd_idade').value,
+      perfil: document.getElementById('pd_perfil').value,
+      obj: document.getElementById('pd_obj').value,
+      horizonte: document.getElementById('pd_horizonte').value,
+      ass: document.getElementById('pd_ass').value,
+      gaps: document.getElementById('pd_gaps').value.trim(),
+      ctx: document.getElementById('pd_ctx').value.trim()
     };
     sb.from('prospects').update({perfil_inicial: perfilInicial}).eq('id', AppState.prospects.currentId).then(function(){});
   }

@@ -289,6 +289,7 @@ async function openProspectDetail(id) {
   AppState.prospects.currentId = id;
   
   // Preencher view detalhado
+  document.getElementById('prospectview').style.display = 'none';
   document.getElementById('prospectDetailView').style.display = 'block';
   
   // Helper para preencher campos pd_*
@@ -364,6 +365,7 @@ function closeProspectDetail() {
 function openNewProspectDetail() {
   AppState.prospects.currentId = null;
   clearProspectForm();
+  document.getElementById('prospectview').style.display = 'none';
   document.getElementById('prospectDetailView').style.display = 'block';
 }
 

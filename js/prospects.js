@@ -349,33 +349,15 @@ async function openProspectDetail(id) {
     updatePdAllocTotal();
   }
   
-  // ── VERIFICAR SE É MANAGER VENDO PROSPECT DE OUTRO ASSESSOR ──
-  var isManager = !!(currentUserIsManager && currentFirmId && prospect.assessor_id !== supabaseUserId);
-  AppState.prospects.viewingAsManager = isManager;
-  
-  var form = document.getElementById('pdFormGrid');
-  var actionsBar = document.getElementById('pdActionsBar');
-  
-  if(isManager){
-    // MANAGER vendo prospect de OUTRO assessor: readonly + sem botões
-    if(form) form.classList.add('pd-readonly');
-    if(actionsBar) actionsBar.style.display = 'none';
-    // NÃO chamar syncFormToSidebar (evita habilitar botões)
-  } else {
-    // ASSESSOR vendo seu próprio prospect: editável + com botões
-    if(form) form.classList.remove('pd-readonly');
-    if(actionsBar) actionsBar.style.display = 'flex';
-    
-    // Sincronizar estado de botões
-    syncFormToSidebar();
-  }
-  
+  // Sincronizar estado de botões
+  syncFormToSidebar();
   updateAllButtonStates(prospect.status);
 }
 
 // ── FECHAR DETALHE DO PROSPECT ──
 function closeProspectDetail() {
   document.getElementById('prospectDetailView').style.display = 'none';
+  document.getElementById('prospectview').style.display = 'block';
 }
 
 // ── ABRIR NOVO PROSPECT ──

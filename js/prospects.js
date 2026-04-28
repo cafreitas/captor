@@ -120,22 +120,18 @@ function onProspectSelect() {
 function clearProspectForm() {
   AppState.prospects.currentId = null;
   AppState.prospects.r1Generated = false;
-  document.getElementById('fProspectSel').value = '';
-  document.getElementById('fNome').value = '';
-  document.getElementById('fPat').value = '';
-  document.getElementById('fProf').value = '';
-  document.getElementById('fIdade').value = '';
-  document.getElementById('fPerfil').value = '';
-  document.getElementById('fObj').value = '';
-  document.getElementById('fHorizonte').value = '';
-  document.getElementById('fAss').value = '';
-  document.getElementById('fGaps').value = '';
-  document.getElementById('fCtx').value = '';
-  document.getElementById('fProspectStatus').innerHTML = '';
-  document.getElementById('confirmR1Wrap').style.display = 'none';
+  ['pd_nome','pd_pat','pd_prof','pd_idade','pd_perfil','pd_obj',
+   'pd_horizonte','pd_ass','pd_gaps','pd_ctx'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  var pdStatus = document.getElementById('pdStatusBadge');
+  if (pdStatus) pdStatus.innerHTML = '';
+  var confirmWrap = document.getElementById('confirmR1Wrap');
+  if (confirmWrap) confirmWrap.style.display = 'none';
   syncToggleR1(null);
   updateR2ButtonState(null);
-  resetSliders();
+  resetPdSliders();
   updateAllButtonStates(null);
 }
 
@@ -356,6 +352,33 @@ async function openProspectDetail(id) {
     updatePdAllocTotal();
   }
   
+  // Bug 7: mostrar confirmR1Wrap quando R1 existe ou status avançado
+  var r1StatusList = ['r1_concluida','resumo_enviado','r1_aprovada','r2_iniciada','negocio_fechado'];
+  var confirmWrap = document.getElementById('confirmR1Wrap');
+  if (confirmWrap) {
+    confirmWrap.style.display = (prospect.roteiro_r1 || r1StatusList.indexOf(prospect.status) >= 0) ? 'flex' : 'none';
+  }
+
+  // Bug 6: renderizar R1 existente ao reabrir prospect
+  if (prospect.roteiro_r1) {
+    var patFmtR1 = prospect.patrimonio_estimado
+      ? new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(prospect.patrimonio_estimado)
+      : 'patrimônio a confirmar';
+    document.getElementById('emptyState').style.display = 'none';
+    AppState.prospects.r1Generated = true;
+    renderR1Output(prospect.nome, patFmtR1, prospect.roteiro_r1);
+    document.getElementById('outArea').style.display = 'block';
+    collapseSidebar();
+  }
+
+  // Bug 10: garantir que SELECT pd_horizonte reflita o valor salvo
+  var hEl = document.getElementById('pd_horizonte');
+  if (hEl && prospect.horizonte) {
+    hEl.value = prospect.horizonte;
+    // Se o valor não corresponde a nenhuma option, mantém vazio
+    if (hEl.value !== prospect.horizonte) hEl.value = '';
+  }
+
   // Sincronizar estado de botões
   syncFormToSidebar();
   updateAllButtonStates(prospect.status);
@@ -367,12 +390,32 @@ function closeProspectDetail() {
   document.getElementById('prospectview').style.display = 'block';
 }
 
-// ── ABRIR NOVO PROSPECT ──
+// ── ABRIR NOVO PROSPECT — abre modal de método ──
 function openNewProspectDetail() {
+  document.getElementById('prospectMethodModal').style.display = 'flex';
+}
+
+function closeProspectMethodModal() {
+  document.getElementById('prospectMethodModal').style.display = 'none';
+}
+
+function openProspectMethodManual() {
+  closeProspectMethodModal();
   AppState.prospects.currentId = null;
   clearProspectForm();
   document.getElementById('prospectview').style.display = 'none';
   document.getElementById('prospectDetailView').style.display = 'block';
+  document.getElementById('outArea').style.display = 'none';
+  document.getElementById('outArea').innerHTML = '';
+  document.getElementById('emptyState').style.display = 'flex';
+  var pdName = document.getElementById('pdName');
+  if (pdName) pdName.textContent = 'Novo prospect';
+  expandSidebar();
+  updateAllButtonStates(null);
+}
+
+function openProspectMethodAPI() {
+  showToast('Integração via API em breve.', 'info');
 }
 
 // ── HELPER: ESCAPAR HTML ──

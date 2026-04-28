@@ -159,6 +159,14 @@ async function generateR1() {
     document.getElementById('outArea').style.display = 'block';
     collapseSidebar();
     AppState.prospects.r1Generated = true;
+
+    // Bug 8: mostrar confirmR1Wrap após geração
+    var confirmWrap = document.getElementById('confirmR1Wrap');
+    if (confirmWrap) confirmWrap.style.display = 'flex';
+    var p = AppState.prospects.currentId
+      ? AppState.prospects.all.find(function(x){ return x.id === AppState.prospects.currentId; })
+      : null;
+    syncToggleR1(p ? p.status : null);
     
     // Salvar roteiro no prospect
     if (AppState.prospects.currentId) {

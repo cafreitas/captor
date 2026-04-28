@@ -20,7 +20,7 @@ var acAssIdx = -1;
 var acAssVisible = [];
 
 function acAssFilter(){
-  var q = acNorm(document.getElementById('fAss').value.trim());
+  var q = acNorm(document.getElementById('pd_ass').value.trim());
   var drop = document.getElementById('acAssDrop');
   acAssIdx = -1; acAssVisible = [];
   var html = '';
@@ -37,7 +37,7 @@ function acAssFilter(){
   drop.innerHTML = html || (q ? '<div class="ac-item" style="color:var(--muted);cursor:default">Nenhuma sugestão — será salvo como digitado</div>' : '');
   drop.classList.toggle('open', true);
 }
-function acAssSelect(val){ document.getElementById('fAss').value=val; acAssHide(); }
+function acAssSelect(val){ document.getElementById('pd_ass').value=val; acAssHide(); syncFormToSidebar(); onFieldChange(); }
 function acAssHide(){ document.getElementById('acAssDrop').classList.remove('open'); acAssIdx=-1; }
 function acAssKey(e){
   var items=document.getElementById('acAssDrop').querySelectorAll('.ac-item');
@@ -110,8 +110,9 @@ function acFilter(){
 }
 
 function acSelect(val){
-  document.getElementById('fProf').value = val;
+  document.getElementById('pd_prof').value = val;
   acHide();
+  syncFormToSidebar();
   onFieldChange();
 }
 
@@ -181,7 +182,7 @@ function closeTermsModal(){
 
 function initSliders(){
   var wrap = document.getElementById('allocSliders');
-  wrap.innerHTML = '';
+  if (!wrap) return;
   ALLOC_CATS.forEach(function(cat, i){
     wrap.innerHTML += '<div class="aslider-row">'
       +'<span class="aslider-label" title="'+cat+'">'+cat+'</span>'
@@ -2212,7 +2213,7 @@ function fillExample() {
   var ex = EXEMPLOS[Math.floor(Math.random() * EXEMPLOS.length)];
 
   // Limpar erros e highlights anteriores
-  ['fNome','fPat','fProf','fIdade','fPerfil','fObj'].forEach(function(id){
+  ['pd_nome','pd_pat','pd_prof','pd_idade','pd_perfil','pd_obj'].forEach(function(id){
     var el=document.getElementById(id);
     if(el){el.style.borderColor='';el.classList.remove('field-error');}
   });

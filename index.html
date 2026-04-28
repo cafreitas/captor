@@ -977,7 +977,20 @@
   </div>
 </div>
 <!-- CHANGELOG
-v6.1.0 — 2026-04-28 — MVP: Geração R1 (Roteiro de Diagnóstico)
+v6.2.0 — 2026-04-28 — Bugfix Release: Correção de IDs pós-refatoração (10 bugs)
+- Fix #1: clearProspectForm() — substituídos IDs f* por pd_* (fNome→pd_nome etc.)
+- Fix #2: openNewProspectDetail() — agora abre modal de método (Manual / Planilha / API)
+- New: openProspectMethodManual(), closeProspectMethodModal(), openProspectMethodAPI()
+- Fix #3: fillExample() — limpeza de erros usava IDs f*, agora usa pd_*
+- Fix #4: acSelect() — preenchia fProf, agora preenche pd_prof + syncFormToSidebar()
+- Fix #5: acAssSelect() / acAssFilter() — usavam fAss, agora usam pd_ass
+- Fix #6: openProspectDetail() — R1 existente agora é renderizado ao reabrir prospect
+- Fix #7: openProspectDetail() — confirmR1Wrap agora aparece quando R1 existe ou status avançado
+- Fix #8: generateR1() — confirmR1Wrap agora é exibido após geração bem-sucedida
+- Fix #9: initSliders() — adicionado guard contra TypeError null
+- Fix #10: openProspectDetail() — pd_horizonte SELECT validado após set
+
+
 - Feature: `generateR1()` — gera roteiro estruturado para reunião de diagnóstico (R1)
 - Validação: verifica campos obrigatórios (nome, profissão, idade, perfil, objetivo)
 - Prompt: contextualiza com dados da empresa + perfil do prospect + problemas identificados

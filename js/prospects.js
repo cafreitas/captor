@@ -512,9 +512,7 @@ async function upsertProspect(status) {
   var nome = document.getElementById('pd_nome').value.trim();
   if (!nome) return;
   var pat = getRawPat();
-  var payload = {
-    assessor_id: supabaseUserId,
-    firm_id: typeof currentFirmId !== 'undefined' ? currentFirmId || null : null,
+  var campos = {
     nome: nome,
     profissao: document.getElementById('pd_prof').value || null,
     idade: parseInt(document.getElementById('pd_idade').value) || null,
@@ -525,22 +523,21 @@ async function upsertProspect(status) {
     updated_at: new Date().toISOString()
   };
   if (AppState.prospects.currentId) {
-    if (status) payload.status = status;
-    try {
-      await sb.from('prospects').update(payload).eq('id', AppState.prospects.currentId);
-    } catch (e) {
-      console.error('upsertProspect (update) erro:', e);
-    }
+    var updatePayload = Object.assign({}, campos);
+    if (status) updatePayload.status = status;
+    var res = await sb.from('prospects').update(updatePayload).eq('id', AppState.prospects.currentId);
+    if (res.error) console.error('upsertProspect (update) erro:', res.error);
   } else {
-    payload.status = status || 'prospect_criado';
-    try {
-      var res = await sb.from('prospects').insert([payload]).select().maybeSingle();
-      if (res.data) {
-        AppState.prospects.currentId = res.data.id;
-        AppState.prospects.all.unshift(res.data);
-      }
-    } catch (e) {
-      console.error('upsertProspect (insert) erro:', e);
+    var insertPayload = Object.assign({}, campos, {
+      assessor_id: supabaseUserId,
+      firm_id: typeof currentFirmId !== 'undefined' ? currentFirmId || null : null,
+      status: status || 'prospect_criado'
+    });
+    var res2 = await sb.from('prospects').insert([insertPayload]).select().maybeSingle();
+    if (res2.error) { console.error('upsertProspect (insert) erro:', res2.error); return; }
+    if (res2.data) {
+      AppState.prospects.currentId = res2.data.id;
+      AppState.prospects.all.unshift(res2.data);
     }
   }
 }

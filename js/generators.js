@@ -155,6 +155,8 @@ async function generateR1() {
     var clean = txt.replace(/```json|```/g, '').trim();
     var r1data = JSON.parse(clean);
     renderR1Output(nome, patFmt, r1data);
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('outArea').style.display = 'block';
     AppState.prospects.r1Generated = true;
     
     // Salvar roteiro no prospect

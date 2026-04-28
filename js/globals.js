@@ -20,7 +20,7 @@ if (typeof supabase !== 'undefined') {
 // ────────────────────────────────────────────────────────────────
 // APP METADATA
 // ────────────────────────────────────────────────────────────────
-var CAPTOR_VERSION = 'v6.3.1';
+var CAPTOR_VERSION = 'v6.3.2';
 
 // ────────────────────────────────────────────────────────────────
 // AUTH STATE
@@ -59,50 +59,10 @@ var extractedColors = [];
 var ALLOC_PERFIS = ['Conservador', 'Moderado', 'Arrojado', 'Agressivo'];
 
 var ALLOC_DEFAULT = {
-  Conservador: {
-    'Renda Fixa': 60,
-    'Ações': 20,
-    'Fundos Imobiliários': 10,
-    'Criptomoedas': 0,
-    'Ouro': 5,
-    'Commodities': 5,
-    'Tesouro': 0,
-    'Seguros': 0,
-    'Estruturados': 0
-  },
-  Moderado: {
-    'Renda Fixa': 40,
-    'Ações': 35,
-    'Fundos Imobiliários': 10,
-    'Criptomoedas': 0,
-    'Ouro': 5,
-    'Commodities': 5,
-    'Tesouro': 5,
-    'Seguros': 0,
-    'Estruturados': 0
-  },
-  Arrojado: {
-    'Renda Fixa': 20,
-    'Ações': 55,
-    'Fundos Imobiliários': 10,
-    'Criptomoedas': 5,
-    'Ouro': 3,
-    'Commodities': 5,
-    'Tesouro': 2,
-    'Seguros': 0,
-    'Estruturados': 0
-  },
-  Agressivo: {
-    'Renda Fixa': 10,
-    'Ações': 65,
-    'Fundos Imobiliários': 10,
-    'Criptomoedas': 10,
-    'Ouro': 2,
-    'Commodities': 3,
-    'Tesouro': 0,
-    'Seguros': 0,
-    'Estruturados': 0
-  }
+  Conservador: [[62,77],[7,17],[2,7],[2,7],[0,5],[0,5],[0,0],[0,5],[0,7]],
+  Moderado:    [[25,40],[17,27],[7,12],[14,19],[2,12],[0,4],[0,10],[0,5],[0,8]],
+  Arrojado:    [[5,20],[22,32],[5,10],[10,15],[12,22],[5,10],[0,14],[0,5],[0,10]],
+  Agressivo:   [[5,20],[22,32],[5,10],[10,15],[12,22],[5,10],[0,14],[0,5],[0,10]]
 };
 
 var ALLOC_CATS = [

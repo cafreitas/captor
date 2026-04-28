@@ -367,6 +367,10 @@ async function openProspectDetail(id) {
     document.getElementById('emptyState').style.display = 'none';
     AppState.prospects.r1Generated = true;
     renderR1Output(prospect.nome, patFmtR1, prospect.roteiro_r1);
+    appendAnotacoesBlock(
+      (prospect.roteiro_r1.perguntas || []),
+      prospect.r1_notes || null
+    );
     document.getElementById('outArea').style.display = 'block';
     collapseSidebar();
   }
@@ -442,6 +446,7 @@ function syncToggleR1(status){
   if(tb){tb.checked=on;if(tbT)tbT.style.background=on?'var(--lime)':'#444';if(tbTh)tbTh.style.transform=on?'translateX(18px)':'translateX(0)';}
   var r2w=document.getElementById('btnR2BottomWrap');
   if(r2w)r2w.style.display=on?'block':'none';
+  updateAllButtonStates(status);
 }
 
 async function onToggleR1(checked){

@@ -506,8 +506,7 @@ function getRawPat() {
 // ── SALVAR/ATUALIZAR PROSPECT COM STATUS ──
 async function upsertProspect(status) {
   if (!AppState.prospects.currentId) {
-    // Criar novo prospect
-    var nome = document.getElementById('fNome').value.trim();
+    var nome = document.getElementById('pd_nome').value.trim();
     if (!nome) return;
     var newProspect = {
       user_id: supabaseUserId,

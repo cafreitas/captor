@@ -93,30 +93,10 @@ async function generateR1() {
   if (ldlabelEl) ldlabelEl.textContent = 'Gerando roteiro R1...';
   document.getElementById('btnGenR1').disabled = true;
   
-  // Salvar prospect com status r1_iniciada
-  await upsertProspect('r1_iniciada');
-  
-  // Snapshot do perfil
-  if (AppState.prospects.currentId) {
-    var perfilInicial = {
-      nome: document.getElementById('pd_nome').value.trim(),
-      pat: document.getElementById('pd_pat').value,
-      prof: document.getElementById('pd_prof').value,
-      idade: document.getElementById('pd_idade').value,
-      perfil: document.getElementById('pd_perfil').value,
-      obj: document.getElementById('pd_obj').value,
-      horizonte: document.getElementById('pd_horizonte').value,
-      ass: document.getElementById('pd_ass').value,
-      gaps: document.getElementById('pd_gaps').value.trim(),
-      ctx: document.getElementById('pd_ctx').value.trim()
-    };
-    sb.from('prospects').update({perfil_inicial: perfilInicial}).eq('id', AppState.prospects.currentId).then(function(){});
-  }
-  
   var ctx = document.getElementById('pd_ctx').value.trim();
   var gaps = document.getElementById('pd_gaps').value.trim();
   var empresaCtx = buildEmpresaPrompt() || '';
-  
+
   var prompt = 'Você é um especialista em vendas consultivas de investimentos.\n\n'
     + 'REGRA DE COMUNICAÇÃO: nunca use a palavra "rapport" em nenhum texto gerado. Substitua por: conexão, confiança, proximidade, abertura ou sintonia.\n\n'
     + 'REGRA DE HONESTIDADE: nas dicas de abertura e encerramento, nunca sugira que o assessor afirme algo sobre si mesmo que pode não ser verdade (ex: "diga que trabalha com artistas"). Em vez disso, sugira perguntas ou formas de buscar conexões genuínas com o cliente (ex: "pergunte se ele conhece outros profissionais da área que também investem").\n\n'
@@ -144,11 +124,31 @@ async function generateR1() {
     + 'Exemplos do que fazer: "se mencionar que o contador gerencia os investimentos da PJ, há risco de interferência de terceiro na decisão" (específico ao contexto desta médica com PJ).';
   
   try {
+    await upsertProspect('r1_iniciada');
+    if (AppState.prospects.currentId) {
+      var perfilInicial = {
+        nome: document.getElementById('pd_nome').value.trim(),
+        pat: document.getElementById('pd_pat').value,
+        prof: document.getElementById('pd_prof').value,
+        idade: document.getElementById('pd_idade').value,
+        perfil: document.getElementById('pd_perfil').value,
+        obj: document.getElementById('pd_obj').value,
+        horizonte: document.getElementById('pd_horizonte').value,
+        ass: document.getElementById('pd_ass').value,
+        gaps: document.getElementById('pd_gaps').value.trim(),
+        ctx: document.getElementById('pd_ctx').value.trim()
+      };
+      sb.from('prospects').update({perfil_inicial: perfilInicial}).eq('id', AppState.prospects.currentId).then(function(){});
+    }
     var resp = await fetch(PROXY_URL, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY},
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({model: 'claude-sonnet-4-20250514', max_tokens: 3000, messages: [{role: 'user', content: prompt}]})
     });
+    if (!resp.ok) {
+      var errData = await resp.json().catch(function(){return{};});
+      throw new Error('HTTP ' + resp.status + ': ' + (errData.error && errData.error.message ? errData.error.message : resp.statusText));
+    }
     var rd = await resp.json();
     if (rd && rd.usage) await logAiUsage('gerar_r1', null, 'claude-sonnet-4-20250514', rd.usage.input_tokens, rd.usage.output_tokens, 'success');
     var txt = (rd.content && rd.content[0] && rd.content[0].text) || '';

@@ -1115,35 +1115,14 @@ function renderOutput(nome,patFmt,data,meta){
     if(donutEl) renderDonut(donutEl, data.alocacao);
   }
 
-  // Botões de publicação (abaixo do bloco, sem barra separada)
-  var pubRow = document.createElement('div');
-  pubRow.className = 'proposal-bar fadein';
-  pubRow.id = 'proposalBar';
-  pubRow.innerHTML = ''
-    +'<div class="proposal-bar-info"><strong>Revise e aprove a proposta do cliente antes de publicar.</strong></div>'
-    +'<div class="proposal-btns">'
-    +'<div style="position:relative;display:inline-block">'
-    +'<div class="pub-tip" id="pubTip">👆 Aprove antes</div>'
-    +'<button class="pbtn pbtn-publish" id="btnPublish" onclick="publishProposal()" disabled>'
-    +'<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg>'
-    +'Publicar Proposta'
-    +'</button>'
-    +'</div>'
-    +'</div>';
-  area.appendChild(pubRow);
-
-  // Se já há rascunho salvo, checar status imediatamente
+  // Se já há rascunho salvo e aprovado, renderizar fase 3 imediatamente
   if(proposalDraftHash){
     (async function(){
       var {data} = await sb.from('proposals').select('status').eq('hash', proposalDraftHash).maybeSingle();
-      if(data && data.status === 'aprovado_sdr'){
+      if(data && (data.status === 'aprovado_sdr' || data.status === 'enviada')){
         proposalApproved = true;
-        var pubBtn = document.getElementById('btnPublish');
-        if(pubBtn) pubBtn.disabled = false;
-        var tip = document.getElementById('pubTip');
-        if(tip) tip.style.display = 'none';
-        var hint = document.getElementById('approveHint');
-        if(hint) hint.innerHTML = '<span style="color:var(--lime);font-weight:700">✅ Proposta aprovada! Clique em Publicar para enviar ao cliente.</span>';
+        var baseUrl = (window.location.origin + window.location.pathname.replace(/index\.html$/, '').replace(/\/$/, ''));
+        autoPublishProposal(proposalDraftHash, baseUrl + '/proposta.html#' + proposalDraftHash, true);
       }
     })();
   }
@@ -1315,19 +1294,16 @@ function buildProposalBlock(data, meta, patFmt){
       +'</div>';
   }
 
-  // Botões na mesma linha + hint e link sempre visível abaixo
-  html += '<div class="prop-inline-approve">'
-    +'<div style="display:flex;gap:8px;width:100%">'
-    +'<button class="genbtn" id="btnUpdateProposal" onclick="updateProposal()" style="background:var(--gold);color:#1a1a1a;padding:9px 14px;font-size:.78rem;flex:1">'
-    +'<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7a5 5 0 1 1 1.5 3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M2 10.5V7h3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-    +' Atualizar proposta'
+  // Área de ação — fases gerenciadas por reviewProposal / autoPublishProposal
+  html += '<div class="prop-inline-approve" id="proposalActionArea">'
+    +'<div id="proposalPhase1" style="width:100%">'
+    +'<button class="pbtn" id="btnReview" onclick="reviewProposal()" style="width:100%;justify-content:center;background:var(--lime);color:#1a1a1a;padding:11px 16px;font-size:.82rem;font-weight:700">'
+    +'Revisar proposta →'
     +'</button>'
-    +'<button class="pbtn pbtn-approve" id="btnApprove" onclick="saveDraftAndPreview()" style="flex:1">'
-    +'<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-    +' Salvar e revisar'
-    +'</button>'
+    +'<div style="text-align:center;margin-top:9px">'
+    +'<a href="#" onclick="updateProposal();return false;" style="font-size:.72rem;color:var(--dim);text-decoration:none">🔄 Regenerar com IA</a>'
     +'</div>'
-    +'<div id="approveHint" style="margin-top:10px;font-size:.72rem;color:var(--muted);display:none"></div>'
+    +'</div>'
     +'</div>';
 
   return html;
@@ -1381,15 +1357,14 @@ function escHtml(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-async function saveDraftAndPreview(){
+async function reviewProposal(){
   var data = window._lastOutput;
   var meta = window._lastMeta;
   if(!data||!meta){ showToast('Gere uma recomendação primeiro.','error'); return; }
   if(!supabaseUserId){ showToast('Você precisa estar logado.','error'); return; }
 
-  var btn = document.getElementById('btnApprove');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div> Salvando...';
+  var btn = document.getElementById('btnReview');
+  if(btn){ btn.disabled = true; btn.textContent = 'Salvando...'; }
 
   // Aplicar edições dos slides
   if(data.slides) data.slides.forEach(function(s,i){
@@ -1411,7 +1386,6 @@ async function saveDraftAndPreview(){
   var versao = 1;
   var prospectIdParaSalvar = AppState.prospects.currentId || null;
   if(prospectIdParaSalvar && !proposalDraftHash){
-    // Nova proposta para prospect existente — buscar última versão
     var {data:ultimaVersao} = await sb.from('proposals')
       .select('versao')
       .eq('prospect_id', prospectIdParaSalvar)
@@ -1421,7 +1395,6 @@ async function saveDraftAndPreview(){
     if(ultimaVersao) versao = (ultimaVersao.versao||1) + 1;
   }
 
-  // Salvar rascunho no Supabase com status 'rascunho'
   var hash = proposalDraftHash || generateHash();
   proposalDraftHash = hash;
   var baseUrl = (window.location.origin + window.location.pathname.replace(/index\.html$/, '').replace(/\/$/, ''));
@@ -1439,9 +1412,9 @@ async function saveDraftAndPreview(){
     cliente_prof: meta.prof,
     cliente_idade: parseInt(meta.idade),
     cliente_obj: meta.obj,
-    cliente_ass: document.getElementById('fAss').value || '',
-    cliente_gaps: document.getElementById('fGaps').value || '',
-    cliente_ctx: document.getElementById('fCtx').value || '',
+    cliente_ass: document.getElementById('fAss') ? document.getElementById('fAss').value || '' : '',
+    cliente_gaps: document.getElementById('fGaps') ? document.getElementById('fGaps').value || '' : '',
+    cliente_ctx: document.getElementById('fCtx') ? document.getElementById('fCtx').value || '' : '',
     alocacao_atual: meta.currentAlloc || null,
     alocacao_sugerida: data.alocacao,
     analise_ia: data,
@@ -1450,17 +1423,13 @@ async function saveDraftAndPreview(){
     expires_at: new Date(Date.now() + 30*24*60*60*1000).toISOString()
   };
 
-  // Upsert pelo hash (permite re-salvar rascunho)
   var {error} = await sb.from('proposals').upsert(payload, {onConflict:'hash'});
   if(error){
     showToast('Erro ao salvar rascunho: '+error.message,'error');
-    btn.disabled=false;
-    btn.innerHTML='<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Salvar e revisar proposta';
+    if(btn){ btn.disabled=false; btn.textContent='Revisar proposta \u2192'; }
     return;
   }
 
-  // Atualizar UI — mostrar link de prévia e polling de aprovação
-  btn.innerHTML = '✓ Salvo';
   // Atualizar status do prospect para r2_iniciada (na primeira versão)
   if(prospectIdParaSalvar && versao === 1){
     await sb.from('prospects').update({status:'r2_iniciada'}).eq('id',prospectIdParaSalvar);
@@ -1468,47 +1437,23 @@ async function saveDraftAndPreview(){
     if(p)p.status='r2_iniciada';
     updateR2ButtonState('r2_iniciada');
   }
-  var hint = document.getElementById('approveHint');
-  if(hint){
-    hint.style.display = 'block';
-    hint.innerHTML = 'Abra o link abaixo para revisar e aprovar. O botão Publicar será habilitado após aprovação.'
-      +'<br><a href="'+previewUrl+'" target="_blank" style="color:var(--lime);font-weight:700;font-size:.76rem">🔗 Abrir prévia da proposta →</a>';
+
+  // Abrir proposta.html em nova aba
+  window.open(previewUrl, '_blank');
+
+  // Fase 2 — aguardando aprovação
+  var phase1 = document.getElementById('proposalPhase1');
+  if(phase1){
+    phase1.innerHTML = ''
+      +'<div style="display:flex;align-items:center;gap:10px;padding:4px 0">'
+      +'<div class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;flex-shrink:0"></div>'
+      +'<span style="font-size:.82rem;color:var(--muted);font-weight:600">Aguardando aprovação...</span>'
+      +'</div>'
+      +'<div style="font-size:.72rem;color:var(--dim);margin-top:6px">A proposta está em nova aba. Revise e aprove.</div>';
   }
 
-  // Polling: aguarda aprovação na proposta.html
-  startApprovalPolling(hash);
-}
-
-function startApprovalPolling(hash){
-  function applyApproval(){
-    proposalApproved = true;
-    var pubBtn = document.getElementById('btnPublish');
-    if(pubBtn){
-      pubBtn.disabled = false;
-      var tip = document.getElementById('pubTip');
-      if(tip) tip.style.display = 'none';
-      var hint = document.getElementById('approveHint');
-      if(hint) hint.innerHTML = '<span style="color:var(--lime);font-weight:700">✅ Proposta aprovada! Clique em Publicar para enviar ao cliente.</span>';
-    }
-  }
-  async function checkStatus(){
-    var {data} = await sb.from('proposals').select('status').eq('hash', hash).maybeSingle();
-    return data && data.status === 'aprovado_sdr';
-  }
-  // Verificação imediata (sem esperar 3s)
-  checkStatus().then(function(approved){
-    if(approved){ applyApproval(); return; }
-    // Polling a cada 3s
-    var interval = setInterval(async function(){
-      var approved = await checkStatus();
-      if(approved){
-        clearInterval(interval);
-        applyApproval();
-      }
-    }, 3000);
-    // Para após 10 minutos
-    setTimeout(function(){ clearInterval(interval); }, 600000);
-  });
+  // Polling — aguarda aprovação
+  startApprovalPolling(hash, previewUrl);
 }
 
 function generateHash(){
@@ -1518,36 +1463,43 @@ function generateHash(){
   return hash;
 }
 
-async function publishProposal(){
-  if(!proposalApproved){ showToast('Aprove a proposta antes de publicar.','error'); return; }
-  if(!supabaseUserId){ showToast('Você precisa estar logado para publicar.','error'); return; }
-  if(!proposalDraftHash){ showToast('Salve o rascunho primeiro.','error'); return; }
 
-  var btn = document.getElementById('btnPublish');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></div> Publicando...';
-
-  var baseUrl = (window.location.origin + window.location.pathname.replace(/index\.html$/, '').replace(/\/$/, ''));
-  var proposalUrl = baseUrl + '/proposta.html#' + proposalDraftHash;
-
-  // Atualiza status de rascunho para enviada
-  var {error} = await sb.from('proposals').update({status:'enviada'}).eq('hash', proposalDraftHash);
-  if(error){
-    showToast('Erro ao publicar: '+error.message,'error');
-    btn.disabled = false;
-    btn.innerHTML = '🔗 Publicar Proposta';
-    return;
+function startApprovalPolling(hash, previewUrl){
+  async function checkStatus(){
+    var {data} = await sb.from('proposals').select('status').eq('hash', hash).maybeSingle();
+    return data && (data.status === 'aprovado_sdr' || data.status === 'enviada');
   }
+  checkStatus().then(function(approved){
+    if(approved){ autoPublishProposal(hash, previewUrl); return; }
+    var interval = setInterval(async function(){
+      var approved = await checkStatus();
+      if(approved){
+        clearInterval(interval);
+        autoPublishProposal(hash, previewUrl);
+      }
+    }, 3000);
+    setTimeout(function(){ clearInterval(interval); }, 600000);
+  });
+}
 
-  btn.innerHTML = '✅ Proposta publicada!';
-  var bar = document.getElementById('proposalBar');
-  var linkWrap = document.createElement('div');
-  linkWrap.className = 'proposal-link-wrap';
-  linkWrap.innerHTML = '<span class="proposal-link-url">'+proposalUrl+'</span>'
-    +'<button class="proposal-link-copy" onclick="copyProposalLink(\''+proposalUrl+'\')">📋 Copiar link</button>';
-  bar.appendChild(linkWrap);
+async function autoPublishProposal(hash, proposalUrl, alreadyPublished){
+  proposalApproved = true;
+  if(!alreadyPublished){
+    await sb.from('proposals').update({status:'enviada'}).eq('hash', hash);
+  }
+  var phase1 = document.getElementById('proposalPhase1');
+  if(!phase1) return;
+  phase1.innerHTML = ''
+    +'<div style="background:rgba(168,194,58,.1);border:1px solid var(--lime);border-radius:8px;padding:14px 16px">'
+    +'<div style="font-size:.84rem;font-weight:700;color:var(--lime);margin-bottom:10px">\u2705 Proposta aprovada e publicada!</div>'
+    +'<div style="display:flex;align-items:center;gap:8px">'
+    +'<span style="font-size:.75rem;color:var(--lime);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace">'+proposalUrl+'</span>'
+    +'<button class="proposal-link-copy" id="btnCopyLink" onclick="copyProposalLink(\''+proposalUrl+'\')">📋 Copiar link</button>'
+    +'</div>'
+    +'</div>';
   copyProposalLink(proposalUrl);
 }
+
 
 function copyProposalLink(url){
   navigator.clipboard.writeText(url).then(function(){
@@ -2266,12 +2218,13 @@ async function updateProposal() {
   var meta = window._lastMeta;
   if(!data||!meta){showToast('Gere uma análise primeiro.','error');return;}
 
-  var btn = document.getElementById('btnUpdateProposal');
-  btn.disabled = true;
-  btn.textContent = 'Atualizando...';
+  // Desabilitar link de regenerar temporariamente (se ainda visível)
+  var regenLink = document.querySelector('#proposalPhase1 a');
+  if(regenLink){ regenLink.style.pointerEvents='none'; regenLink.textContent='Regenerando...'; }
+  var btn = { disabled: false, textContent: '' }; // placeholder
 
   try { await debitCredit('regeneracao', meta.nome); }
-  catch(e) { alert(e.message); btn.disabled=false; btn.textContent='🔄 Atualizar proposta'; return; }
+  catch(e) { alert(e.message); if(regenLink){ regenLink.style.pointerEvents=''; regenLink.textContent='🔄 Regenerar com IA'; } return; }
 
   // Coleta edições do SDR
   var slidesEditados = [];
@@ -3160,3 +3113,12 @@ function captorConfirmCancel(){
 })();
 
 // ── FIM CAPTOR TEAMS ──────────────────────────────────────────────────────────
+
+// ── CHANGELOG ──────────────────────────────────────────────────────────────────
+// v6.4.0 — Fluxo de proposta simplificado: CTA único "Revisar proposta →" (fase 1)
+//           → salva rascunho + abre proposta.html em nova aba automaticamente
+//           → fase 2: "Aguardando aprovação..." com spinner
+//           → fase 3: auto-publica ao detectar aprovado_sdr + exibe link com auto-copy
+//           Removidos: btnPublish, btnApprove, btnUpdateProposal, proposalBar, approveHint
+//           updateProposal() mantido como ação secundária via link "Regenerar com IA"
+// ──────────────────────────────────────────────────────────────────────────────

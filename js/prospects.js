@@ -144,6 +144,8 @@ async function loadProspects() {
   }
   
   AppState.prospects.all = data;
+  var sub = document.getElementById('prospectSubtitle');
+  if (sub) sub.textContent = data.length + ' prospect' + (data.length !== 1 ? 's' : '');
   renderProspectTable(data);
 }
 
@@ -199,6 +201,9 @@ function renderProspectTable(rows) {
       '<td style="padding:9px 12px" onclick="event.stopPropagation()">' +
       (p.status !== 'perdido_user' && p.status !== 'perdido_auto' && p.status !== 'negocio_fechado'
         ? '<button onclick="markPerdidoUser(\'' + escHtml(p.id) + '\')" class="dash-link" style="color:var(--status-lost-user);border-color:rgba(239,68,68,.3)">Perdido</button>'
+        : '') +
+      (['r2_iniciada','negocio_fechado'].indexOf(p.status) >= 0
+        ? '<button onclick="verPropostaProspect(\'' + escHtml(p.id) + '\',event)" class="dash-link" style="color:var(--lime);border-color:rgba(168,194,58,.3);margin-left:4px">Ver Proposta →</button>'
         : '') +
       '</td></tr>';
   }).join('');
@@ -318,6 +323,9 @@ async function openProspectDetail(id) {
   spd('pd_perfil', prospect.perfil_risco);
   spd('pd_obj', prospect.objetivo);
   spd('pd_horizonte', prospect.horizonte);
+  spd('pd_ass', prospect.assessoria_atual);
+  spd('pd_gaps', prospect.gaps_identificados);
+  spd('pd_ctx', prospect.contexto_prospect);
   
   // Status badge
   var pdStatus = document.getElementById('pdStatusBadge');
@@ -445,7 +453,19 @@ function syncToggleR1(status){
   var tbTh=document.getElementById('toggleR1bThumb');
   if(tb){tb.checked=on;if(tbT)tbT.style.background=on?'var(--lime)':'#444';if(tbTh)tbTh.style.transform=on?'translateX(18px)':'translateX(0)';}
   var r2w=document.getElementById('btnR2BottomWrap');
-  if(r2w)r2w.style.display=on?'block':'none';
+  if(r2w) r2w.style.display=on?'block':'none';
+  // Bug L: trocar label do botão conforme status
+  var r2btn=document.getElementById('btnR2Bottom');
+  if(r2btn && on){
+    var isR2Plus = status && ['r2_iniciada','negocio_fechado'].indexOf(status)>=0;
+    if(isR2Plus){
+      r2btn.innerHTML='<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Ver Proposta →';
+      r2btn.onclick=function(){ verPropostaAtual(); };
+    } else {
+      r2btn.innerHTML='<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg> Preparar Proposta';
+      r2btn.onclick=function(){ generate(); };
+    }
+  }
   updateAllButtonStates(status);
 }
 
@@ -543,6 +563,25 @@ function fillExampleAndOpen(){
   updateAllButtonStates(null);
 }
 
+async function verPropostaAtual() {
+  var id = AppState.prospects.currentId;
+  if (!id) { showToast('Nenhum prospect selecionado.', 'error'); return; }
+  await verPropostaProspect(id);
+}
+
+async function verPropostaProspect(id, e) {
+  if (e) e.stopPropagation();
+  var { data, error } = await sb.from('proposals')
+    .select('hash')
+    .eq('prospect_id', id)
+    .order('versao', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error || !data) { showToast('Proposta não encontrada.', 'error'); return; }
+  var base = (window.location.origin + window.location.pathname.replace(/index\.html$/, '').replace(/\/$/, ''));
+  window.open(base + '/proposta.html#' + data.hash, '_blank');
+}
+
 async function markPerdidoUser(id){
   showConfirmModal('Marcar como perdido','Este prospect será marcado como perdido. Você pode reverter isso manualmente.',async function(){
     await sb.from('prospects').update({status:'perdido_user'}).eq('id',id);
@@ -584,6 +623,9 @@ async function upsertProspect(status) {
     perfil_risco: document.getElementById('pd_perfil').value || null,
     objetivo: document.getElementById('pd_obj').value || null,
     horizonte: document.getElementById('pd_horizonte').value || null,
+    assessoria_atual: document.getElementById('pd_ass').value.trim() || null,
+    gaps_identificados: document.getElementById('pd_gaps').value.trim() || null,
+    contexto_prospect: document.getElementById('pd_ctx').value.trim() || null,
     updated_at: new Date().toISOString()
   };
   if (AppState.prospects.currentId) {
@@ -607,6 +649,14 @@ async function upsertProspect(status) {
 }
 
 // ── CHANGELOG ──────────────────────────────────────────────────────────────────
+// v6.6.0 — Bug I: prospectSubtitle atualizado com contagem após loadProspects()
+//           Bug J: pdStatusBadge movido para mesma linha que pdNomeDisplay
+//           Bug K: "Preparar Reunião de Perfil" → "Reunião de Perfil realizada"
+//           Bug L: syncToggleR1 troca botão para "Ver Proposta →" quando r2_iniciada+
+//                  verPropostaAtual() / verPropostaProspect() buscam hash no Supabase
+//                  Lista de prospects: botão "Ver Proposta →" para r2_iniciada+
+// v6.5.0 — Bug B: assessoria_atual, gaps_identificados, contexto_prospect persistidos no banco
+//           upsertProspect() salva pd_ass/pd_gaps/pd_ctx; openProspectDetail() restaura os 3 campos
 // v6.4.2 — "Prepara" → "Preparar Reunião de Perfil"; "Anotações R1" → "Anotações Reunião de Perfil"
 //           Campos obrigatórios expandidos: Perfil + Objetivo + Horizonte
 //           validacaoHighlight(): borda vermelha + label vermelho nos campos faltantes

@@ -252,7 +252,7 @@ function appendAnotacoesBlock(perguntas, r1Notes) {
     + '<span id="toggleR1bTrack" style="position:absolute;top:0;left:0;right:0;bottom:0;background:#444;border-radius:22px;transition:background .2s"></span>'
     + '<span id="toggleR1bThumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)"></span>'
     + '</label>'
-    + '<span style="font-size:.84rem;font-weight:600;color:var(--muted)">Preparar Reunião de Perfil</span>'
+    + '<span style="font-size:.84rem;font-weight:600;color:var(--muted)">Reunião de Perfil realizada</span>'
     + '</div>'
     + '<div id="btnR2BottomWrap" style="display:none;margin-top:10px">'
     + '<button class="genbtn" id="btnR2Bottom" onclick="generate()">'
@@ -598,6 +598,7 @@ async function extractFromTranscricao() {
       body: JSON.stringify({model: 'claude-sonnet-4-20250514', max_tokens: 1400, messages: [{role:'user', content: prompt}]})
     });
     var rd = await resp.json();
+    if (rd && rd.usage) await logAiUsage('extrair_transcricao', null, 'claude-sonnet-4-20250514', rd.usage.input_tokens, rd.usage.output_tokens, 'success');
     var txt = (rd.content && rd.content[0] && rd.content[0].text) || '';
     var clean = txt.replace(/```json|```/g, '').trim();
     var ex = JSON.parse(clean);
@@ -893,7 +894,8 @@ async function generate() {
 }
 
 // ── CHANGELOG ──────────────────────────────────────────────────────────────────
-// v6.4.2 — "Prepara" → "Preparar Reunião de Perfil"; "Anotações R1" → "Anotações Reunião de Perfil"
+// v6.6.0 — Bug K: "Preparar Reunião de Perfil" → "Reunião de Perfil realizada" (toggle bottom)
+// v6.5.0 — Bug F: logAiUsage adicionado em extractFromTranscricao()
 //           Campos obrigatórios expandidos: Perfil + Objetivo + Horizonte
 //           validacaoHighlight(): borda vermelha + label vermelho nos campos faltantes
 //           onToggleR1: toast lista campos faltantes por nome; rola até primeiro erro

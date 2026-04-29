@@ -205,9 +205,11 @@
       <div class="pd-topbar">
         <button class="pd-back" onclick="closeProspectDetail()">← Prospects</button>
         <div style="flex:1;min-width:0">
-          <div class="pd-name" id="pdNomeDisplay">—</div>
-          <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <div class="pd-name" id="pdNomeDisplay">—</div>
             <span id="pdStatusBadge"></span>
+          </div>
+          <div style="margin-top:4px">
             <span id="pdMetaExtra" style="font-size:.72rem;color:var(--muted)"></span>
           </div>
         </div>
@@ -309,7 +311,7 @@
       <div id="pdActionsBar" style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:20px;flex-wrap:wrap">
         <!-- Toggle R1 finalizada — só aparece quando R1 existe -->
         <div id="confirmR1Wrap" style="display:none;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:7px 12px">
-          <span style="font-size:.78rem;font-weight:600;color:var(--muted);font-family:var(--f)">Preparar Reunião de Perfil</span>
+          <span style="font-size:.78rem;font-weight:600;color:var(--muted);font-family:var(--f)">Reunião de Perfil realizada</span>
           <label data-testid="toggle-r1" style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer;flex-shrink:0">
             <input type="checkbox" id="toggleR1" onchange="onToggleR1(this.checked)" style="opacity:0;width:0;height:0;position:absolute">
             <span id="toggleR1Track" style="position:absolute;top:0;left:0;right:0;bottom:0;background:#444;border-radius:22px;transition:background .2s"></span>

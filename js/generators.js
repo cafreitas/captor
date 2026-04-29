@@ -208,7 +208,7 @@ function appendAnotacoesBlock(perguntas, r1Notes) {
   if (oldBottom) oldBottom.remove();
 
   // Bloco Anotações
-  var bAnot = mkBlock('📝', 'Anotações R1', false);
+  var bAnot = mkBlock('📝', 'Anotações Reunião de Perfil', false);
   bAnot.el.id = 'validacaoBloco';
   bAnot.body.innerHTML = buildAnotacoesR1HTML(perguntas || []);
   area.appendChild(bAnot.el);
@@ -252,7 +252,7 @@ function appendAnotacoesBlock(perguntas, r1Notes) {
     + '<span id="toggleR1bTrack" style="position:absolute;top:0;left:0;right:0;bottom:0;background:#444;border-radius:22px;transition:background .2s"></span>'
     + '<span id="toggleR1bThumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)"></span>'
     + '</label>'
-    + '<span style="font-size:.84rem;font-weight:600;color:var(--muted)">Prepara Reunião de Perfil</span>'
+    + '<span style="font-size:.84rem;font-weight:600;color:var(--muted)">Preparar Reunião de Perfil</span>'
     + '</div>'
     + '<div id="btnR2BottomWrap" style="display:none;margin-top:10px">'
     + '<button class="genbtn" id="btnR2Bottom" onclick="generate()">'
@@ -278,7 +278,7 @@ function buildAnotacoesR1HTML(perguntas) {
   // ── Aba Durante ──
   var duranteHTML = '<div data-panel="durante" class="r1tab-panel" style="padding:12px 0">'
     + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">'
-    + '<div><span style="' + lbl + '">Perfil confirmado</span>'
+    + '<div class="r1-field"><span class="r1-field-label" style="' + lbl + '">Perfil confirmado <span style="color:#f87171">*</span></span>'
     + '<select class="fsel" id="r1_perfil_confirmado" style="font-size:.8rem;padding:6px 8px">'
     + '<option value="">Selecione...</option>'
     + ['Conservador','Moderado','Arrojado','Agressivo'].map(function(p) { return '<option>' + p + '</option>'; }).join('')
@@ -300,12 +300,12 @@ function buildAnotacoesR1HTML(perguntas) {
     + '<input class="fi" id="r1_idade" type="number" placeholder="45" min="18" max="90" style="font-size:.8rem;padding:6px 8px"></div>'
     + '</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
-    + '<div><span style="' + lbl + '">Objetivo</span>'
+    + '<div class="r1-field"><span class="r1-field-label" style="' + lbl + '">Objetivo <span style="color:#f87171">*</span></span>'
     + '<select class="fsel" id="r1_obj" style="font-size:.8rem;padding:6px 8px">'
     + '<option value="">Selecione...</option>'
     + ['Aposentadoria / Independência financeira','Sucessão patrimonial / família','Compra de imóvel / bem','Crescimento patrimonial acelerado','Proteção e preservação','Renda passiva','Investimentos internacionais / Offshore'].map(function(o) { return '<option>' + o + '</option>'; }).join('')
     + '</select></div>'
-    + '<div><span style="' + lbl + '">Horizonte</span>'
+    + '<div class="r1-field"><span class="r1-field-label" style="' + lbl + '">Horizonte <span style="color:#f87171">*</span></span>'
     + '<select class="fsel" id="r1_horizonte" style="font-size:.8rem;padding:6px 8px">'
     + '<option value="">Selecione...</option>'
     + ['Até 2 anos','3 a 5 anos','5 a 10 anos','Mais de 10 anos'].map(function(h) { return '<option>' + h + '</option>'; }).join('')
@@ -402,9 +402,38 @@ function preencheValidacao() {
 
 function isValidacaoPreenchida() {
   var perf = document.getElementById('r1_perfil_confirmado');
-  var obj = document.getElementById('r1_obj');
   if (!perf) return true; // bloco não existe — não bloquear
-  return !!(perf.value && obj && obj.value);
+  var obj  = document.getElementById('r1_obj');
+  var hor  = document.getElementById('r1_horizonte');
+  return !!(perf.value && obj && obj.value && hor && hor.value);
+}
+
+// Destaca campos obrigatórios faltantes e retorna lista de labels ausentes
+function validacaoHighlight() {
+  var campos = [
+    { id: 'r1_perfil_confirmado', label: 'Perfil Confirmado' },
+    { id: 'r1_obj',               label: 'Objetivo' },
+    { id: 'r1_horizonte',         label: 'Horizonte' }
+  ];
+  var faltando = [];
+  campos.forEach(function(c) {
+    var el = document.getElementById(c.id);
+    if (!el) return;
+    // Encontra o label pai (.r1-field-label ou elemento anterior)
+    var wrap = el.closest ? el.closest('.r1-field') : null;
+    var lbl = wrap ? wrap.querySelector('.r1-field-label') : null;
+    if (!el.value) {
+      el.style.borderColor = '#f87171';
+      el.style.boxShadow = '0 0 0 2px rgba(248,113,113,.2)';
+      if (lbl) lbl.style.color = '#f87171';
+      faltando.push(c.label);
+    } else {
+      el.style.borderColor = '';
+      el.style.boxShadow = '';
+      if (lbl) lbl.style.color = '';
+    }
+  });
+  return faltando;
 }
 
 function collectR1Notes() {
@@ -700,7 +729,7 @@ async function generate() {
         if (el) { el.style.borderColor = ''; el.classList.remove('field-error'); }
       }
     });
-    showToast('Preencha nas Anotações R1: ' + missing.join(', ') + '.', 'error');
+    showToast('Preencha nas Anotações Reunião de Perfil: ' + missing.join(', ') + '.', 'error');
     var bv = document.getElementById('validacaoBloco');
     if (bv) {
       var bvBody = bv.querySelector('.blkbody');
@@ -862,3 +891,10 @@ async function generate() {
     showToast('Erro ao gerar proposta R2: ' + e.message, 'error');
   }
 }
+
+// ── CHANGELOG ──────────────────────────────────────────────────────────────────
+// v6.4.2 — "Prepara" → "Preparar Reunião de Perfil"; "Anotações R1" → "Anotações Reunião de Perfil"
+//           Campos obrigatórios expandidos: Perfil + Objetivo + Horizonte
+//           validacaoHighlight(): borda vermelha + label vermelho nos campos faltantes
+//           onToggleR1: toast lista campos faltantes por nome; rola até primeiro erro
+// ──────────────────────────────────────────────────────────────────────────────

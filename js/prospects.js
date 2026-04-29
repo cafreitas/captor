@@ -461,18 +461,23 @@ async function onToggleR1(checked){
     if(r2w)r2w.style.display=on?'block':'none';
   }
   if(checked){
+    var faltando = typeof validacaoHighlight === 'function' ? validacaoHighlight() : [];
     if(!isValidacaoPreenchida()){
-      showToast('Preencha Perfil e Objetivo nas Anotações R1 antes de confirmar.','error');
+      var msg = faltando.length
+        ? 'Campos obrigatórios: ' + faltando.join(', ') + '.'
+        : 'Preencha os campos obrigatórios nas Anotações antes de confirmar.';
+      showToast(msg, 'error');
       document.getElementById('toggleR1').checked=false;
       track.style.background='#444';
       thumb.style.transform='translateX(0)';
       syncBottom(false);
-      var bv=document.getElementById('validacaoBloco');
-      if(bv){
-        var bvBody=bv.querySelector('.blkbody');
-        if(bvBody&&!bvBody.classList.contains('open')){var bvHd=bv.querySelector('.blkhd');if(bvHd)bvHd.click();}
-        bv.scrollIntoView({behavior:'smooth',block:'start'});
-      }
+      // Abrir bloco Anotações e rolar até ele
+      var panels = document.querySelectorAll('.r1tab-panel');
+      panels.forEach(function(p){ if(p.dataset.panel==='durante') p.style.display=''; });
+      var anotBlock = document.querySelector('[id^="b"]');
+      // Rolar até o primeiro campo com erro
+      var firstErr = document.querySelector('.r1-field select[style*="f87171"]');
+      if(firstErr) firstErr.scrollIntoView({behavior:'smooth',block:'center'});
       return;
     }
     track.style.background='var(--lime)';
@@ -600,3 +605,10 @@ async function upsertProspect(status) {
     }
   }
 }
+
+// ── CHANGELOG ──────────────────────────────────────────────────────────────────
+// v6.4.2 — "Prepara" → "Preparar Reunião de Perfil"; "Anotações R1" → "Anotações Reunião de Perfil"
+//           Campos obrigatórios expandidos: Perfil + Objetivo + Horizonte
+//           validacaoHighlight(): borda vermelha + label vermelho nos campos faltantes
+//           onToggleR1: toast lista campos faltantes por nome; rola até primeiro erro
+// ──────────────────────────────────────────────────────────────────────────────

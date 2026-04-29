@@ -252,12 +252,12 @@ function appendAnotacoesBlock(perguntas, r1Notes) {
     + '<span id="toggleR1bTrack" style="position:absolute;top:0;left:0;right:0;bottom:0;background:#444;border-radius:22px;transition:background .2s"></span>'
     + '<span id="toggleR1bThumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)"></span>'
     + '</label>'
-    + '<span style="font-size:.84rem;font-weight:600;color:var(--muted)">R1 finalizada</span>'
+    + '<span style="font-size:.84rem;font-weight:600;color:var(--muted)">Prepara Reunião de Perfil</span>'
     + '</div>'
     + '<div id="btnR2BottomWrap" style="display:none;margin-top:10px">'
     + '<button class="genbtn" id="btnR2Bottom" onclick="generate()">'
     + '<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5H13l-3.75 2.75 1.5 4.5L7 10.25 3.25 12.75l1.5-4.5L1 5.5h4.5L7 1z" fill="currentColor"/></svg>'
-    + ' Gerar Proposta R2'
+    + ' Preparar Proposta'
     + '</button>'
     + '</div>';
   area.appendChild(toggleBottom);

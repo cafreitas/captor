@@ -1313,23 +1313,40 @@ function updateAllocSliders(changedIdx){
   var data = window._lastOutput;
   if(!data||!data.alocacao) return;
   var n = data.alocacao.labels.length;
-  var vals = data.alocacao.labels.map(function(_,i){
-    return parseInt(document.getElementById('pi_aloc_'+i).value)||0;
-  });
+
+  // Lê valores atuais
+  var vals = [];
+  for(var i=0;i<n;i++){
+    vals.push(parseInt(document.getElementById('pi_aloc_'+i).value)||0);
+  }
   var total = vals.reduce(function(a,b){return a+b;},0);
+
+  // Clamp: se passou de 100, reduz o slider que mudou
+  if(total > 100 && changedIdx !== undefined){
+    var over = total - 100;
+    var sl = document.getElementById('pi_aloc_'+changedIdx);
+    if(sl){
+      sl.value = Math.max(0, vals[changedIdx] - over);
+      vals[changedIdx] = parseInt(sl.value);
+      total = 100;
+    }
+  }
+
   var remaining = 100 - total;
 
-  // Trava sliders zerados quando total = 100
+  // Atualiza labels de % e trava sliders zerados quando restante = 0
   for(var i=0;i<n;i++){
     var sl = document.getElementById('pi_aloc_'+i);
+    var vl = document.getElementById('pi_alocv_'+i);
     if(vl) vl.textContent = vals[i]+'%';
+    if(sl) sl.disabled = (remaining === 0 && vals[i] === 0);
   }
 
   // Atualiza total com cor
   var totalEl = document.getElementById('pi_aloc_total');
   if(totalEl){
     totalEl.textContent = total+'%';
-    totalEl.style.color = total===100 ? 'var(--lime)' : '#f08080';
+    totalEl.style.color = total===100 ? 'var(--lime)' : (total>100 ? '#f87171' : 'var(--gold)');
   }
 
   // Atualiza donut preview
@@ -3121,4 +3138,9 @@ function captorConfirmCancel(){
 //           → fase 3: auto-publica ao detectar aprovado_sdr + exibe link com auto-copy
 //           Removidos: btnPublish, btnApprove, btnUpdateProposal, proposalBar, approveHint
 //           updateProposal() mantido como ação secundária via link "Regenerar com IA"
+// ──────────────────────────────────────────────────────────────────────────────
+
+// ── CHANGELOG (adicionado) ─────────────────────────────────────────────────────
+// v6.4.3 — updateAllocSliders: fix bug vl undefined (pi_alocv_i); clamp ao atingir 100%;
+//           lock de sliders zerados quando remaining=0; cor do total gold enquanto < 100%
 // ──────────────────────────────────────────────────────────────────────────────

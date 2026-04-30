@@ -185,63 +185,33 @@ function closeTermsModal(){
 }
 
 function initSliders(){
-  var wrap = document.getElementById('allocSliders');
-  if (!wrap) return;
-  ALLOC_CATS.forEach(function(cat, i){
-    wrap.innerHTML += '<div class="aslider-row">'
-      +'<span class="aslider-label" title="'+cat+'">'+cat+'</span>'
-      +'<div class="aslider-wrap">'
-      +'<input type="range" class="aslider" id="asl_'+i+'" min="0" max="100" value="0" step="1" oninput="updateSliders('+i+')">'
-      +'</div>'
-      +'<span class="aslider-val" id="asv_'+i+'">0%</span>'
-      +'</div>';
+  if(!document.getElementById('allocSliders')) return;
+  window._r2Sliders = initAllocSliders({
+    prefix:      'asl_',
+    containerId: 'allocSliders',
+    totalElId:   'allocTotal',
+    labels:      ALLOC_CATS
   });
 }
 
 function initPdSliders(){
-  var labels=['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'];
-  var container=document.getElementById('pdAllocSliders');
-  if(!container)return;
-  container.innerHTML='';
-  for(var i=0;i<9;i++){
-    (function(idx,lb){
-      var row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:5px';
-      var lbl=document.createElement('span');
-      lbl.style.cssText='font-size:.68rem;color:var(--muted);width:108px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
-      lbl.textContent=lb;
-      var sl=document.createElement('input');
-      sl.type='range';sl.min=0;sl.max=100;sl.value=0;
-      sl.className='aslider';sl.id='pd_sl_'+idx;sl.style.flex='1';
-      var val=document.createElement('span');
-      val.id='pd_sl_'+idx+'_v';
-      val.style.cssText='font-size:.7rem;font-weight:700;color:var(--lime);width:30px;text-align:right;flex-shrink:0';
-      val.textContent='0%';
-      sl.oninput=function(){
-        val.textContent=sl.value+'%';
-        updatePdAllocTotal();
-        syncFormToSidebar();
-      };
-      row.appendChild(lbl);row.appendChild(sl);row.appendChild(val);
-      container.appendChild(row);
-    })(i,labels[i]);
-  }
+  if(!document.getElementById('pdAllocSliders')) return;
+  window._pdSliders = initAllocSliders({
+    prefix:      'pd_sl_',
+    containerId: 'pdAllocSliders',
+    totalElId:   'pdAllocTotal',
+    labels:      ['Pós Fixado','Inflação','Prefixado','Multimercados','Renda Variável BR','FII','Alternativos','RF Global','RV Global'],
+    compact:     true,
+    onChange:    function(){ syncFormToSidebar(); }
+  });
 }
 
 function updatePdAllocTotal(){
-  var total=0;
-  for(var i=0;i<9;i++){var sl=document.getElementById('pd_sl_'+i);if(sl)total+=parseInt(sl.value)||0;}
-  var tot=document.getElementById('pdAllocTotal');
-  if(tot){tot.textContent=total+'%';tot.style.color=total>100?'var(--gold)':'var(--lime)';}
+  if(window._pdSliders) window._pdSliders.update(-1);
 }
 
 function resetPdSliders(){
-  for(var i=0;i<9;i++){
-    var sl=document.getElementById('pd_sl_'+i);
-    var vl=document.getElementById('pd_sl_'+i+'_v');
-    if(sl){sl.value=0;if(vl)vl.textContent='0%';}
-  }
-  updatePdAllocTotal();
+  if(window._pdSliders) window._pdSliders.reset();
   syncFormToSidebar();
 }
 
@@ -266,44 +236,11 @@ function syncFormToSidebar(){
 }
 
 function updateSliders(changed){
-  if (!document.getElementById('asl_0')) return;
-  var total = 0;
-  ALLOC_CATS.forEach(function(_, i){
-    var el = document.getElementById('asl_'+i);
-    total += el ? parseInt(el.value) || 0 : 0;
-  });
-
-  // Se passou de 100, reduz o slider que acabou de mudar
-  if(total > 100){
-    var over = total - 100;
-    var el = document.getElementById('asl_'+changed);
-    el.value = Math.max(0, parseInt(el.value) - over);
-    total = 100;
-  }
-
-  var remaining = 100 - total;
-
-  // Atualiza valores e trava sliders que não têm espaço
-  ALLOC_CATS.forEach(function(_, i){
-    var val = parseInt(document.getElementById('asl_'+i).value);
-    document.getElementById('asv_'+i).textContent = val + '%';
-    var slider = document.getElementById('asl_'+i);
-    // Trava se remaining = 0 e este slider está em 0
-    slider.disabled = (remaining === 0 && val === 0);
-  });
-
-  // Atualiza total
-  var totalEl = document.getElementById('allocTotal');
-  totalEl.textContent = total + '%';
-  totalEl.style.color = total === 100 ? '#a8c23a' : total > 90 ? '#e0b840' : '#a8c23a';
+  if(window._r2Sliders) window._r2Sliders.update(changed !== undefined ? changed : -1);
 }
 
 function resetSliders(){
-  ALLOC_CATS.forEach(function(_, i){
-    document.getElementById('asl_'+i).value = 0;
-    document.getElementById('asl_'+i).disabled = false;
-  });
-  document.getElementById('allocTotal').textContent = '0%';
+  if(window._r2Sliders) window._r2Sliders.reset();
 }
 
 function getSliderAlloc(){
